@@ -1,0 +1,20 @@
+
+TuxFrw Installation
+===================
+
+To install TuxFrw, follow these steps:
+
+1) Run (as root):
+
+# ./install.sh
+
+The scripts will be installed under /etc/tuxfrw.  The  installer  will  try  to
+copy the script 'tuxfrw' with the  right  permissions  under  /sbin.
+
+2) Configure the variables in /etc/tuxfrw/tuxfrw.conf
+
+With the above procedures, TuxFrw is already set up to start.
+# tuxfrw start
+
+Read the README and "TuxFrw Manual" for more information on running TuxFrw.
+

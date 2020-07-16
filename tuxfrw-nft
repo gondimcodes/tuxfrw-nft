@@ -1,0 +1,285 @@
+#!/usr/bin/env bash
+#
+# ----------------------------------------------------------------------------
+# TuxFrw-NFT 1.0
+# Copyright (C) 2001-2019 Marcelo Gondim (https://tuxfrw.linuxinfo.com.br/)
+# ----------------------------------------------------------------------------
+#
+# tuxfrw - startup script for the TuxFrw firewall automation tool
+#
+# ----------------------------------------------------------------------------
+#
+# This file is part of TuxFrw
+#
+# TuxFrw is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# ----------------------------------------------------------------------------
+
+#################################################################
+# Definindo funcoes:
+COL=70;WCOL=50
+SET_COL="echo -en \\033[${COL}G"
+NORMAL="echo -en \\033[0;39m"
+SUCCESS="echo -en \\033[1;32m"
+FAILURE="echo -en \\033[1;31m"
+
+evaluate_retval() {
+   if [ "`cat /tmp/tf_error`" = "" ]; then
+      print_status success
+   else
+      print_status failure
+   fi
+   rm /tmp/tf_error
+}
+
+print_status() {
+   if [ $# = 0 ]; then
+      echo "Usage: print_status {success|failure}"
+      return 1
+   fi
+   case "$1" in
+           success)
+                   $SET_COL
+                   echo -n "["
+                   $SUCCESS
+                   echo -n "OK"
+                   $NORMAL
+                   echo "]"
+                   ;;
+           failure)
+                   $SET_COL
+                   echo -n "["
+                   $FAILURE
+                   echo -n "FAILED"
+                   $NORMAL
+                   echo "]"
+                   ;;
+   esac
+}
+
+CONF_DIR="/etc/tuxfrw-nft"
+
+#
+# load up configuration files and modules
+#
+load_files()
+{
+  # don't do this if we don't have the config file
+  echo -n "Opening TuxFrw configuration file: "
+  if [ -f $CONF_DIR/tuxfrw.conf ]; then
+    . $CONF_DIR/tuxfrw.conf
+    print_status success
+    # source TuxFrw modules
+    . $CONF_DIR/tf_BASE.mod
+    . $CONF_DIR/tf_KERNEL.mod
+  else
+    print_status failure
+    exit 1
+  fi
+}
+
+load_chain() {
+  echo '#!/usr/sbin/nft -f' > $CONF_DIR/tuxfrw.nft
+  defines
+  if [ "$1" != "" ]; then
+     if [ "$1" == "NAT-IN" ]; then
+        if [ "$NAT" == "3" -o "$NAT" == "2" ]; then
+           $NFT 'flush chain ip nat PREROUTING' >> $CONF_DIR/tuxfrw.nft
+           $NFT 'flush chain ip6 nat PREROUTING' >> $CONF_DIR/tuxfrw.nft
+           . $CONF_DIR/rules/tf_$1.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+           echo -n "Loading $1 ..." 
+	   evaluate_retval
+           run_nft
+        fi
+        exit
+     fi
+     if [ "$1" == "NAT-OUT" ]; then
+        if [ "$NAT" == "1" -o "$NAT" == "2" ]; then
+           $NFT 'flush chain ip nat POSTROUTING' >> $CONF_DIR/tuxfrw.nft
+           $NFT 'flush chain ip6 nat POSTROUTING' >> $CONF_DIR/tuxfrw.nft
+           . $CONF_DIR/rules/tf_$1.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+           echo -n "Loading $1 ..." 
+           evaluate_retval
+           run_nft
+        fi
+        exit
+     fi
+     if [ "$1" == "INPUT" -o "$1" == "OUTPUT" ]; then
+        $NFT "flush chain inet filter $1" >> $CONF_DIR/tuxfrw.nft
+        . $CONF_DIR/rules/tf_$1.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+        echo -n "Loading $1 ..." 
+	evaluate_retval
+        run_nft
+        exit
+     fi
+     if [ "$1" == "NETDEV" ]; then
+        if [ "$EXT_IFACE" != "" ]; then
+           $NFT "flush chain netdev filter $EXT_IFACE" >> $CONF_DIR/tuxfrw.nft
+        fi
+        if [ "$INT_IFACE" != "" ]; then
+           $NFT "flush chain netdev filter $INT_IFACE" >> $CONF_DIR/tuxfrw.nft
+        fi
+        if [ "$DMZ_IFACE" != "" ]; then
+           $NFT "flush chain netdev filter $DMZ_IFACE" >> $CONF_DIR/tuxfrw.nft
+        fi
+        if [ "$EXT_IFACE" != "" -o "$INT_IFACE" != "" -o "$DMZ_IFACE" != "" ]; then 
+           . $CONF_DIR/rules/tf_$1.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+           echo -n "Loading $1 ..." 
+	   evaluate_retval
+           run_nft
+        fi
+        exit
+     fi
+     if [ "$1" == "MANGLE" ]; then
+        if [ "$MANGLE" == "1" ]; then
+           $NFT "flush chain inet mangle FORWARD" >> $CONF_DIR/tuxfrw.nft
+           . $CONF_DIR/rules/tf_$1.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+           echo -n "Loading $1 ..." 
+	   evaluate_retval
+           run_nft
+        fi
+        exit
+     fi
+     if [ "$1" == "FORWARD" ]; then
+        if [ "$EXT_IFACE" != "" ]; then
+           if [ "$INT_IFACE" != "" -o "$DMZ_IFACE" != "" ]; then
+              $NFT "flush chain inet filter FORWARD" >> $CONF_DIR/tuxfrw.nft
+              . $CONF_DIR/rules/tf_$1.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+              echo -n "Loading $1 ..." 
+	      evaluate_retval
+              run_nft
+              exit
+           fi
+        fi
+        exit
+     fi
+     VAR1="`echo $1|cut -d- -f1`"
+     VAR2="`echo $1|cut -d- -f2`"
+     CHAIN="$VAR1"2"$VAR2"
+     $NFT "flush chain inet filter $CHAIN" >> $CONF_DIR/tuxfrw.nft
+     . $CONF_DIR/rules/tf_$1.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+     echo -n "Loading $CHAIN ..." 
+     evaluate_retval
+     run_nft
+     exit
+  fi
+  echo
+  echo "Module not found! Ex.: tuxfrw load INT-EXT"
+  exit
+}
+
+start() {
+  echo -e "Compiling rules to nft format... \n"
+  # Clear these first, because we might be adding to pre-existing rules
+  clear_rules 2> /tmp/tf_error
+  echo -n "Clearing all current rules and user defined chains: "
+  evaluate_retval
+  defines 2> /tmp/tf_error
+  echo -n "Creating define values: "
+  evaluate_retval
+  echo -e "Applying TuxFrw configuration: \n"
+  create_rules
+  touch /var/lock/subsys/tuxfrw &> /dev/null
+  run_nft
+}
+
+stop() {
+  clear_rules 2> /tmp/tf_error
+  echo -n "Clearing all current rules and user defined chains: "
+  evaluate_retval
+  rm -f /var/lock/subsys/tuxfrw &> /dev/null
+  run_nft
+}
+
+natopen() {
+  clear_rules 2> /tmp/tf_error
+  echo -n "Clearing all current rules and user defined chains: "
+  evaluate_retval
+  defines 2> /tmp/tf_error
+  echo -n "Creating define values: "
+  evaluate_retval
+  echo -e "Applying NAT configuration: \n"
+  create_natopen
+  rm -f /var/lock/subsys/tuxfrw &> /dev/null
+  run_nft
+}
+
+panic() {
+  clear_rules 2> /tmp/tf_error
+  echo -n "Clearing all current rules and user defined chains: "
+  evaluate_retval
+  $NFT 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
+  $NFT 'add chain inet filter INPUT { type filter hook input priority 0; policy drop; }' >> $CONF_DIR/tuxfrw.nft
+  rm -f /var/lock/subsys/tuxfrw &> /dev/null
+  run_nft
+}
+
+header() {
+  echo "========================================================================="
+  echo "=== TuxFrw-NFT 1.0                                                    ==="
+  echo "=== Copyright (C) 2001-2019                                           ===" 
+  echo "=== Marcelo Gondim <gondim@linuxinfo.com.br>                          ===" 
+  echo "+-----------------------------------------------------------------------+"
+  echo "| TuxFrw is free software; you can redistribute it and/or modify        |"
+  echo "| it under the terms of the GNU General Public License as published by  |"
+  echo "| the Free Software Foundation; either version 2 of the License, or     |"
+  echo "| (at your option) any later version.                                   |"
+  echo "+-----------------------------------------------------------------------+"
+}
+
+# See how we were called.
+case "$1" in
+  start)
+    header
+    load_files
+    start
+    ;;
+  stop)
+    header
+    load_files
+    stop
+    ;;
+  load)
+    header
+    load_files
+    load_chain $2
+    ;;
+  natopen)
+    header
+    load_files
+    natopen
+    ;;
+  status)
+    header
+    nft list ruleset
+    echo
+    ;;
+  restart)
+    header
+    load_files
+    if [ -f /var/lock/subsys/tuxfrw ]; then
+      stop
+    fi
+    start
+    ;;
+  panic)
+    header
+    load_files
+    panic
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|load|natopen|status|restart|panic}"
+    exit 1
+esac
