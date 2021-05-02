@@ -45,7 +45,7 @@ if [ "$EXT_IFACE" != "" ]; then
    $NFT "add rule netdev filter $EXT_IFACE ip6 saddr \$bogons_v6 counter drop"
 
    # drop fragmentation
-   $NFT "add rule netdev filter $EXT_IFACE ip frag-off & 0x1fff != 0 counter drop"
+   #$NFT "add rule netdev filter $EXT_IFACE ip frag-off & 0x1fff != 0 counter drop"
 
    # SPOOF_CHECK packets
    if [ "$EXT_IP" != "" ]; then $NFT "add rule netdev filter $EXT_IFACE ip saddr $EXT_IP counter drop"; fi
