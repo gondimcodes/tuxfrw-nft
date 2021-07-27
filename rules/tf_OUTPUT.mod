@@ -36,8 +36,8 @@ $NFT 'add rule inet filter OUTPUT ct state established  counter accept'
 $NFT 'add rule inet filter OUTPUT oifname "lo" counter accept'
 
 # accept link local address
-$NFT 'add rule inet filter OUTPUT ip6 daddr fe80::/64 counter accept'
-$NFT 'add rule inet filter OUTPUT ip6 daddr ff00::/8 counter accept'
+$NFT 'add rule inet filter OUTPUT ip6 saddr fe80::/64 counter accept'
+$NFT 'add rule inet filter OUTPUT ip6 saddr ::/128 counter accept'
 
 # accept unmatched OUTPUT packets
 # - To enhance security, comment out this line after tests.
