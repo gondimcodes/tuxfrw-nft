@@ -38,8 +38,9 @@ $NFT 'add rule inet filter INPUT iifname "lo" counter accept'
 # drop new connection tcp that not flag syn
 $NFT 'add rule inet filter INPUT tcp flags & (fin|syn|rst|ack) != syn ct state new counter drop'
 
-# accept link local address
+# accept link local address and multicast
 $NFT 'add rule inet filter INPUT ip6 daddr fe80::/64 counter accept'
+$NFT 'add rule inet filter INPUT ip6 daddr ff00::/8 counter accept'
 
 # accept SSH input from remote administrator IP
 if [ "$RMT_ADMIN_IP" != "" ]; then
