@@ -28,24 +28,42 @@
 #
 # OUTPUT chain
 #
-
-# accept output packets with allowed state
-$NFT 'add rule inet filter OUTPUT ct state established  counter accept'
-
 # accept output packets from LO_IFACE
 $NFT 'add rule inet filter OUTPUT oifname "lo" counter accept'
 
-# accept link local address
-$NFT 'add rule inet filter OUTPUT ip6 saddr fe80::/64 counter accept'
-$NFT 'add rule inet filter OUTPUT ip6 saddr ::/128 counter accept'
+$NFT 'add rule inet filter OUTPUT rt type 0 counter drop'
+
+# accept output packets with allowed state
+$NFT 'add rule inet filter OUTPUT ct state related,established counter accept'  
+
+# icmpv6 allow
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type destination-unreachable counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type packet-too-big counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type time-exceeded counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type parameter-problem counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type echo-request counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type echo-reply counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type nd-router-solicit ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type nd-router-advert ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type nd-neighbor-solicit ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type nd-neighbor-advert ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type ind-neighbor-solicit ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type ind-neighbor-advert ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type mld-listener-query counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type mld-listener-report counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type mld-listener-done counter accept'
+$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type mld2-listener-report counter accept'
+
+# not implemented
+#$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type 148 ip6 hoplimit 255 counter accept'
+#$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type 149 ip6 hoplimit 255 counter accept'
+#$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type 151 ip6 hoplimit 1 counter accept'
+#$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type 152 ip6 hoplimit 1 counter accept'
+#$NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type 153 ip6 hoplimit 1 counter accept'
 
 # accept unmatched OUTPUT packets
 # - To enhance security, comment out this line after tests.
 $NFT 'add rule inet filter OUTPUT counter accept'
-
-# accept ICMP output packets (from the firewall to any other host)
-# $NFT 'add rule inet filter OUTPUT ip protocol icmp counter accept'
-# $NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp counter accept'
 
 #==============================================================================
 # Place your rules below

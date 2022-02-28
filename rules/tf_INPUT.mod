@@ -29,18 +29,61 @@
 # INPUT chains
 #
 
-# accept input packets with allowed state
-$NFT 'add rule inet filter INPUT ct state established  counter accept'
-
 # accept input packets from lo
 $NFT 'add rule inet filter INPUT iifname "lo" counter accept'
 
-# drop new connection tcp that not flag syn
-$NFT 'add rule inet filter INPUT tcp flags & (fin|syn|rst|ack) != syn ct state new counter drop'
+$NFT 'add rule inet filter INPUT rt type 0 counter drop'
 
-# accept link local address and multicast
-$NFT 'add rule inet filter INPUT ip6 daddr fe80::/64 counter accept'
-$NFT 'add rule inet filter INPUT ip6 daddr ff00::/8 counter accept'
+# accept input packets with allowed state
+$NFT 'add rule inet filter INPUT ct state related,established counter accept'
+
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type echo-reply counter accept'
+
+$NFT 'add rule inet filter INPUT ct state invalid counter drop'
+
+# icmpv4 allow
+$NFT 'add rule inet filter INPUT icmp type destination-unreachable counter accept'
+$NFT 'add rule inet filter INPUT icmp type time-exceeded counter accept'
+$NFT 'add rule inet filter INPUT icmp type parameter-problem counter accept'
+$NFT 'add rule inet filter INPUT icmp type echo-request counter accept'
+
+# icmpv6 allow
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type destination-unreachable counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type packet-too-big counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type time-exceeded counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type parameter-problem counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type echo-request counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type nd-router-solicit ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type nd-router-advert ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type nd-neighbor-solicit ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type nd-neighbor-advert ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type ind-neighbor-solicit ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type ind-neighbor-advert ip6 hoplimit 255 counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type mld-listener-query counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type mld-listener-report counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type mld-listener-done counter accept'
+$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type mld2-listener-report counter accept'
+
+# not implemented
+#$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type 148 ip6 hoplimit 255 counter accept'
+#$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type 149 ip6 hoplimit 255 counter accept'
+#$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type 151 ip6 hoplimit 1 counter accept'
+#$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type 152 ip6 hoplimit 1 counter accept'
+#$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmpv6 type 153 ip6 hoplimit 1 counter accept'
+#$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type 144 counter accept'
+#$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type 145 counter accept'
+#$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type 146 counter accept'
+#$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type 147 counter accept'
+
+$NFT 'add rule inet filter INPUT ip6 saddr fe80::/10 ip6 daddr fe80::/10 udp sport 547 udp dport 546 counter accept'
+$NFT 'add rule inet filter INPUT ip6 daddr ff02::fb udp dport 5353 counter accept'
+$NFT 'add rule inet filter INPUT ip6 daddr ff02::f udp dport 1900 counter accept'
+
+$NFT 'add rule inet filter INPUT udp sport 67 udp dport 68 counter accept'
+
+$NFT 'add rule inet filter INPUT ip daddr 224.0.0.251 udp dport 5353 counter accept'
+
+$NFT 'add rule inet filter INPUT ip daddr 239.255.255.250 udp dport 1900 counter accept'
 
 # accept SSH input from remote administrator IP
 if [ "$RMT_ADMIN_IP" != "" ]; then
@@ -49,13 +92,6 @@ fi
 if [ "$RMT_ADMIN_IP6" != "" ]; then
    $NFT "add rule inet filter INPUT ip6 saddr $RMT_ADMIN_IP6 tcp dport $SSH_PORT tcp flags & (fin|syn|rst|ack) == syn counter accept"
 fi
-
-# ICMP rule
-$NFT 'add rule inet filter INPUT ip protocol icmp counter accept'
-$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp counter accept'
-
-# accept UNIX Traceroute Requests
-# $NFT 'add rule inet filter INPUT udp dport 33434-33474 counter reject'
 
 # Proxy access - authorization
 if [ "$PROXY_PORT" != "" -a "$INT_IFACE" != "" ]; then

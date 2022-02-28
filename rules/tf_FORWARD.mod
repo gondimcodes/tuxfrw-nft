@@ -30,11 +30,13 @@
 #
 
 # accept forward packets with allowed state
-$NFT 'add rule inet filter FORWARD ct state established  counter accept'
+$NFT 'add rule inet filter FORWARD ct state related,established counter accept'
 
-# ICMP rules
-$NFT 'add rule inet filter FORWARD ip protocol icmp counter accept'
-$NFT 'add rule inet filter FORWARD meta l4proto ipv6-icmp counter accept'
+# icmpv4 allow
+$NFT 'add rule inet filter FORWARD icmp type destination-unreachable counter accept'
+$NFT 'add rule inet filter FORWARD icmp type time-exceeded counter accept'
+$NFT 'add rule inet filter FORWARD icmp type parameter-problem counter accept'
+$NFT 'add rule inet filter FORWARD icmp type echo-request counter accept'
 
 # accept the forwardings of the nets
 if [ "$DMZ_IFACE" != "" ]; then $NFT "add rule inet filter FORWARD iifname $DMZ_IFACE oifname $DMZ_IFACE counter accept"; fi
