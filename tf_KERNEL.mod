@@ -137,5 +137,4 @@ set_sysctl()
   $SYSCTL net.ipv4.conf.all.rp_filter=1
   $SYSCTL net.ipv4.tcp_mtu_probing=1
   $SYSCTL net.ipv4.tcp_base_mss=1024
-  $SYSCTL net.netfilter.nf_conntrack_helper=1
 }
