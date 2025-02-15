@@ -28,6 +28,9 @@
 #
 # INPUT chains
 #
+# SYNPROXY protection
+# check mss and wscale with command: tcpdump -pni eth0 -c 1 'tcp[tcpflags] == (tcp-syn|tcp-ack)' and port 443
+$NFT 'add synproxy inet filter https-synproxy mss 1460 wscale 12 timestamp sack-perm'
 
 # accept input packets from lo
 $NFT 'add rule inet filter INPUT iifname "lo" counter accept'
@@ -38,6 +41,8 @@ $NFT 'add rule inet filter INPUT rt type 0 counter drop'
 $NFT 'add rule inet filter INPUT ct state related,established counter accept'
 
 $NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type echo-reply counter accept'
+
+$NFT 'add rule inet filter INPUT ct state invalid,untracked synproxy name "https-synproxy" counter'
 
 $NFT 'add rule inet filter INPUT ct state invalid counter drop'
 
@@ -119,7 +124,8 @@ fi
 # Place your rules below
 #==============================================================================
 
-
+# SYNPROXY HTTPS protection example:
+#$NFT "add rule inet filter https-synproxy tcp dport 443 tcp flags syn notrack counter"
 
 
 
