@@ -129,6 +129,7 @@ create_rules()
   # base I/O rules
   $NFT 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
   $NFT 'add chain inet filter https-synproxy { type filter hook prerouting priority raw; policy accept; }' >> $CONF_DIR/tuxfrw.nft
+  $NFT 'add chain inet filter https-synprxv6 { type filter hook prerouting priority raw; policy accept; }' >> $CONF_DIR/tuxfrw.nft
   $NFT 'add chain inet filter INPUT { type filter hook input priority 0; policy drop; }' >> $CONF_DIR/tuxfrw.nft
   . $CONF_DIR/rules/tf_INPUT.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
   echo -n "Loading INPUT" 
