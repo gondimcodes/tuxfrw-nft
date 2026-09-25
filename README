@@ -25,8 +25,8 @@ Features:
   and controls container access on FORWARD (via tf_DOCKER.mod) without flushing or
   interfering with Docker container networking and DNAT.
 
-Visit TuxFrw home page and get its latest version at:
- <https://tuxfrw.linuxinfo.com.br/>
+Visit TuxFrw-NFT on GitHub:
+ <https://github.com/gondimcodes/tuxfrw-nft>
 
 
 Requirements

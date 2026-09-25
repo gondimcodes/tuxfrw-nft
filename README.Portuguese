@@ -25,8 +25,8 @@ Recursos:
   e controla acessos aos containers no FORWARD (via tf_DOCKER.mod), sem derrubar ou
   interferir nas regras e pontes virtuais internas do Docker.
 
-Visite a página oficial do TuxFrw e obtenha a versão mais recente em:
- <https://tuxfrw.linuxinfo.com.br/>
+Visite o TuxFrw-NFT no GitHub:
+ <https://github.com/gondimcodes/tuxfrw-nft>
 
 
 Requisitos

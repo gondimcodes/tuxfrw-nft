@@ -1,6 +1,6 @@
 # ----------------------------------------------------------------------------
 # TuxFrw-NFT 5.0
-# Copyright (C) 2001-2022 Marcelo Gondim (https://tuxfrw.linuxinfo.com.br/)
+# Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
 # tf_INT-EXT.mod - TuxFrw INT->EXT rules module
