@@ -40,9 +40,11 @@ if [ "$EXT_IFACE" != "" ]; then
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn|rst|psh|ack|urg) == fin|syn|psh|urg counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn|rst|psh|ack|urg) == fin|syn|rst|ack|urg counter drop"
 
-   # drop BOGONS
-   $NFT "add rule netdev filter $EXT_IFACE ip saddr \$bogons_v4 counter drop"
-   $NFT "add rule netdev filter $EXT_IFACE ip6 saddr \$bogons_v6 counter drop"
+   # drop BOGONS (optional, enabled via BOGONS="1" in tuxfrw.conf)
+   if [ "$BOGONS" = "1" ]; then
+      $NFT "add rule netdev filter $EXT_IFACE ip saddr \$bogons_v4 counter drop"
+      $NFT "add rule netdev filter $EXT_IFACE ip6 saddr \$bogons_v6 counter drop"
+   fi
 
    # drop fragmentation
    #$NFT "add rule netdev filter $EXT_IFACE ip frag-off & 0x1fff != 0 counter drop"

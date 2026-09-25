@@ -32,10 +32,14 @@ clear_rules()
 {
   echo '#!/usr/sbin/nft -f' > $CONF_DIR/tuxfrw.nft
   if [ "$DOCKER_SUPPORT" = "1" ]; then
-    # In Docker mode, NEVER flush ruleset! Delete/flush only our specific table if it exists.
-    # Create empty table first so delete table never fails if it is the first start.
+    # In Docker mode, NEVER flush ruleset (it would destroy Docker chains & bridges)!
+    # Delete only TuxFrw's own tables. We add empty tables first so delete never fails if table doesn't exist.
     echo 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
     echo 'delete table inet filter' >> $CONF_DIR/tuxfrw.nft
+    echo 'add table netdev filter' >> $CONF_DIR/tuxfrw.nft
+    echo 'delete table netdev filter' >> $CONF_DIR/tuxfrw.nft
+    echo 'add table inet mangle' >> $CONF_DIR/tuxfrw.nft
+    echo 'delete table inet mangle' >> $CONF_DIR/tuxfrw.nft
   else
     echo 'flush ruleset' >> $CONF_DIR/tuxfrw.nft
   fi
@@ -43,8 +47,10 @@ clear_rules()
 
 defines()
 {
-  echo 'define bogons_v4 = { 0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24, 192.168.0.0/16, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 240.0.0.0/4, 255.255.255.255/32 }' >> $CONF_DIR/tuxfrw.nft
-  echo 'define bogons_v6 = { 0100::/64, 2001:2::/48, 2001:10::/28, 2001:db8::/32, 3ffe::/16, fc00::/7, fec0::/10, ff00::/8 }' >> $CONF_DIR/tuxfrw.nft
+  local v4="${BOGONS_V4:-0.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 192.0.0.0/24, 192.0.2.0/24, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 240.0.0.0/4, 255.255.255.255/32}"
+  local v6="${BOGONS_V6:-0100::/64, 2001:2::/48, 2001:10::/28, 2001:db8::/32, 3ffe::/16, fc00::/7, fec0::/10, ff00::/8}"
+  echo "define bogons_v4 = { $v4 }" >> $CONF_DIR/tuxfrw.nft
+  echo "define bogons_v6 = { $v6 }" >> $CONF_DIR/tuxfrw.nft
 }
 
 run_nft()
