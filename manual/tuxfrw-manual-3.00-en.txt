@@ -519,7 +519,40 @@ Observation.: Notice that the entry of the block above was placed before the cal
 
 Ok! Now you just have to restart the TuxFrw for the new rules to work.
 
-/sbin/tuxfrw start ou /etc/init.d/tuxfrw start
+/usr/sbin/tuxfrw-nft start
+
+================================================================================
+
+ Docker Support and Integration (DOCKER_SUPPORT)
+ -----------------------------------------------
+
+Starting with TuxFrw-NFT, native compatibility with Docker environments has been
+introduced via DOCKER_SUPPORT="1" in /etc/tuxfrw-nft/tuxfrw.conf.
+
+1. Problem Solved:
+Docker manages its own Netfilter tables and chains for container bridges (docker0, br-+).
+A global 'flush ruleset' tears down container connectivity. Furthermore, published
+ports (-p host_port:container_port) pass through the FORWARD chain via DNAT, bypassing
+the host's INPUT chain.
+
+2. How TuxFrw-NFT operates with DOCKER_SUPPORT="1":
+- Safe Flush: Start and stop operations only remove TuxFrw's own 'inet filter' table,
+  leaving Docker tables completely untouched.
+- Host Hardening (INPUT): Enforces default DROP policy protecting local host services
+  (SSH, ICMP, local daemons) via tf_INPUT.mod.
+- Container Control (FORWARD / tf_DOCKER.mod): Creates the FORWARD chain with
+  priority -5 in nftables, evaluating TuxFrw rules BEFORE Docker's default rules (priority 0).
+- Conflict Avoidance: TuxFrw disables its own NAT/Mangle modules in this mode,
+  leaving container NAT to the Docker daemon.
+
+3. Module Management:
+To reload container access rules without restarting the firewall or disturbing host connections:
+
+  # tuxfrw-nft load DOCKER
+
+Example rule in /etc/tuxfrw-nft/rules/tf_DOCKER.mod (using RFC 5737 doc IP):
+  $NFT 'add rule inet filter FORWARD ip saddr 203.0.113.50 tcp dport 3000 counter accept'
+  $NFT 'add rule inet filter FORWARD tcp dport 3000 counter drop'
 
 ================================================================================
 

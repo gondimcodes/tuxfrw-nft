@@ -124,6 +124,14 @@ load_chain() {
         run_nft
         exit
      fi
+     if [ "$1" == "DOCKER" ]; then
+        $NFT "flush chain inet filter FORWARD" >> $CONF_DIR/tuxfrw.nft
+        . $CONF_DIR/rules/tf_DOCKER.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+        echo -n "Loading DOCKER ..." 
+	evaluate_retval
+        run_nft
+        exit
+     fi
      if [ "$1" == "NETDEV" ]; then
         if [ "$EXT_IFACE" != "" ]; then
            $NFT "flush chain netdev filter $EXT_IFACE" >> $CONF_DIR/tuxfrw.nft

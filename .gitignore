@@ -1,0 +1,9 @@
+# Generated runtime files
+tuxfrw.nft
+/tmp/tf_error
+
+# Scratch & Editor temporary files
+*~
+*.swp
+*.bak
+.DS_Store

@@ -1,4 +1,15 @@
+1.1 (2026-09-25)
+
+- Added native Docker compatibility mode (DOCKER_SUPPORT="1").
+- Added rules/tf_DOCKER.mod for fine-grained container access control via FORWARD (priority -5).
+- Added 'tuxfrw-nft load DOCKER' command support.
+- Safe table flushing in Docker mode (prevents tearing down Docker rules and bridges).
+- Fixed port configuration bug in rules/tf_INT-DMZ.mod (WWW6 ports).
+- Fixed DHCPv4/v6 and IPv6 SSDP multicast ports in rules/tf_INPUT.mod.
+- Added ICMPv4 essential outbound rules in rules/tf_OUTPUT.mod.
+- Refactored and modernized install.sh with checks, styling and full overwrite detection.
+- Standardized documentation, paths (/usr/sbin and /etc/tuxfrw-nft) and UTF-8 encoding.
+
 1.0 (2022-02-13)
 
-- NFTables suport.
-
+- NFTables support.

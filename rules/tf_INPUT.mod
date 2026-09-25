@@ -82,11 +82,11 @@ $NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmp
 #$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type 146 counter accept'
 #$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type 147 counter accept'
 
-$NFT 'add rule inet filter INPUT ip6 saddr fe80::/10 ip6 daddr fe80::/10 udp sport 547 udp dport 546 counter accept'
+$NFT 'add rule inet filter INPUT ip6 saddr fe80::/10 udp sport { 546, 547 } udp dport { 546, 547 } counter accept'
 $NFT 'add rule inet filter INPUT ip6 daddr ff02::fb udp dport 5353 counter accept'
-$NFT 'add rule inet filter INPUT ip6 daddr ff02::f udp dport 1900 counter accept'
+$NFT 'add rule inet filter INPUT ip6 daddr { ff02::c, ff05::c } udp dport 1900 counter accept'
 
-$NFT 'add rule inet filter INPUT udp sport 67 udp dport 68 counter accept'
+$NFT 'add rule inet filter INPUT udp sport { 67, 68 } udp dport { 67, 68 } counter accept'
 
 $NFT 'add rule inet filter INPUT ip daddr 224.0.0.251 udp dport 5353 counter accept'
 
@@ -129,6 +129,9 @@ fi
 # SYNPROXY HTTPS protection example:
 #$NFT "add rule inet filter https-synproxy ip saddr 0/0 tcp dport 443 tcp flags syn notrack counter"
 #$NFT "add rule inet filter https-synprxv6 ip6 saddr ::/0 tcp dport 443 tcp flags syn notrack counter"
+
+# Example of custom subnet blocking rules (using RFC 5737 documentation blocks):
+#$NFT "add rule inet filter INPUT ip saddr { 198.51.100.0/24, 203.0.113.0/24 } tcp dport { 587, 465 } counter drop"
 
 
 

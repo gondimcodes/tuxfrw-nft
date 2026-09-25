@@ -36,6 +36,12 @@ $NFT 'add rule inet filter OUTPUT rt type 0 counter drop'
 # accept output packets with allowed state
 $NFT 'add rule inet filter OUTPUT ct state related,established counter accept'  
 
+# icmpv4 allow
+$NFT 'add rule inet filter OUTPUT icmp type destination-unreachable counter accept'
+$NFT 'add rule inet filter OUTPUT icmp type time-exceeded counter accept'
+$NFT 'add rule inet filter OUTPUT icmp type parameter-problem counter accept'
+$NFT 'add rule inet filter OUTPUT icmp type echo-request counter accept'
+
 # icmpv6 allow
 $NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type destination-unreachable counter accept'
 $NFT 'add rule inet filter OUTPUT meta l4proto ipv6-icmp icmpv6 type packet-too-big counter accept'

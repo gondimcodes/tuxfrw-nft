@@ -39,7 +39,7 @@ $NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_DNS2 tcp dport 53 counter acce
 $NFT "add rule inet filter INT2DMZ ip protocol tcp ip daddr $IP_SMTP tcp dport { 25,110 } counter accept" 
 $NFT "add rule inet filter INT2DMZ meta l4proto tcp ip6 daddr $IP6_SMTP tcp dport { 25,110 } counter accept"
 $NFT "add rule inet filter INT2DMZ ip protocol tcp ip daddr $IP_WWW1 tcp dport { 80,443 } counter accept" 
-$NFT "add rule inet filter INT2DMZ meta l4proto tcp ip6 daddr $IP6_WWW1 tcp dport { 25,110 } counter accept"
+$NFT "add rule inet filter INT2DMZ meta l4proto tcp ip6 daddr $IP6_WWW1 tcp dport { 80,443 } counter accept"
 
 # log and reject all the unmatched packets
 #$NFT 'add rule inet filter INT2DMZ counter log prefix \"tuxfrw: INT->DMZ! \"'

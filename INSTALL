@@ -1,20 +1,18 @@
+TuxFrw-NFT Installation
+========================
 
-TuxFrw Installation
-===================
-
-To install TuxFrw, follow these steps:
+To install TuxFrw-NFT, follow these steps:
 
 1) Run (as root):
 
 # ./install.sh
 
-The scripts will be installed under /etc/tuxfrw.  The  installer  will  try  to
-copy the script 'tuxfrw' with the  right  permissions  under  /sbin.
+The configuration and modules will be installed under /etc/tuxfrw-nft.
+The installer will copy the main script 'tuxfrw-nft' with executable permissions under /usr/sbin.
 
-2) Configure the variables in /etc/tuxfrw/tuxfrw.conf
+2) Configure the variables in /etc/tuxfrw-nft/tuxfrw.conf
 
-With the above procedures, TuxFrw is already set up to start.
-# tuxfrw start
+3) Start TuxFrw-NFT:
+# tuxfrw-nft start
 
-Read the README and "TuxFrw Manual" for more information on running TuxFrw.
-
+Read the README and "TuxFrw Manual" for more information on running TuxFrw-NFT.

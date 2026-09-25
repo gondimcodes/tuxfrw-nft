@@ -1,111 +1,81 @@
 ===============================================================================
 
- 				   TuxFrw
-				   ------
+                                TuxFrw-NFT
+                                ----------
 
-	  A ferramenta definitiva para automação de firewalls Linux.
+       A ferramenta definitiva de automaÃ§Ã£o de firewall Linux com nftables.
 
 ===============================================================================
 
-TuxFrw é uma ferramenta completa de  automação  de  firewalls  para  GNU/Linux.
+O TuxFrw-NFT Ã© uma ferramenta completa de automaÃ§Ã£o de firewall para GNU/Linux baseada no subsistema nftables.
 
-Atualmente, TuxFrw consiste de 'scripts' criados para  facilitar  a  forma  com
-que regras de firewall IPTables  são  configuradas.  Com o  TuxFrw,  um usuário
-pode configurar seu próprio firewall baseado em  Linux / Netfilter,  fornecendo
-simplesmente os endereços IP e outras  políticas  de  utilização  de  serviços.
-Comece com um firewall básico, e ajuste-o usando suas habilidades  aliadas  com
-a força da modularidade do TuxFrw. TuxFrw é a ferramenta de  firewalls  baseada
-em IPTables definitiva,  levando  total  vantagem  desta  grande  estrutura  de
-firewalls Linux.
+O TuxFrw-NFT consiste em scripts modulares criados para simplificar e automatizar
+a forma como as regras de firewall nftables sÃ£o configuradas e aplicadas.
+Com o TuxFrw-NFT, o administrador pode configurar um firewall robusto baseado no Netfilter
+apenas definindo IPs, interfaces de rede e polÃ­ticas de seguranÃ§a.
 
-Embora sua funcionalidade não seja tão abrangente, nossa intenção é melhorar  o
-TuxFrw de forma a transformá-lo em uma ferramenta completa de  configuração  de
-firewalls.
+Recursos:
+- CompilaÃ§Ã£o atÃ´mica de regras e aplicaÃ§Ã£o direta via nftables (nft -f).
+- Arquitetura modular (tf_BASE, tf_KERNEL e mÃ³dulos direcionais).
+- Filtro com controle de estado de conexÃ£o (Stateful Packet Inspection - ct state).
+- Filtro de pacotes em estÃ¡gio ingress via hook netdev (BOGONs, anti-spoofing, ataques de TCP flags).
+- Suporte completo Dual-Stack (IPv4 e IPv6 simultÃ¢neos).
+- Modo Tradicional de Gateway / DMZ / NAT (EXT, INT, DMZ, VPNs).
+- Modo de Compatibilidade Nativa com Docker (DOCKER_SUPPORT="1"): blinda o host no INPUT
+  e controla acessos aos containers no FORWARD (via tf_DOCKER.mod), sem derrubar ou
+  interferir nas regras e pontes virtuais internas do Docker.
 
-Visite a home page do TuxFrw e pegue a última versão em
- <http://tuxfrw.linuxinfo.com.br/>
+Visite a pÃ¡gina oficial do TuxFrw e obtenha a versÃ£o mais recente em:
+ <https://tuxfrw.linuxinfo.com.br/>
 
 
 Requisitos
 ==========
 
-- Linux kernel 3.x (ou posterior) com suporte a NetFilter;
-- IPTables 1.4.x (ou posterior)
+- Kernel Linux com suporte a nftables (subsistema nf_tables);
+- UtilitÃ¡rio nftables (nft) instalado (versÃ£o 0.9.x ou superior);
+- Interpretador Bash.
 
 
-Instalação
+InstalaÃ§Ã£o
 ==========
 
-Leia o arquivo INSTALL.Portuguese para obter instruções de instalação.
+Leia o arquivo INSTALL.Portuguese para instruÃ§Ãµes de instalaÃ§Ã£o.
+A configuraÃ§Ã£o e os mÃ³dulos residem em /etc/tuxfrw-nft e o executÃ¡vel em /usr/sbin/tuxfrw-nft.
 
 
-Utilização
+UtilizaÃ§Ã£o
 ==========
 
-Leia o "Manual do TuxFrw" para obter ajuda com o TuxFrw.
+# tuxfrw-nft {start|stop|load <mÃ³dulo>|natopen|status|restart|panic}
+
+Exemplos:
+  tuxfrw-nft start
+  tuxfrw-nft stop
+  tuxfrw-nft status
+  tuxfrw-nft load INPUT
+  tuxfrw-nft load DOCKER
+  tuxfrw-nft load INT-EXT
 
 
 Autores
 =======
 
-	"The TuxFrw Team"
-        -----------------
-	- Marcelo Gondim <gondim@gmail.com>
-        - outros contribuidores (listados no arquivo CREDITS).
+    "The TuxFrw Team"
+    -----------------
+    - Marcelo Gondim <gondim@gmail.com>
+    - outros colaboradores (reconhecidos no arquivo CREDITS).
 
 
-Contato
-=======
+InformaÃ§Ãµes de Contato
+======================
 
-Envie relatórios  de  bugs,  patches,  pedidos  de  novas  características,  ou
-qualquer coisa do  tipo  para  os  autores  listados  no  arquivo  AUTHORS,  ou
-diretamente para o mantenedor principal, Marcelo Gondim 
-<gondim@gmail.com>.
+Envie relatÃ³rios de erros, patches e sugestÃµes ao mantenedor principal:
+Marcelo Gondim <gondim@gmail.com>.
 
 
-Informações Legais
+InformaÃ§Ãµes Legais
 ==================
 
-TuxFrw foi lançado de acordo com os termos  da  licença  GPL.  Veja  o  arquivo 
-LICENSE para mais informações.
-
-TuxFrw é software livre; você pode redistribuí-lo e/ou  modificá-lo  de  acordo
-com os termos  da  Licensa  Pública  GNU  como  publicada  pela  Free  Software
-Foundation; versão 2 da Licensa, ou  (conforme  sua  escolha)  qualquer  versão
-mais nova.
-
-TuxFrw é distribuído com o intuito de ser  útil,  mas  SEM  QUALQUER  GARANTIA;
-nem mesmo a garantia implícita  de  MERCHANTABILITY  ou  FITNESS  PARA  UM  FIM
-PARTICULAR. (Basicamente, se você for "hackeado", não venha chorar  para  nós.)
-Veja a Licensa Pública Geral GNU para mais detalhes.
-
-Você deveria ter recebido uma cópia do Licensa  Pública  Geral  GNU  juntamente
-com o TuxFrw; se não, escreva para :
-
-Free Software Foundation, Inc.,
-59 Temple Place, Suite 330, Boston, MA
-02111-1307
-USA
-
-
-Algumas considerações finais
-============================
-
-Este projeto é recomendado para  qualquer  um  que  tenha  conhecimento  básico
-sobre redes, TCP/IP, filtro de pactoes, IPTables e  também  algum  conhecimento
-adicional sobre administração de sistemas Linux. Ele poderá ser de muita  valia
-para estudantes de áreas relacionadas com segurança da informação em  redes  de
-computadores.
-
----
-
-Ficaremos felizes se você gostou  deste  projeto,  ainda  mais  se  você  puder
-ajudar-nos em  seu  desenvolvimento  e  melhoria,  com  qualquer  contribuição. 
-Bug-fixes e sugestões para novas versões do  TuxFrw  podem  ser  enviadas  para
-qualquer das pessoas listadas no arquivo AUTHORS.
-
-Obrigado pela sua atenção!
-
-	-- The TuxFrw Team
-
-
+O TuxFrw Ã© distribuÃ­do sob a licenÃ§a GNU General Public License (GPLv2).
+Consulte o arquivo LICENSE para mais informaÃ§Ãµes.

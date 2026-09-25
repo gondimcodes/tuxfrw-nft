@@ -31,7 +31,14 @@
 clear_rules()
 {
   echo '#!/usr/sbin/nft -f' > $CONF_DIR/tuxfrw.nft
-  echo 'flush ruleset' >> $CONF_DIR/tuxfrw.nft
+  if [ "$DOCKER_SUPPORT" = "1" ]; then
+    # In Docker mode, NEVER flush ruleset! Delete/flush only our specific table if it exists.
+    # Create empty table first so delete table never fails if it is the first start.
+    echo 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
+    echo 'delete table inet filter' >> $CONF_DIR/tuxfrw.nft
+  else
+    echo 'flush ruleset' >> $CONF_DIR/tuxfrw.nft
+  fi
 }
 
 defines()
@@ -96,6 +103,31 @@ create_rules()
 
   # set /proc options
   set_sysctl
+
+  # DOCKER MODE: Focus strictly on host protection (INPUT) and container access control (FORWARD/tf_DOCKER.mod)
+  if [ "$DOCKER_SUPPORT" = "1" ]; then
+     $NFT 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
+
+     # Host Protection Chain (INPUT)
+     $NFT 'add chain inet filter INPUT { type filter hook input priority 0; policy drop; }' >> $CONF_DIR/tuxfrw.nft
+     . $CONF_DIR/rules/tf_INPUT.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+     echo -n "Loading INPUT" 
+     evaluate_retval
+
+     # Outbound Host Traffic (OUTPUT)
+     $NFT 'add chain inet filter OUTPUT { type filter hook output priority 0; policy accept; }' >> $CONF_DIR/tuxfrw.nft
+     . $CONF_DIR/rules/tf_OUTPUT.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+     echo -n "Loading OUTPUT"
+     evaluate_retval
+
+     # Container Access Control Chain (FORWARD) with priority -5
+     # Priority -5 ensures TuxFrw filters/blocks packets BEFORE Docker priority 0 chains!
+     $NFT 'add chain inet filter FORWARD { type filter hook forward priority -5; policy accept; }' >> $CONF_DIR/tuxfrw.nft
+     . $CONF_DIR/rules/tf_DOCKER.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+     echo -n "Loading DOCKER"
+     evaluate_retval
+     return
+  fi
 
   # setup netdev
   if [ "$EXT_IFACE" != "" -o "$DMZ_IFACE" != "" -o "$INT_IFACE" != "" ]; then

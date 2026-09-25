@@ -3,71 +3,71 @@
                               Manual do TuxFrw
                               ----------------
                              
-                                (vers„o 3.00)
+                                (vers√£o 3.00)
 
 ===============================================================================
 
-TuxFrw consiste em um conjunto de shell scripts cujo conte˙do s„o definiÁıes  e
+TuxFrw consiste em um conjunto de shell scripts cujo conte√∫do s√£o defini√ß√µes  e
 regras  de  firewall  Netfilter/IPTables,  escritos  de  maneira  modular  para
-facilitar sua administraÁ„o. Os scripts do TuxFrw, tambÈm chamados de  mÛdulos,
+facilitar sua administra√ß√£o. Os scripts do TuxFrw, tamb√©m chamados de  m√≥dulos,
 possuem estrutura capaz de atuar em  firewalls que  interligam  e  protegem  um
-ambiente corporativo de atÈ trÍs subredes, quais sejam:
+ambiente corporativo de at√© tr√™s subredes, quais sejam:
 
-- EXT ==> rede externa ou Internet. Um dos pontos  mais  vulner·veis  para  uma
-          corporaÁ„o que possua acesso direto ‡ Internet. Existem mÛdulos do TF
-          especÌficos para estes acessos  que  v„o  bloquear  alguns  tipos  de
+- EXT ==> rede externa ou Internet. Um dos pontos  mais  vulner√°veis  para  uma
+          corpora√ß√£o que possua acesso direto √† Internet. Existem m√≥dulos do TF
+          espec√≠ficos para estes acessos  que  v√£o  bloquear  alguns  tipos  de
           ataques e gerar registros para posterior auditoria.
 
-- DMZ ==> rede semi-protegida para servidores  que  disponibilizem  serviÁos  a 
-          rede externa ou Internet. Podem oferecer diversos serviÁos  como  por
-          exemplo: HTTP, FTP, DNS, SMTP, POP3  e  outros.  Dizemos  que  È  uma
-          rede semi-protegida por disponibilizar serviÁos para a  Internet  que
-          podem comprometer a seguranÁa  da  corporaÁ„o  caso  haja  falhas  de
-          seguranÁa nesses serviÁos. Por esse motivo todos os serviÁos p˙blicos
-          devem ser disponibilizados na DMZ e essa rede n„o pode ter  acesso  a
+- DMZ ==> rede semi-protegida para servidores  que  disponibilizem  servi√ßos  a 
+          rede externa ou Internet. Podem oferecer diversos servi√ßos  como  por
+          exemplo: HTTP, FTP, DNS, SMTP, POP3  e  outros.  Dizemos  que  √©  uma
+          rede semi-protegida por disponibilizar servi√ßos para a  Internet  que
+          podem comprometer a seguran√ßa  da  corpora√ß√£o  caso  haja  falhas  de
+          seguran√ßa nesses servi√ßos. Por esse motivo todos os servi√ßos p√∫blicos
+          devem ser disponibilizados na DMZ e essa rede n√£o pode ter  acesso  a
           rede corporativa da empresa.
-          O TF protege a rede DMZ permitindo somente  acessos  a  serviÁos  que
+          O TF protege a rede DMZ permitindo somente  acessos  a  servi√ßos  que
           estejam habilitados e definindo regras para estes acessos.
-          Podem existir  serviÁos  habilitados  na  DMZ  mas  que   n„o   sejam
-          disponibilizados para a Internet, como por exemplo o SSH, que È muito
-          utilizado para manutenÁ„o remota de um servidor.
-	  … importante que o administrador mantenha sempre os  seus  servidores
-          muito bem atualizados, pois quanto mais estem s„o conhecidos, maior a
+          Podem existir  servi√ßos  habilitados  na  DMZ  mas  que   n√£o   sejam
+          disponibilizados para a Internet, como por exemplo o SSH, que √© muito
+          utilizado para manuten√ß√£o remota de um servidor.
+	  √â importante que o administrador mantenha sempre os  seus  servidores
+          muito bem atualizados, pois quanto mais estem s√£o conhecidos, maior a
           probabilidade de serem atacados.
 
-- INT ==> rede corporativa do cliente. Nesta rede n„o  pode  haver  acessos  da
+- INT ==> rede corporativa do cliente. Nesta rede n√£o  pode  haver  acessos  da
           rede externa ou Internet, embora algumas empresas cometam esse  erro.
-          Todos os acessos desta rede para Internet e/ou DMZ ser„o  controlados
-          pelo TuxFrw e ser„o registradas todas as  tentativas  de  acesso  n„o
+          Todos os acessos desta rede para Internet e/ou DMZ ser√£o  controlados
+          pelo TuxFrw e ser√£o registradas todas as  tentativas  de  acesso  n√£o
           autorizado.
 
-O TuxFrw possui alguns recursos avanÁados como SPF (Stateful Packet Filtering),
-que controla o estado de uma conex„o, diminuindo assim a quantidade de regras e
-tornando-as mais simples de gerenciar, alÈm de uma maior seguranÁa,  j·  que  o
-firewall se encarrega de avaliar se uma respota È v·lida ou n„o. Outro  recurso
-que o TF  j·  possui  em  sua  estrutura  modular  È  o  NAT  (Network  Address
-Translation), que pode ser de trÍs tipos:
+O TuxFrw possui alguns recursos avan√ßados como SPF (Stateful Packet Filtering),
+que controla o estado de uma conex√£o, diminuindo assim a quantidade de regras e
+tornando-as mais simples de gerenciar, al√©m de uma maior seguran√ßa,  j√°  que  o
+firewall se encarrega de avaliar se uma respota √© v√°lida ou n√£o. Outro  recurso
+que o TF  j√°  possui  em  sua  estrutura  modular  √©  o  NAT  (Network  Address
+Translation), que pode ser de tr√™s tipos:
 
-- N:1 ==> ou tradicionalmente conhecido como "masquerade", permite  que  v·rios 
-          IPs de uma subrede "saiam" com um ˙nico IP da outra subrede.
+- N:1 ==> ou tradicionalmente conhecido como "masquerade", permite  que  v√°rios 
+          IPs de uma subrede "saiam" com um √∫nico IP da outra subrede.
           Algumas Empresas utilizam este recurso para economia de  IPs  e  para 
-          dar mais seguranÁa ‡ rede interna. Nesse cen·rio a  rede  corporativa
-          sai para a Internet usando apenas um ˙nico IP p˙blico e rote·vel.
+          dar mais seguran√ßa √† rede interna. Nesse cen√°rio a  rede  corporativa
+          sai para a Internet usando apenas um √∫nico IP p√∫blico e rote√°vel.
 
-- 1:1 ==> este recurso È muito utilizado numa DMZ por permitir que um  servidor
-          n„o necessite um IP p˙blico. Dessa forma n„o È preciso  subdividir  o
-          intervalo de IPs  p˙blicos  cedidos  por  um  provedor  j·  que  isso 
+- 1:1 ==> este recurso √© muito utilizado numa DMZ por permitir que um  servidor
+          n√£o necessite um IP p√∫blico. Dessa forma n√£o √© preciso  subdividir  o
+          intervalo de IPs  p√∫blicos  cedidos  por  um  provedor  j√°  que  isso 
           implicaria em "perda" de IPs.
-          Dessa forma poderÌamos associar um IP  192.168.0.1  ‡  200.xxx.0.1  e 
+          Dessa forma poder√≠amos associar um IP  192.168.0.1  √†  200.xxx.0.1  e 
           vice-versa.
 
 - N:N ==> muito pouco utilizado, este tipo  de  NAT  faz  nada  menos  que  uma
           troca de um pool de IPs de uma subrede por outro pool de IPs de outra
           subrede.
 
-Como observaÁ„o o  NAT  n„o  existe  no  IPv6,  pois  n„o  foi  implementado. A
-filosofia do IPv6 diz que todo device deve ter seu prÛprio IP sem a necessidade
-do uso de NAT porque n„o haver· falta de IPs.
+Como observa√ß√£o o  NAT  n√£o  existe  no  IPv6,  pois  n√£o  foi  implementado. A
+filosofia do IPv6 diz que todo device deve ter seu pr√≥prio IP sem a necessidade
+do uso de NAT porque n√£o haver√° falta de IPs.
 
 
 Estrutura do TuxFrw IPv4:
@@ -124,122 +124,122 @@ tf_INT-DMZ.mod |  | tf_DMZ-INT.mod  tf_DMZ-VPN.mod |   | tf_VPN-DMZ.mod
 
 
 
-Olhando pela primeira vez a estrutura  do  TuxFrw, temos a  impress„o  de  algo
-confuso, mas logo veremos que alÈm de pr·tico È muito simples  administr·-lo  e
-implement·-lo em uma instituiÁ„o.
-Os diagramas acima ilustram quais mÛdulos est„o interligados, demonstrando  que
-o arquivo "tuxfrw" È respons·vel pela chamada dos mÛdulos abaixo dele.  Reparem
-que no IPv6 n„o existem os mÛdulos tf_NAT-IN.mod e o tf_NAT-OUT.mod.
+Olhando pela primeira vez a estrutura  do  TuxFrw, temos a  impress√£o  de  algo
+confuso, mas logo veremos que al√©m de pr√°tico √© muito simples  administr√°-lo  e
+implement√°-lo em uma institui√ß√£o.
+Os diagramas acima ilustram quais m√≥dulos est√£o interligados, demonstrando  que
+o arquivo "tuxfrw" √© respons√°vel pela chamada dos m√≥dulos abaixo dele.  Reparem
+que no IPv6 n√£o existem os m√≥dulos tf_NAT-IN.mod e o tf_NAT-OUT.mod.
 
 
-DescriÁ„o dos programas que compıem o TuxFrw:
+Descri√ß√£o dos programas que comp√µem o TuxFrw:
 =============================================
 
-- tuxfrw         ==> este È o programa  principal, onde  n„o  costumamos  fazer
-                     qualquer alteraÁ„o. Ele serve  apenas  para  organizar  as
-                     rotinas de carga dos mÛdulos e permitir  as  chamadas  das
-                     funÁıes base como por exemplo: start, stop, status, panic,
+- tuxfrw         ==> este √© o programa  principal, onde  n√£o  costumamos  fazer
+                     qualquer altera√ß√£o. Ele serve  apenas  para  organizar  as
+                     rotinas de carga dos m√≥dulos e permitir  as  chamadas  das
+                     fun√ß√µes base como por exemplo: start, stop, status, panic,
                      load e outras que possam surgir. 
-                     Normalmente  È  instalado  em  /etc/rc.d/init.d,  onde   È
+                     Normalmente  √©  instalado  em  /etc/rc.d/init.d,  onde   √©
                      devidamente configurado para iniciar com o sistema.
 
-- tf_BASE.mod    ==> este  mÛdulo  contÈm  a  definiÁ„o  das  funÁıes   b·sicas
+- tf_BASE.mod    ==> este  m√≥dulo  cont√©m  a  defini√ß√£o  das  fun√ß√µes   b√°sicas
                      executadas pelo programa principal,  como  por  exemplo  a
-                     funÁ„o que  faz  a  inicializaÁ„o,  onde  a  partir  deste
-                     instante  ser„o  chamadas  outras  funÁıes  definidas  nos 
-                     outros mÛdulos descritos abaixo.  
-                     Neste mÛdulo È organizado a ordem das chamadas das funÁıes
-                     base. Caso sejam criados novos  mÛdulos,  ser·  necess·rio 
-                     criar as chamadas das funÁıes novas neste mÛdulo.
+                     fun√ß√£o que  faz  a  inicializa√ß√£o,  onde  a  partir  deste
+                     instante  ser√£o  chamadas  outras  fun√ß√µes  definidas  nos 
+                     outros m√≥dulos descritos abaixo.  
+                     Neste m√≥dulo √© organizado a ordem das chamadas das fun√ß√µes
+                     base. Caso sejam criados novos  m√≥dulos,  ser√°  necess√°rio 
+                     criar as chamadas das fun√ß√µes novas neste m√≥dulo.
 
-- tf_KERNEL.mod  ==> este mÛdulo contÈm a definiÁ„o  de  v·rios  par‚metros  do
+- tf_KERNEL.mod  ==> este m√≥dulo cont√©m a defini√ß√£o  de  v√°rios  par√¢metros  do
                      kernel, para que este esteja bem otimizado e mais  seguro.
-                     … recomendado a leitura deste arquivo, pois podem  existir
-                     situaÁıes onde sejam necess·rias algumas alteraÁıes.
+                     √â recomendado a leitura deste arquivo, pois podem  existir
+                     situa√ß√µes onde sejam necess√°rias algumas altera√ß√µes.
 
-- tf_NAT-IN.mod  ==> neste mÛdulo ficam todas as regras relacionadas ao NAT  de
+- tf_NAT-IN.mod  ==> neste m√≥dulo ficam todas as regras relacionadas ao NAT  de
                      entrada (PREROUTING).
 
-- tf_NAT-OUT.mod ==> neste mÛdulo ficam todas as regras relacionadas ao NAT  de
-                     saÌda (OUTPUT e POSTROUTING). OUTPUT quando for  usado  um
+- tf_NAT-OUT.mod ==> neste m√≥dulo ficam todas as regras relacionadas ao NAT  de
+                     sa√≠da (OUTPUT e POSTROUTING). OUTPUT quando for  usado  um
                      NAT local.
 
-- tf_MANGLE.mod  ==> neste mÛdulo s„o feitas marcaÁıes e alteraÁıes em pacotes.
+- tf_MANGLE.mod  ==> neste m√≥dulo s√£o feitas marca√ß√µes e altera√ß√µes em pacotes.
 
-- tf_INPUT.mod   ==> este mÛdulo È respons·vel pelas regras de INPUT.
+- tf_INPUT.mod   ==> este m√≥dulo √© respons√°vel pelas regras de INPUT.
 
-- tf_OUTPUT.mod  ==> este mÛdulo È respons·vel pelas regras de OUTPUT.
+- tf_OUTPUT.mod  ==> este m√≥dulo √© respons√°vel pelas regras de OUTPUT.
 
-- tf_FORWARD.mod ==> este mÛdulo È respons·vel pelas regras de FORWARD. Aqui  È
+- tf_FORWARD.mod ==> este m√≥dulo √© respons√°vel pelas regras de FORWARD. Aqui  √©
 		     mantida uma estrutura para organizar as regras de  FORWARD
-                     em chains especÌficas e separ·-las em outros mÛdulos.
+                     em chains espec√≠ficas e separ√°-las em outros m√≥dulos.
 
-Antes de apresentar os outros mÛdulos È necess·rio entender que  as  regras  no
-TuxFrw s„o direcionadas de acordo com a entrada e saÌda de pacotes atravÈs  das
+Antes de apresentar os outros m√≥dulos √© necess√°rio entender que  as  regras  no
+TuxFrw s√£o direcionadas de acordo com a entrada e sa√≠da de pacotes atrav√©s  das
 interfaces de rede do firewall. Ex.: regras para  permitir  acessos  vindos  da
-Internet para os serviÁos disponibilizados na DMZ, s„o na  verdade  os  pacotes 
-que entram pela interface ligada ‡ Internet  e  saem  pela  interface  de  rede
-ligada ‡ rede DMZ. Do contr·rio inverte-se a entrada com a saÌda.
+Internet para os servi√ßos disponibilizados na DMZ, s√£o na  verdade  os  pacotes 
+que entram pela interface ligada √† Internet  e  saem  pela  interface  de  rede
+ligada √† rede DMZ. Do contr√°rio inverte-se a entrada com a sa√≠da.
 
-- tf_INT-EXT.mod ==> neste mÛdulo dever„o ser colocadas  todas  as  regras  que
-                     permitir„o  acesso  da  rede  interna  ou  corporativa  do
+- tf_INT-EXT.mod ==> neste m√≥dulo dever√£o ser colocadas  todas  as  regras  que
+                     permitir√£o  acesso  da  rede  interna  ou  corporativa  do
                      cliente para a rede externa ou Internet. Ex.: para liberar
-                     acesso a p·ginas HTTP da Internet, teriam de ser colocadas
-                     as regras neste mÛdulo.
+                     acesso a p√°ginas HTTP da Internet, teriam de ser colocadas
+                     as regras neste m√≥dulo.
 
-- tf_EXT-INT.mod ==> o inverso do apresentado acima. Para permitir  que  alguÈm
-                     da Internet acesse algum serviÁo dentro da  rede  interna,
-                     uma regra deve ser colocada neste mÛdulo. Note que o  nome
-                     do mÛdulo j· indica onde colocar as regras de acordo com a
+- tf_EXT-INT.mod ==> o inverso do apresentado acima. Para permitir  que  algu√©m
+                     da Internet acesse algum servi√ßo dentro da  rede  interna,
+                     uma regra deve ser colocada neste m√≥dulo. Note que o  nome
+                     do m√≥dulo j√° indica onde colocar as regras de acordo com a
                      necessidade.
 		     
-- tf_INT-DMZ.mod ==> o mesmo j· descrito acima, sÛ que entre a rede interna e a
+- tf_INT-DMZ.mod ==> o mesmo j√° descrito acima, s√≥ que entre a rede interna e a
   tf_DMZ-INT.mod     rede DMZ.
 
-- tf_EXT-DMZ.mod ==> o mesmo j· descrito acima, sÛ que  entre  a  rede  externa
+- tf_EXT-DMZ.mod ==> o mesmo j√° descrito acima, s√≥ que  entre  a  rede  externa
   tf_DMZ-EXT.mod     (Internet) e a DMZ.
 
 - tf_INT-VPN.mod ==> o TuxFrw tem suporte 100% a VPN  (Virtual Private Network)
   tf_VPN-INT.mod     utilizando  o  OpenVPN   http://openvpn.net     ou    PPTP 
                      http://pptpclient.sourceforge.net.
-	             O princÌpio de funcionamento  È  o  mesmo  j·  apresentado
- 		     anteriormente, sÛ que entre as interfaces de rede  interna
+	             O princ√≠pio de funcionamento  √©  o  mesmo  j√°  apresentado
+ 		     anteriormente, s√≥ que entre as interfaces de rede  interna
 		     e tun+ ou  ppp+.  Ex.:  da  interface  eth2  para  tun0  e 
 		     vice-versa.
-		     Para se entender mais sobre esses mÛdulos È necess·rio  um
+		     Para se entender mais sobre esses m√≥dulos √© necess√°rio  um
 		     estudo sobre VPNs.
 
-- tf_DMZ-VPN.mod ==> o mesmo j· descrito acima sÛ que entre a rede DMZ e a VPN,
+- tf_DMZ-VPN.mod ==> o mesmo j√° descrito acima s√≥ que entre a rede DMZ e a VPN,
   tf_VPN-DMZ.mod     EXT e a VPN.
   tf_VPN-EXT.mod     
   tf_EXT-VPN.mod     
 
-- tuxfrw.conf    ==> esse arquivo contÈm a  definiÁ„o  de  todas  as  vari·veis
-		     utilizadas pelo TuxFrw. Qualquer vari·vel nova  criada  no
-		     arquivo, pode ser usada em qualquer mÛdulo. Isso  facilita
-		     a manutenÁ„o, pois basta mudar o valor de uma vari·vel e o
- 		     comportamento do TuxFrw ser· alterado em todos os  mÛdulos
- 		     onde esta vari·vel esteja sendo utilizada.
-		     Algumas  vari·veis  j·  s„o  definidas  nesse  arquivo.  A
-		     alteraÁ„o de seus nomes pode causar um  mau  funcionamento
+- tuxfrw.conf    ==> esse arquivo cont√©m a  defini√ß√£o  de  todas  as  vari√°veis
+		     utilizadas pelo TuxFrw. Qualquer vari√°vel nova  criada  no
+		     arquivo, pode ser usada em qualquer m√≥dulo. Isso  facilita
+		     a manuten√ß√£o, pois basta mudar o valor de uma vari√°vel e o
+ 		     comportamento do TuxFrw ser√° alterado em todos os  m√≥dulos
+ 		     onde esta vari√°vel esteja sendo utilizada.
+		     Algumas  vari√°veis  j√°  s√£o  definidas  nesse  arquivo.  A
+		     altera√ß√£o de seus nomes pode causar um  mau  funcionamento
                      do TuxFrw.
 
 - install.sh	 ==> este shell script somente instala o TuxFrw nos seus devidos
-		     diretÛrios. Todos os mÛdulos  s„o  colocados  a  partir  de
-                     /etc/tuxfrw/ assim como o tuxfrw.conf. O  script  tuxfrw  È
-                     colocado em  /etc/rc.d/init.d/  caso  exista  o  utilit·rio 
-                     chkconfig, sen„o tambÈm ficar· em /etc/tuxfrw/.
-		     O TuxFrw, na presenÁa do utilit·rio  chkconfig,  poder·  se
-		     comportar como um serviÁo a ser executado na  inicializaÁ„o
+		     diret√≥rios. Todos os m√≥dulos  s√£o  colocados  a  partir  de
+                     /etc/tuxfrw/ assim como o tuxfrw.conf. O  script  tuxfrw  √©
+                     colocado em  /etc/rc.d/init.d/  caso  exista  o  utilit√°rio 
+                     chkconfig, sen√£o tamb√©m ficar√° em /etc/tuxfrw/.
+		     O TuxFrw, na presen√ßa do utilit√°rio  chkconfig,  poder√°  se
+		     comportar como um servi√ßo a ser executado na  inicializa√ß√£o
 		     do sistema.
 
-Algumas observaÁıes importantes:
+Algumas observa√ß√µes importantes:
 ================================
 
-Em caso de problemas de acesso, consulte o mÛdulo tf_KERNEL.mod, pois pode haver
-algum par‚metro que necessite alteraÁ„o.
+Em caso de problemas de acesso, consulte o m√≥dulo tf_KERNEL.mod, pois pode haver
+algum par√¢metro que necessite altera√ß√£o.
 
-No caso de ocorrÍncia de erros ao se iniciar o TuxFrw, como no  exemplo  abaixo:
+No caso de ocorr√™ncia de erros ao se iniciar o TuxFrw, como no  exemplo  abaixo:
 
 =========================================================================
 === TuxFrw 3.00                                                       ===
@@ -266,7 +266,7 @@ Loading FORWARD IPv4                                                 [OK]
 Loading FORWARD IPv6                                                 [OK]
 
 
-Utilize a seguinte tÈcnica para avaliar o problema:
+Utilize a seguinte t√©cnica para avaliar o problema:
 
 # sh -x /etc/init.d/tuxfrw start &> /tmp/error.check
 ou
@@ -274,10 +274,10 @@ ou
 
 # less /tmp/error.check
 
-Este È o modo DEBUG para o shell script, linguagem na qual o TuxFrw foi criado.
+Este √© o modo DEBUG para o shell script, linguagem na qual o TuxFrw foi criado.
 
-Vari·veis criadas no tuxfrw.conf e repassadas para os mÛdulos com o nome  errado
-podem gerar erros difÌceis de se detectar, como mostrado abaixo:
+Vari√°veis criadas no tuxfrw.conf e repassadas para os m√≥dulos com o nome  errado
+podem gerar erros dif√≠ceis de se detectar, como mostrado abaixo:
 
 No tuxfrw.conf:
 
@@ -287,7 +287,7 @@ No tf_INT-EXT.mod:
 
 $IPTABLES -A INT2EXT -s $RMT_IP_ADMIN -j ACCEPT
 
-Ser· executado assim:
+Ser√° executado assim:
 
 iptables -A INT2EXT -s   -j ACCEPT
 
@@ -296,13 +296,13 @@ Gerando o seguinte erro:
  Bad argument `ACCEPT'
  Try `iptables -h' or 'iptables --help' for more information.
 
-Repare que essa regra nunca ser· efetivada por causa dessa vari·vel errada!
+Repare que essa regra nunca ser√° efetivada por causa dessa vari√°vel errada!
 
-Em caso de um acesso n„o estar funcionando, consulte os seus logs. Normalmente o
-/var/log/messages È o respons·vel por este armazenamento, j· que o TuxFrw  grava
+Em caso de um acesso n√£o estar funcionando, consulte os seus logs. Normalmente o
+/var/log/messages √© o respons√°vel por este armazenamento, j√° que o TuxFrw  grava
 todas as tentativas de acessos indevidos.
 
-MÛdulos que necessitam de alteraÁ„o com mais freq¸Íncia:
+M√≥dulos que necessitam de altera√ß√£o com mais freq√º√™ncia:
 ========================================================
 
 - tf_INPUT.mod   ==> devido as regras de INPUT do Firewall.
@@ -311,28 +311,28 @@ MÛdulos que necessitam de alteraÁ„o com mais freq¸Íncia:
 
 - tf_NAT-IN.mod  ==> caso  a  rede  disponibilize  um  NAT  de  entrada,  o  que
                      normalmente  ocorre  quando existem servidores na  DMZ  que
-		     necessitam ter IP p˙blico. Ex.: DNS Server, Web Server.
+		     necessitam ter IP p√∫blico. Ex.: DNS Server, Web Server.
 
-- tf_NAT-OUT.mod ==> … extremamente necess·rio para que a rede Corporativa possa
-                     acessar a Internet com algum IP p˙blico e  tambÈm  para  os
-		     servidores acessarem a Internet com seu IP p˙blico prÛprio.
-                     SEGURAN«A: Somente dÍ IP p˙blico na saÌda  para  servidores
-                     que realmente v„o acessar outros servidores p˙blicos.
-                     Ex.: DNS Server, outros servidores v„o precisar caso  o seu
-                     DNS Server n„o esteja localizado na sua  DMZ.  A  seguranÁa
+- tf_NAT-OUT.mod ==> √â extremamente necess√°rio para que a rede Corporativa possa
+                     acessar a Internet com algum IP p√∫blico e  tamb√©m  para  os
+		     servidores acessarem a Internet com seu IP p√∫blico pr√≥prio.
+                     SEGURAN√áA: Somente d√™ IP p√∫blico na sa√≠da  para  servidores
+                     que realmente v√£o acessar outros servidores p√∫blicos.
+                     Ex.: DNS Server, outros servidores v√£o precisar caso  o seu
+                     DNS Server n√£o esteja localizado na sua  DMZ.  A  seguran√ßa
                      seria pelo simples fato de que se algum servidor da DMZ for
-                     invadido, este n„o tendo acesso a Internet de  saÌda  e  IP
-                     p˙blico na saÌda, n„o poder·  ser  usado  para  ataques  na
+                     invadido, este n√£o tendo acesso a Internet de  sa√≠da  e  IP
+                     p√∫blico na sa√≠da, n√£o poder√°  ser  usado  para  ataques  na
                      Internet sem que haja comprometimento do Firewall.
 
-- tf_INT-EXT.mod ==> esses s„o os mais alterados  devido  as  suas  import‚ncias
+- tf_INT-EXT.mod ==> esses s√£o os mais alterados  devido  as  suas  import√¢ncias
   tf_EXT-INT.mod     dentro da chain principal FORWARD. Eles controlam  o  fluxo
   tf_INT-DMZ.mod     de dados existente entre as interfaces do Firewall.
   tf_DMZ-INT.mod
   tf_EXT-DMZ.mod
   tf_DMZ-EXT.mod
 
-- tf_INT-VPN.mod ==> estes tem tanta import‚ncia quanto os de cima  mas  somente
+- tf_INT-VPN.mod ==> estes tem tanta import√¢ncia quanto os de cima  mas  somente
   tf_VPN-INT.mod     nos casos onde existir uma VPN com o Firewall.
   tf_DMZ-VPN.mod
   tf_VPN-DMZ.mod
@@ -342,15 +342,15 @@ MÛdulos que necessitam de alteraÁ„o com mais freq¸Íncia:
 Para os administradores que queiram adicionar mais interfaces de rede:
 ======================================================================
 
-… muito simples. Basta o admin preencher os seguintes prÈ-requisitos b·sicos:
+√â muito simples. Basta o admin preencher os seguintes pr√©-requisitos b√°sicos:
 
 - Conhecimentos sobre shell script.
 - Conhecimentos sobre TCP/IP.
 - Conhecimentos sobre a ferramenta IPTables.
 
 Digamos que se queira criar mais uma interface  de  rede  no  TuxFrw,  porque  o 
-firewall em quest„o possui quatro interfaces de rede ao invÈs  de  apenas  trÍs.
-Vejamos um exemplo pr·tico, para criaÁ„o da interface de rede TST de teste:
+firewall em quest√£o possui quatro interfaces de rede ao inv√©s  de  apenas  tr√™s.
+Vejamos um exemplo pr√°tico, para cria√ß√£o da interface de rede TST de teste:
 
 1 - Edite o /etc/tuxfrw/tuxfrw.conf e crie a nova interface de rede:
 
@@ -363,15 +363,15 @@ Vejamos um exemplo pr·tico, para criaÁ„o da interface de rede TST de teste:
  TST_NET6=""
 
 2 - Digamos que se queira criar regras entre a rede interna  e  essa  nova  rede
-    para que ambos troquem informaÁıes:
+    para que ambos troquem informa√ß√µes:
 
 Crie no /etc/tuxfrw/ipv4 os seguintes arquivos: tf_INT-TST.mod e  tf_TST-INT.mod
 Crie no /etc/tuxfrw/ipv6 os seguintes arquivos: tf_INT-TST.mod e  tf_TST-INT.mod
-A estrutura b·sica desses arquivos È esta:
+A estrutura b√°sica desses arquivos √© esta:
 
 
 
-O mÛdulo tf_INT-TST.mod para IPv4 deve conter estas linhas:
+O m√≥dulo tf_INT-TST.mod para IPv4 deve conter estas linhas:
 ===========================================================
 #
 # INT->TST directional chains
@@ -384,7 +384,7 @@ $IPTABLES -A INT2TST -j LOG --log-prefix "FIREWALL: INT->TST! "
 
 
 
-O mÛdulo tf_INT-TST.mod para IPv6 deve conter estas linhas:
+O m√≥dulo tf_INT-TST.mod para IPv6 deve conter estas linhas:
 ===========================================================
 #
 # INT->TST directional chains
@@ -397,7 +397,7 @@ $IP6TABLES -A INT2TST -j LOG --log-prefix "FIREWALL: INT->TST! "
 
 
 
-O mÛdulo tf_TST-INT.mod para IPv4 deve conter estas linhas:
+O m√≥dulo tf_TST-INT.mod para IPv4 deve conter estas linhas:
 ===========================================================
 #
 # TST->INT directional chains
@@ -410,7 +410,7 @@ $IPTABLES -A TST2INT -j LOG --log-prefix "FIREWALL: TST->INT! "
 
 
 
-O mÛdulo tf_TST-INT.mod para IPv6 deve conter estas linhas:
+O m√≥dulo tf_TST-INT.mod para IPv6 deve conter estas linhas:
 ===========================================================
 #
 # TST->INT directional chains
@@ -423,13 +423,13 @@ $IP6TABLES -A TST2INT -j LOG --log-prefix "FIREWALL: TST->INT! "
 
 
 
-Repare na troca de INT2TST para TST2INT e  sempre  a  ˙ltima  linha  serve  para
-registrar os logs das tentativas de acesso n„o permitidas.
+Repare na troca de INT2TST para TST2INT e  sempre  a  √∫ltima  linha  serve  para
+registrar os logs das tentativas de acesso n√£o permitidas.
 
-3 - … necess·rio fazer com que  todo  o  fluxo de  dados  do  FORWARD  entre  as
+3 - √â necess√°rio fazer com que  todo  o  fluxo de  dados  do  FORWARD  entre  as
     interfaces de rede interna (INT)  e  teste (TST)  passem  para  essas  novas
     novas chains, a INT2TST e a TST2INT.
-    Abaixo os trechos do mÛdulo tf_FORWARD.mod, onde devem  ser  adicionadas  as
+    Abaixo os trechos do m√≥dulo tf_FORWARD.mod, onde devem  ser  adicionadas  as
     novas  regras  de  FORWARD.  Para  IPv6  basta  fazer  o  mesmo  mas  usando 
     $IP6TABLES no lugar de $IPTABLES:
 
@@ -462,9 +462,9 @@ if [ "$TST_IFACE" != "" ]; then $IPTABLES -A FORWARD -i $TST_IFACE -o $TST_IFACE
   .
   .
 
-4 - … necess·rio adicionar essas chamadas  dentro  de  outra  funÁ„o  do  mÛdulo
-    tf_BASE.mod, a funÁ„o create_rules().
-    Abaixo est· o trecho onde dever· entrar a chamada:
+4 - √â necess√°rio adicionar essas chamadas  dentro  de  outra  fun√ß√£o  do  m√≥dulo
+    tf_BASE.mod, a fun√ß√£o create_rules().
+    Abaixo est√° o trecho onde dever√° entrar a chamada:
 
   .
   .
@@ -530,9 +530,45 @@ Obs.: Repare que a nova entrada de  bloco  INT2TST  e  TST2INT  ficou  antes  da
       chamada do bloco FORWARD acima e precisa ser assim para todas
       as  novas entradas desse tipo.
 
-Pronto! Agora È sÛ reiniciar o TuxFrw para as novas regras entrarem em vigor.
+Pronto! Agora √© s√≥ reiniciar o TuxFrw para as novas regras entrarem em vigor.
 
-/sbin/tuxfrw start ou /etc/init.d/tuxfrw start
+/usr/sbin/tuxfrw-nft start
+
+================================================================================
+
+ Suporte e Integra√ß√£o com Docker (DOCKER_SUPPORT)
+ ------------------------------------------------
+
+A partir do TuxFrw-NFT, foi introduzido o modo de compatibilidade nativa com
+ambientes que utilizam Docker (DOCKER_SUPPORT="1" em /etc/tuxfrw-nft/tuxfrw.conf).
+
+1. O Problema Resolvido:
+No Docker tradicional com Netfilter, o Docker cria suas pr√≥prias tabelas e chains
+(iptables/nftables) para gerenciar o tr√°fego dos containers e pontes virtuais
+(docker0, br-+). Uma limpeza geral tradicional (flush ruleset) derruba o networking
+dos containers. Al√©m disso, quando o Docker publica portas via DNAT (-p porta:porta),
+esse tr√°fego atravessa a chain FORWARD e n√£o a chain INPUT do host.
+
+2. Como o TuxFrw-NFT atua com DOCKER_SUPPORT="1":
+- Limpeza Segura: O comando start/stop remove apenas a tabela 'inet filter' do
+  TuxFrw, deixando as tabelas e regras do Docker 100% intactas.
+- Blindagem do Host (INPUT): Mant√©m a pol√≠tica padr√£o DROP para prote√ß√£o do servidor
+  (SSH, ICMP, ferramentas locais) atrav√©s do m√≥dulo tf_INPUT.mod.
+- Controle de Containers (FORWARD / tf_DOCKER.mod): Cria a chain FORWARD com
+  prioridade -5 no nftables. Isso faz com que as regras do TuxFrw sejam avaliadas
+  ANTES das regras padr√£o do Docker (prioridade 0).
+- Desativa√ß√£o de M√≥dulos Conflitantes: O TuxFrw n√£o carrega regras de NAT ou Mangle
+  pr√≥prias neste modo, deixando o NAT dos containers a cargo do daemon do Docker.
+
+3. Gerenciamento e Recarga:
+Para recarregar exclusivamente as regras de acesso aos containers sem reiniciar
+o firewall ou impactar o servidor:
+
+  # tuxfrw-nft load DOCKER
+
+Exemplo de libera√ß√£o de container no arquivo /etc/tuxfrw-nft/rules/tf_DOCKER.mod:
+  $NFT 'add rule inet filter FORWARD ip saddr 203.0.113.50 tcp dport 3000 counter accept'
+  $NFT 'add rule inet filter FORWARD tcp dport 3000 counter drop'
 
 ================================================================================
 
@@ -545,7 +581,7 @@ Pronto! Agora È sÛ reiniciar o TuxFrw para as novas regras entrarem em vigor.
  Links
  -----
 
- P·gina oficial do Netfilter+IPTables:
+ P√°gina oficial do Netfilter+IPTables:
  http://www.netfilter.org
 
  Excelente tutorial sobre IPTables:
