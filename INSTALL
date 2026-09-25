@@ -8,14 +8,12 @@ To install TuxFrw-NFT, follow these steps:
 # ./install.sh
 
 The configuration and modules will be installed under /etc/tuxfrw-nft.
-The installer will copy the main script 'tuxfrw-nft' with executable permissions under /usr/sbin.
+The installer will copy the main script 'tuxfrw-nft' with executable permissions under /usr/sbin
+and automatically install and enable the systemd service 'tuxfrw-nft.service' at boot.
 
 2) Configure the variables in /etc/tuxfrw-nft/tuxfrw.conf
 
 3) Start TuxFrw-NFT:
-# tuxfrw-nft start (or systemctl start tuxfrw-nft)
-
-4) Enable at boot (optional):
-# systemctl enable tuxfrw-nft
+# systemctl start tuxfrw-nft (or tuxfrw-nft start)
 
 Read the README and "TuxFrw Manual" for more information on running TuxFrw-NFT.

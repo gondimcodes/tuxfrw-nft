@@ -133,7 +133,8 @@ perform_install() {
     msg_info "Installing systemd unit service..."
     install -m 644 "${SCRIPT_DIR}/tuxfrw-nft.service" "${SYSTEMD_DIR}/tuxfrw-nft.service"
     systemctl daemon-reload >/dev/null 2>&1 || true
-    msg_ok "Systemd service installed at: ${BOLD}${SYSTEMD_DIR}/tuxfrw-nft.service${RESET}"
+    systemctl enable tuxfrw-nft.service >/dev/null 2>&1 || true
+    msg_ok "Systemd service installed and enabled at boot: ${BOLD}${SYSTEMD_DIR}/tuxfrw-nft.service${RESET}"
   fi
 
   # Verification
@@ -191,12 +192,9 @@ echo -e "   1. Review and edit network settings:"
 echo -e "      ${CYAN}nano ${CONF_DIR}/tuxfrw.conf${RESET}"
 echo
 echo -e "   2. Start the firewall:"
-echo -e "      ${CYAN}tuxfrw-nft start${RESET} (or ${CYAN}systemctl start tuxfrw-nft${RESET})"
+echo -e "      ${CYAN}systemctl start tuxfrw-nft${RESET} (or ${CYAN}tuxfrw-nft start${RESET})"
 echo
-echo -e "   3. Enable at boot (systemd):"
-echo -e "      ${CYAN}systemctl enable tuxfrw-nft${RESET}"
-echo
-echo -e "   4. Check running ruleset:"
+echo -e "   3. Check running ruleset:"
 echo -e "      ${CYAN}tuxfrw-nft status${RESET}"
 echo
 
