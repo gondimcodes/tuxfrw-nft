@@ -1,0 +1,17 @@
+[Unit]
+Description=TuxFrw-NFT Automated Firewall Service
+Documentation=https://github.com/gondimcodes/tuxfrw-nft
+DefaultDependencies=no
+Before=network-pre.target shutdown.target
+Wants=network-pre.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/tuxfrw-nft start
+ExecStop=/usr/sbin/tuxfrw-nft stop
+ExecReload=/usr/sbin/tuxfrw-nft restart
+
+[Install]
+WantedBy=multi-user.target

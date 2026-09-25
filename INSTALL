@@ -13,6 +13,9 @@ The installer will copy the main script 'tuxfrw-nft' with executable permissions
 2) Configure the variables in /etc/tuxfrw-nft/tuxfrw.conf
 
 3) Start TuxFrw-NFT:
-# tuxfrw-nft start
+# tuxfrw-nft start (or systemctl start tuxfrw-nft)
+
+4) Enable at boot (optional):
+# systemctl enable tuxfrw-nft
 
 Read the README and "TuxFrw Manual" for more information on running TuxFrw-NFT.

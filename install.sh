@@ -34,6 +34,7 @@ set -euo pipefail
 # -----------------------------------------------------------------------------
 SBIN_DIR="${SBIN_DIR:-/usr/sbin}"
 CONF_DIR="${CONF_DIR:-/etc/tuxfrw-nft}"
+SYSTEMD_DIR="${SYSTEMD_DIR:-/etc/systemd/system}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # -----------------------------------------------------------------------------
@@ -128,6 +129,13 @@ perform_install() {
   install -m 700 "${SCRIPT_DIR}/tuxfrw-nft" "${SBIN_DIR}/tuxfrw-nft"
   msg_ok "Executable installed at: ${BOLD}${SBIN_DIR}/tuxfrw-nft${RESET}"
 
+  if [ -d "${SYSTEMD_DIR}" ] && command -v systemctl >/dev/null 2>&1; then
+    msg_info "Installing systemd unit service..."
+    install -m 644 "${SCRIPT_DIR}/tuxfrw-nft.service" "${SYSTEMD_DIR}/tuxfrw-nft.service"
+    systemctl daemon-reload >/dev/null 2>&1 || true
+    msg_ok "Systemd service installed at: ${BOLD}${SYSTEMD_DIR}/tuxfrw-nft.service${RESET}"
+  fi
+
   # Verification
   msg_info "Verifying script syntax..."
   bash -n "${SBIN_DIR}/tuxfrw-nft"
@@ -183,9 +191,12 @@ echo -e "   1. Review and edit network settings:"
 echo -e "      ${CYAN}nano ${CONF_DIR}/tuxfrw.conf${RESET}"
 echo
 echo -e "   2. Start the firewall:"
-echo -e "      ${CYAN}tuxfrw-nft start${RESET}"
+echo -e "      ${CYAN}tuxfrw-nft start${RESET} (or ${CYAN}systemctl start tuxfrw-nft${RESET})"
 echo
-echo -e "   3. Check running ruleset:"
+echo -e "   3. Enable at boot (systemd):"
+echo -e "      ${CYAN}systemctl enable tuxfrw-nft${RESET}"
+echo
+echo -e "   4. Check running ruleset:"
 echo -e "      ${CYAN}tuxfrw-nft status${RESET}"
 echo
 
