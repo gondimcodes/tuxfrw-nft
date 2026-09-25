@@ -1,4 +1,4 @@
-1.1 (2026-09-25)
+5.0 (2026-09-25)
 
 - Added native Docker compatibility mode (DOCKER_SUPPORT="1").
 - Added rules/tf_DOCKER.mod for fine-grained container access control via FORWARD (priority -5).
@@ -8,6 +8,7 @@
 - Fixed DHCPv4/v6 and IPv6 SSDP multicast ports in rules/tf_INPUT.mod.
 - Added ICMPv4 essential outbound rules in rules/tf_OUTPUT.mod.
 - Refactored and modernized install.sh with checks, styling and full overwrite detection.
+- Cleaned up invasive sysctl tuning, preserving forwarding controls only.
 - Standardized documentation, paths (/usr/sbin and /etc/tuxfrw-nft) and UTF-8 encoding.
 
 1.0 (2022-02-13)

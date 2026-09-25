@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 1.0
+# TuxFrw-NFT 5.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://tuxfrw.linuxinfo.com.br/)
 # ----------------------------------------------------------------------------
 #
@@ -63,7 +63,7 @@ msg_err()   { echo -e "  [${RED}ERR${RESET}] $*" >&2; }
 print_banner() {
   clear 2>/dev/null || true
   echo -e "${CYAN}================================================================================${RESET}"
-  echo -e "${BOLD} TuxFrw-NFT 1.0 - Automated Firewall Setup${RESET}"
+  echo -e "${BOLD} TuxFrw-NFT 5.0 - Automated Firewall Setup${RESET}"
   echo -e " Copyright (C) 2001-2026 Marcelo Gondim (${CYAN}https://tuxfrw.linuxinfo.com.br/${RESET})"
   echo -e "${CYAN}================================================================================${RESET}"
   echo
