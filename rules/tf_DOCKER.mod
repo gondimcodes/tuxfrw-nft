@@ -74,3 +74,7 @@ $NFT 'add rule inet filter FORWARD iifname "br-*" oifname "br-*" counter accept'
 # $NFT 'add rule inet filter FORWARD ip saddr 192.168.1.10 tcp dport 5432 counter accept'
 # $NFT 'add rule inet filter FORWARD tcp dport 5432 counter drop'
 #==============================================================================
+
+#==============================================================================
+# reject all the unmatched packets. Insert your rules above this line.
+#$NFT 'add rule inet filter FORWARD limit rate 1/minute burst 5 packets counter log prefix "tuxfrw: DOCKER! "'
