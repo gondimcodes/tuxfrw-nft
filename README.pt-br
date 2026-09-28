@@ -1,0 +1,165 @@
+===============================================================================
+
+                                TuxFrw-NFT
+                                ----------
+
+       A ferramenta definitiva de automação de firewall Linux com nftables.
+                                Versão 5.0
+
+===============================================================================
+
+O TuxFrw-NFT é uma solução completa de automação e gerenciamento de firewall
+para GNU/Linux baseada exclusivamente no moderno subsistema Netfilter/nftables.
+
+O sistema opera compilando dinamicamente um arquivo batch de regras atômico
+(/etc/tuxfrw-nft/tuxfrw.nft) aplicado diretamente no kernel através do comando
+'/usr/sbin/nft -f'. Sua arquitetura modular foi projetada para que administradores
+de sistemas e engenheiros de redes possam definir políticas de segurança, interfaces
+e endereços IP de forma declarativa, legível e determinística.
+
+
+Principais Recursos
+===================
+
+- Compilação Atômica: As regras são compiladas em lote e injetadas no kernel
+  em uma única transação atômica, eliminando estados intermediários e riscos de
+  perda de pacotes durante recargas.
+- Dual-Stack Nativo: Tratamento unificado de tráfego IPv4 e IPv6 através da
+  família 'inet', simplificando as regras e eliminando a redundância histórica
+  entre iptables e ip6tables.
+- Modo Docker Nativo (DOCKER_SUPPORT="1"):
+  * Blindagem completa do host no hook INPUT;
+  * Filtragem granular de portas e origens de contêineres no hook FORWARD
+    através do módulo dedicado 'rules/tf_DOCKER.mod', operando com prioridade
+    superior (priority -5) antes da aceitação padrão do Docker;
+  * Operação não-destrutiva: elimina o uso de 'flush ruleset', preservando
+    as chains do daemon Docker, bridges virtuais (docker0, br-*) e NAT interno;
+  * Permissão irrestrita de tráfego de saída para contêineres e controle fino
+    sobre quais IPs podem alcançar serviços publicados (-p).
+- Pré-Filtragem em Estágio Ingress (Netdev):
+  * Mitigação precoce de pacotes com anomalias de flags TCP (Xmas, NULL, SYN/FIN)
+    diretamente na camada de interface física via hook netdev, poupando CPU;
+  * Proteção anti-spoofing e filtragem opcional de Bogons desacoplada da RFC 1918.
+- Stateful Packet Inspection: Inspeção de estado de conexão rigorosa via conntrack
+  (ct state established, related) e descarte de pacotes inválidos.
+- Modo Gateway / Roteador Tradicional (DOCKER_SUPPORT="0"):
+  * Matriz direcional completa: EXT, INT, DMZ e túneis VPN (OpenVPN, PPTP);
+  * Suporte nativo a NAT em nftables: DNAT/Port Forwarding (tf_NAT-IN.mod) e
+    SNAT/Masquerade (tf_NAT-OUT.mod).
+- Recarga Atômica Dinâmica: Suporte à recarga isolada de módulos específicos
+  sem recarregar todo o firewall (ex: 'tuxfrw-nft load DOCKER').
+- Integração Nativa com Systemd: Unidade tuxfrw-nft.service configurada para
+  inicialização segura e integrada ao ciclo de vida da rede.
+
+
+Estrutura do Projeto
+====================
+
+/usr/sbin/tuxfrw-nft          -> Script executável principal de controle (CLI).
+/etc/systemd/system/          -> tuxfrw-nft.service (unidade de controle systemd).
+/etc/tuxfrw-nft/
+  ├── tuxfrw.conf             -> Arquivo de configuração central e variáveis de rede.
+  ├── tf_BASE.mod             -> Funções essenciais (limpeza segura, definições e tabelas).
+  ├── tf_KERNEL.mod           -> Carga de módulos de kernel e controle de IP forwarding.
+  └── rules/                  -> Diretório de módulos de regras especializadas:
+      ├── tf_INPUT.mod        -> Proteção e filtragem do host (INPUT).
+      ├── tf_OUTPUT.mod       -> Políticas e exceções de saída do host (OUTPUT).
+      ├── tf_DOCKER.mod       -> Regras para contêineres Docker (FORWARD priority -5).
+      ├── tf_NETDEV.mod       -> Pré-filtragem ingress em nível de placa de rede.
+      ├── tf_FORWARD.mod      -> Roteamento e encaminhamento (Modo Gateway).
+      ├── tf_INT-EXT.mod      -> Tráfego da rede interna para a Internet.
+      ├── tf_EXT-INT.mod      -> Tráfego da Internet para a rede interna.
+      ├── tf_INT-DMZ.mod      -> Tráfego da rede interna para a DMZ.
+      ├── tf_DMZ-INT.mod      -> Tráfego da DMZ para a rede interna.
+      ├── tf_EXT-DMZ.mod      -> Acessos públicos da Internet aos servidores da DMZ.
+      ├── tf_DMZ-EXT.mod      -> Acessos dos servidores da DMZ para a Internet.
+      ├── tf_NAT-IN.mod       -> Regras de DNAT (Port Forwarding em PREROUTING).
+      ├── tf_NAT-OUT.mod      -> Regras de SNAT (Masquerade em POSTROUTING).
+      ├── tf_OPENVPN.mod      -> Regras de integração para túneis OpenVPN.
+      └── tf_PPTP.mod         -> Regras de integração para túneis PPTP/GRE.
+
+
+Requisitos
+==========
+
+- Sistema Operacional GNU/Linux com kernel 4.19 ou superior;
+- Subsistema Netfilter com suporte a nftables;
+- Pacote 'nftables' instalado (comando 'nft' 0.9.0 ou superior);
+- Interpretador Bash (/bin/bash).
+
+
+Instalação Rápida
+=================
+
+Consulte o arquivo INSTALL.pt-br para o guia completo passo a passo.
+
+1) Como root, execute o instalador:
+   # ./install.sh
+
+2) Configure os parâmetros de rede no arquivo /etc/tuxfrw-nft/tuxfrw.conf:
+   - Defina DOCKER_SUPPORT="1" (para servidores Docker) ou "0" (para gateways);
+   - Configure as interfaces (IF_EXT, IF_INT, etc.) e portas de gerência.
+
+3) Inicie o serviço em ambiente de teste:
+   # tuxfrw-nft start
+
+4) Após validar as regras e certificar-se de que não há bloqueios indevidos:
+   # systemctl enable tuxfrw-nft
+
+
+Utilização do CLI
+=================
+
+O comando 'tuxfrw-nft' disponibiliza os seguintes subcomandos:
+
+  # tuxfrw-nft start
+    Compila todas as regras e aplica atomicamente o firewall no kernel.
+
+  # tuxfrw-nft stop
+    Remove com segurança as tabelas do TuxFrw (sem destruir o Docker no modo Docker).
+
+  # tuxfrw-nft restart
+    Executa a sequência de stop seguida de start.
+
+  # tuxfrw-nft status
+    Exibe as tabelas e chains ativas compiladas pelo TuxFrw-NFT.
+
+  # tuxfrw-nft load <MÓDULO>
+    Recarrega atomicamente apenas o módulo informado.
+    Exemplos:
+      # tuxfrw-nft load DOCKER   -> Aplica alterações de portas em tf_DOCKER.mod
+      # tuxfrw-nft load INPUT    -> Recarrega as regras do tf_INPUT.mod
+      # tuxfrw-nft load INT-EXT  -> Recarrega as regras do tf_INT-EXT.mod
+
+  # tuxfrw-nft panic
+    Mecanismo de emergência: bloqueia imediatamente todo o tráfego do sistema.
+
+  # tuxfrw-nft natopen
+    (Modo Gateway) Carrega regras de DNAT dinâmicas sob demanda.
+
+
+Documentação Adicional
+======================
+
+Manuais aprofundados e guias arquiteturais detalhados estão disponíveis no diretório 'manual/':
+- manual/tuxfrw-manual-5.00-br.txt  (Manual completo em Português do Brasil)
+- manual/tuxfrw-manual-5.00-en.txt  (Manual completo em Inglês)
+
+
+Autores
+=======
+
+    "The TuxFrw Team"
+    -----------------
+    - Marcelo Gondim <gondim@gmail.com>
+    - Colaboradores reconhecidos no arquivo CREDITS.
+
+Repositório Oficial:
+    https://github.com/gondimcodes/tuxfrw-nft
+
+
+Licença
+=======
+
+O TuxFrw-NFT é software livre distribuído sob os termos da GNU General Public
+License versão 2 (GPLv2). Consulte o arquivo LICENSE para maiores detalhes.
