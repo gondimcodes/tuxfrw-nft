@@ -63,30 +63,61 @@ O sistema opera compilando dinamicamente um arquivo batch atômico de regras (`/
 
 ## Estrutura do Projeto
 
+### Árvore do Repositório (Código-Fonte)
+
 ```text
-/usr/sbin/tuxfrw-nft          # Script executável principal de controle (CLI)
-/etc/systemd/system/          # tuxfrw-nft.service (unidade systemd)
-/etc/tuxfrw-nft/
-  ├── tuxfrw.conf             # Configuração central e variáveis de rede
-  ├── tf_BASE.mod             # Funções essenciais, tabelas e compilação do batch
-  ├── tf_KERNEL.mod           # Módulos de kernel e controle de IP forwarding
-  └── rules/                  # Módulos especializados de regras
-      ├── tf_INPUT.mod        # Proteção e filtragem do host local (INPUT)
-      ├── tf_OUTPUT.mod       # Políticas e exceções de tráfego de saída (OUTPUT)
-      ├── tf_DOCKER.mod       # Políticas de acesso aos contêineres Docker (FORWARD)
-      ├── tf_NETDEV.mod       # Pré-filtragem ingress em nível de placa de rede
-      ├── tf_FORWARD.mod      # Roteamento e encaminhamento entre zonas (Gateway)
-      ├── tf_INT-EXT.mod      # Tráfego da rede interna para a Internet
-      ├── tf_EXT-INT.mod      # Tráfego da Internet para a rede interna
-      ├── tf_INT-DMZ.mod      # Tráfego da rede interna para a DMZ
-      ├── tf_DMZ-INT.mod      # Tráfego da DMZ para a rede interna
-      ├── tf_EXT-DMZ.mod      # Acessos da Internet aos servidores da DMZ
-      ├── tf_DMZ-EXT.mod      # Acessos dos servidores da DMZ para a Internet
-      ├── tf_NAT-IN.mod       # Port Forwarding / DNAT em PREROUTING
-      ├── tf_NAT-OUT.mod      # Masquerade / SNAT em POSTROUTING
-      ├── tf_OPENVPN.mod      # Regras para túneis OpenVPN
-      └── tf_PPTP.mod         # Regras para túneis PPTP/GRE
+tuxfrw-nft/
+├── tuxfrw-nft                    # Script executável principal de controle (CLI)
+├── tuxfrw.conf                   # Arquivo central de configuração e variáveis de rede
+├── tuxfrw-nft.service            # Unidade de serviço para gerenciamento via systemd
+├── install.sh                    # Script de instalação com validações e detecção de upgrade
+├── tf_BASE.mod                   # Núcleo do firewall (tabelas, compilação atômica e limpeza segura)
+├── tf_KERNEL.mod                 # Carga de módulos do kernel e controle de IP forwarding
+├── rules/                        # Módulos especializados de regras Netfilter/nftables
+│   ├── tf_INPUT.mod              # Proteção e filtragem do host local (hook input)
+│   ├── tf_OUTPUT.mod             # Políticas e exceções de tráfego de saída (hook output)
+│   ├── tf_DOCKER.mod             # Políticas para contêineres Docker (FORWARD priority -5)
+│   ├── tf_NETDEV.mod             # Pré-filtragem ingress em interfaces físicas (netdev)
+│   ├── tf_FORWARD.mod            # Roteamento e matriz de encaminhamento (Modo Gateway)
+│   ├── tf_MANGLE.mod             # Manipulação e ajuste de pacotes (MSS clamping, etc.)
+│   ├── tf_NAT-IN.mod             # Port Forwarding / DNAT em PREROUTING
+│   ├── tf_NAT-OUT.mod            # Masquerade / SNAT em POSTROUTING
+│   ├── tf_INT-EXT.mod            # Tráfego da rede interna (INT) para a Internet (EXT)
+│   ├── tf_EXT-INT.mod            # Tráfego da Internet (EXT) para a rede interna (INT)
+│   ├── tf_INT-DMZ.mod            # Tráfego da rede interna (INT) para a DMZ
+│   ├── tf_DMZ-INT.mod            # Tráfego da DMZ para a rede interna (INT)
+│   ├── tf_EXT-DMZ.mod            # Acessos da Internet (EXT) aos servidores da DMZ
+│   ├── tf_DMZ-EXT.mod            # Acessos dos servidores da DMZ para a Internet (EXT)
+│   ├── tf_INT-VPN.mod            # Tráfego da rede interna (INT) para túneis VPN
+│   ├── tf_VPN-INT.mod            # Tráfego de túneis VPN para a rede interna (INT)
+│   ├── tf_EXT-VPN.mod            # Tráfego da Internet (EXT) para túneis VPN
+│   ├── tf_VPN-EXT.mod            # Tráfego de túneis VPN para a Internet (EXT)
+│   ├── tf_DMZ-VPN.mod            # Tráfego da DMZ para túneis VPN
+│   └── tf_VPN-DMZ.mod            # Tráfego de túneis VPN para a DMZ
+├── manual/                       # Manuais técnicos aprofundados
+│   ├── tuxfrw-manual-5.00-pt-br.md # Manual técnico completo em Português do Brasil
+│   └── tuxfrw-manual-5.00-en.md    # Manual técnico completo em Inglês
+├── README.md & README.pt-br.md   # Documentação principal do projeto (EN / PT-BR)
+├── INSTALL.md & INSTALL.pt-br.md # Guias de instalação e validação (EN / PT-BR)
+├── CHANGELOG.md                  # Histórico de alterações seguindo Keep a Changelog
+├── AUTHORS & CREDITS             # Autores e colaboradores do projeto
+├── LICENSE                       # Licença GNU General Public License v2 (GPLv2)
+└── VERSION                       # Versão da release atual (5.0)
 ```
+
+### Layout de Implantação no Sistema Operacional
+
+Após a execução do `./install.sh`, os arquivos são distribuídos com permissões estritas no host:
+
+| Caminho no Sistema | Permissão | Descrição |
+| :--- | :--- | :--- |
+| `/usr/sbin/tuxfrw-nft` | `0700` (`rwx------`) | Utilitário executável do CLI |
+| `/etc/systemd/system/tuxfrw-nft.service` | `0644` (`rw-r--r--`) | Unidade de inicialização do systemd |
+| `/etc/tuxfrw-nft/` | `0700` (`rwx------`) | Diretório de configuração e regras |
+| `/etc/tuxfrw-nft/tuxfrw.conf` | `0600` (`rw-------`) | Configuração central do firewall |
+| `/etc/tuxfrw-nft/tf_BASE.mod` | `0600` (`rw-------`) | Funções base e compilação do ruleset |
+| `/etc/tuxfrw-nft/tf_KERNEL.mod` | `0600` (`rw-------`) | Módulos e parâmetros de kernel |
+| `/etc/tuxfrw-nft/rules/*.mod` | `0600` (`rw-------`) | 20 módulos de regras especializadas |
 
 ---
 
