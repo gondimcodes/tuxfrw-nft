@@ -27,7 +27,7 @@
   - [Native Docker Mode (`DOCKER_SUPPORT="1"`)](#native-docker-compatibility-mode-docker_support1)
   - [Classic Gateway Mode (`DOCKER_SUPPORT="0"`)](#classic-gateway-mode-docker_support0)
 - [Technical Documentation](#technical-documentation)
-- [Authors and Credits](#authors-and-credits)
+- [Authorship & Historical Credits](#authorship--historical-credits)
 - [License](#license)
 
 ---
@@ -100,7 +100,8 @@ tuxfrw-nft/
 ├── README.md & README.pt-br.md   # Project overview and main documentation (EN / PT-BR)
 ├── INSTALL.md & INSTALL.pt-br.md # Installation and validation guides (EN / PT-BR)
 ├── CHANGELOG.md                  # Release notes and change history (Keep a Changelog)
-├── AUTHORS & CREDITS             # Project authors and contributors
+├── CREDITS.md                    # Historical credits from legacy versions (IPTables/CFTK)
+├── AUTHORS                       # Project author and maintainer
 ├── LICENSE                       # GNU General Public License v2 (GPLv2)
 └── VERSION                       # Current release version string (5.0)
 ```
@@ -211,11 +212,12 @@ In-depth technical manuals and architecture guides:
 
 ---
 
-## Authors and Credits
+## Authorship & Historical Credits
 
 **The TuxFrw Team**
-- **Marcelo Gondim** <gondim@gmail.com> (Author and Primary Maintainer)
-- Contributors acknowledged in the [CREDITS](CREDITS) file.
+- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 5.0)
+
+Acknowledgments and contributions to legacy project versions (Netfilter/IPTables and Conectiva CFTK) are documented in [CREDITS.md](CREDITS.md).
 
 Official Repository: [https://github.com/gondimcodes/tuxfrw-nft](https://github.com/gondimcodes/tuxfrw-nft)
 
