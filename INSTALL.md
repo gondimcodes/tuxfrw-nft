@@ -5,7 +5,7 @@
 For full architecture details and rule explanations, see:
 - [English README](README.md)
 - [Brazilian Portuguese README](README.pt-br.md)
-- [Complete Technical Manual](manual/tuxfrw-manual-5.00-en.txt)
+- [Complete Technical Manual](manual/tuxfrw-manual-5.00-en.md)
 
 ---
 

@@ -19,7 +19,7 @@ and this project adheres to semantic release versioning.
 - **Modern Markdown Documentation**:
   - Converted documentation files to GitHub Flavored Markdown (`README.md`, `README.pt-br.md`, `INSTALL.md`, `INSTALL.pt-br.md`, `CHANGELOG.md`).
   - Renamed legacy `.Portuguese` documentation to standard `.pt-br.md`.
-  - Rewrote technical reference manuals in `manual/` (`tuxfrw-manual-5.00-br.txt` and `tuxfrw-manual-5.00-en.txt`).
+  - Rewrote technical reference manuals in `manual/` (`tuxfrw-manual-5.00-pt-br.md` and `tuxfrw-manual-5.00-en.md`).
 
 ### Changed
 - **Installer Modernization**:

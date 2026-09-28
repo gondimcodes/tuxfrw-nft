@@ -172,8 +172,8 @@ Ideal para roteadores corporativos e firewalls de borda.
 ## Documentação Técnica
 
 Guias aprofundados sobre arquitetura, boas práticas e diagnóstico:
-- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.00-br.txt)
-- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.00-en.txt)
+- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.00-pt-br.md)
+- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.00-en.md)
 - [Guia de Instalação (Português)](INSTALL.pt-br.md)
 - [Installation Guide (English)](INSTALL.md)
 - [Notas de Versão e Changelog](CHANGELOG.md)

@@ -172,8 +172,8 @@ Recommended for perimeter routers and corporate firewalls.
 ## Technical Documentation
 
 In-depth technical manuals and architecture guides:
-- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.00-en.txt)
-- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.00-br.txt)
+- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.00-en.md)
+- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.00-pt-br.md)
 - [Installation Guide (English)](INSTALL.md)
 - [Guia de Instalação (Português)](INSTALL.pt-br.md)
 - [Release Notes & Changelog](CHANGELOG.md)
