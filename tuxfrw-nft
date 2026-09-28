@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.0
+# TuxFrw-NFT 5.1
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -244,8 +244,8 @@ panic() {
 
 header() {
   echo "========================================================================="
-  echo "=== TuxFrw-NFT 5.0                                                    ==="
-  echo "=== Copyright (C) 2001-2022                                           ===" 
+  echo "=== TuxFrw-NFT 5.1                                                    ==="
+  echo "=== Copyright (C) 2001-2026                                           ===" 
   echo "=== Marcelo Gondim <gondim@gmail.com>                                 ===" 
   echo "+-----------------------------------------------------------------------+"
   echo "| TuxFrw is free software; you can redistribute it and/or modify        |"

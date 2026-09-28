@@ -4,7 +4,7 @@
 
 Para mais detalhes sobre regras e arquitetura, consulte:
 - [README em Português](README.pt-br.md)
-- [Manual Técnico Completo](manual/tuxfrw-manual-5.00-pt-br.md)
+- [Manual Técnico Completo](manual/tuxfrw-manual-5.1-pt-br.md)
 
 ---
 

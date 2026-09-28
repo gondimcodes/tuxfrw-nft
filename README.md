@@ -1,7 +1,7 @@
 # TuxFrw-NFT
 
 > **The ultimate Linux firewall automation and management tool using Netfilter/nftables.**  
-> *Version 5.0*
+> *Version 5.1*
 
 [![License: GPLv2](https://img.shields.io/badge/License-GPLv2-blue.svg)](LICENSE)
 [![Netfilter](https://img.shields.io/badge/Netfilter-nftables-orange.svg)](https://wiki.nftables.org/)
@@ -99,15 +99,15 @@ tuxfrw-nft/
 │   ├── tf_DMZ-VPN.mod            # DMZ to VPN tunnels traffic
 │   └── tf_VPN-DMZ.mod            # VPN tunnels to DMZ traffic
 ├── manual/                       # In-depth technical documentation manuals
-│   ├── tuxfrw-manual-5.00-pt-br.md # Complete technical manual in Brazilian Portuguese
-│   └── tuxfrw-manual-5.00-en.md    # Complete technical manual in English
+│   ├── tuxfrw-manual-5.1-pt-br.md  # Complete technical manual in Brazilian Portuguese
+│   └── tuxfrw-manual-5.1-en.md     # Complete technical manual in English
 ├── README.md & README.pt-br.md   # Project overview and main documentation (EN / PT-BR)
 ├── INSTALL.md & INSTALL.pt-br.md # Installation and validation guides (EN / PT-BR)
 ├── CHANGELOG.md                  # Release notes and change history (Keep a Changelog)
 ├── CREDITS.md                    # Historical credits from legacy versions (IPTables/CFTK)
 ├── AUTHORS                       # Project author and maintainer
 ├── LICENSE                       # GNU General Public License v2 (GPLv2)
-└── VERSION                       # Current release version string (5.0)
+└── VERSION                       # Current release version string (5.1)
 ```
 
 ### OS Deployment Layout
@@ -211,8 +211,8 @@ Recommended for perimeter routers and corporate firewalls.
 ## Technical Documentation
 
 In-depth technical manuals and architecture guides:
-- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.00-en.md)
-- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.00-pt-br.md)
+- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.1-en.md)
+- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.1-pt-br.md)
 - [Installation Guide (English)](INSTALL.md)
 - [Guia de Instalação (Português)](INSTALL.pt-br.md)
 - [Release Notes & Changelog](CHANGELOG.md)
@@ -222,7 +222,7 @@ In-depth technical manuals and architecture guides:
 ## Authorship & Historical Credits
 
 **The TuxFrw Team**
-- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 5.0)
+- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 5.1)
 
 Acknowledgments and contributions to legacy project versions (Netfilter/IPTables and Conectiva CFTK) are documented in [CREDITS.md](CREDITS.md).
 

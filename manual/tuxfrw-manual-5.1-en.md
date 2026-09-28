@@ -1,7 +1,7 @@
 # TuxFrw-NFT Technical Manual
 
 > **Comprehensive Guide on Architecture, Operations, Docker Integration, and Diagnostics**  
-> *Version 5.0*
+> *Version 5.1*
 
 ---
 
