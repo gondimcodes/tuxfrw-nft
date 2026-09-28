@@ -36,12 +36,12 @@ SUCCESS="echo -en \\033[1;32m"
 FAILURE="echo -en \\033[1;31m"
 
 evaluate_retval() {
-   if [ "`cat /tmp/tf_error`" = "" ]; then
-      print_status success
-   else
+   if [ -s /tmp/tf_error ]; then
       print_status failure
+   else
+      print_status success
    fi
-   rm /tmp/tf_error
+   rm -f /tmp/tf_error
 }
 
 print_status() {

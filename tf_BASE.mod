@@ -140,7 +140,7 @@ create_rules()
      $NFT 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
 
      # Ingress Anti-Spoofing / uRPF via FIB
-     setup_urpf
+     setup_urpf 2> /tmp/tf_error
      echo -n "Loading uRPF (Anti-Spoofing)"
      evaluate_retval
 
@@ -198,7 +198,7 @@ create_rules()
   $NFT 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
 
   # Ingress Anti-Spoofing / uRPF via FIB
-  setup_urpf
+  setup_urpf 2> /tmp/tf_error
   echo -n "Loading uRPF (Anti-Spoofing)"
   evaluate_retval
   $NFT 'add chain inet filter https-synproxy { type filter hook prerouting priority raw; policy accept; }' >> $CONF_DIR/tuxfrw.nft

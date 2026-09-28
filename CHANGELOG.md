@@ -43,6 +43,7 @@ and this project adheres to semantic release versioning.
 - Fixed IPv6 SSDP multicast groups in `rules/tf_INPUT.mod` (`{ ff02::c, ff05::c }`).
 - Fixed missing essential outbound ICMPv4 rules in `rules/tf_OUTPUT.mod`.
 - Fixed table leak where `table netdev filter` persisted in memory after `tuxfrw-nft stop` when in Docker mode.
+- Fixed missing stderr redirection in `setup_urpf` calls and hardened `evaluate_retval` to prevent spurious `cat`/`rm` error messages when `/tmp/tf_error` is absent.
 
 ---
 
