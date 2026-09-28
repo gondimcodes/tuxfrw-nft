@@ -49,14 +49,18 @@ O sistema opera compilando dinamicamente um arquivo batch atômico de regras (`/
   - Filtragem granular de portas e origens de contêineres no hook `FORWARD` via módulo dedicado `rules/tf_DOCKER.mod` com prioridade superior (`priority -5`);
   - Operação não-destrutiva: elimina o uso de `flush ruleset`, preservando pontes virtuais (`docker0`, `br-*`), chains do daemon Docker e regras de NAT interno;
   - Saída irrestrita de contêineres e controle refinado sobre serviços publicados (`-p`).
+- **uRPF Nativo e Anti-Spoofing Completo (FIB & BCP 38)**:
+  - Strict uRPF via `fib saddr . iif oif` no hook `prerouting` para IPv4 e IPv6, descartando pacotes forjados antes das decisões de roteamento;
+  - Egress Anti-Spoofing (BCP 38) garantindo que pacotes saindo da INT e DMZ para a Internet pertençam exclusivamente às sub-redes autorizadas;
+  - Proteção contra amplificação e reflexão de DDoS na DMZ e isolamento estrito contra conexões não solicitadas da Internet para a rede interna (`EXT->INT`).
 - **Pré-Filtragem Ingress (`netdev`)**:
   - Mitigação de anomalias de flags TCP (Xmas, NULL, SYN/FIN) e pacotes inválidos diretamente na placa de rede, poupando CPU;
-  - Anti-spoofing e controle de Bogons desacoplado das redes privadas (RFC 1918).
+  - Anti-spoofing precoce e controle de Bogons desacoplado das redes privadas (RFC 1918).
 - **Stateful Packet Inspection**: Inspeção com controle de estado estrito via conntrack (`ct state established, related`) e descarte explícito de tráfego inválido.
 - **Modo Gateway / Roteador Tradicional (`DOCKER_SUPPORT="0"`)**:
   - Matriz direcional completa: `EXT`, `INT`, `DMZ` e túneis VPN (`OpenVPN`, `PPTP`);
   - Suporte nativo a NAT em nftables: DNAT/Port Forwarding (`tf_NAT-IN.mod`) e SNAT/Masquerade (`tf_NAT-OUT.mod`).
-- **Recargas Atômicas Dinâmicas**: Recarregue módulos isoladamente sem reiniciar todo o firewall (ex: `tuxfrw-nft load DOCKER`).
+- **Recargas Atômicas Dinâmicas**: Recarregue módulos isoladamente sem reiniciar todo o firewall (ex: `tuxfrw-nft load DOCKER`, `tuxfrw-nft load URPF`).
 - **Integração Nativa com Systemd**: Unidade `tuxfrw-nft.service` ordenada antes de targets de rede para inicialização segura.
 
 ---
@@ -174,6 +178,9 @@ O executável `/usr/sbin/tuxfrw-nft` suporta as seguintes operações:
 ```bash
 # Aplicar novas regras de contêineres após editar rules/tf_DOCKER.mod
 tuxfrw-nft load DOCKER
+
+# Recarregar regras de anti-spoofing / uRPF
+tuxfrw-nft load URPF
 
 # Atualizar proteções do host após editar rules/tf_INPUT.mod
 tuxfrw-nft load INPUT

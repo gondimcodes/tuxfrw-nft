@@ -97,6 +97,31 @@ run_natopen()
 }
 
 #
+# Setup uRPF (Unicast Reverse Path Forwarding / Anti-Spoofing via FIB)
+#
+setup_urpf()
+{
+  # Ingress Anti-Spoofing & uRPF (Unicast Reverse Path Forwarding)
+  # Hook prerouting priority filter - 10 (-10) validates routes before filter priority 0
+  $NFT 'add chain inet filter PREROUTING { type filter hook prerouting priority filter - 10; policy accept; }' >> $CONF_DIR/tuxfrw.nft
+
+  # Exemption: IPv6 Duplicate Address Detection (DAD) and SLAAC initialization (source address ::)
+  $NFT 'add rule inet filter PREROUTING ip6 saddr :: ip6 daddr ff02::/16 counter accept' >> $CONF_DIR/tuxfrw.nft
+
+  # Strict uRPF per active physical interface:
+  # Drops inbound packets if the reverse route back to the source IP does not match the incoming interface
+  if [ "$EXT_IFACE" != "" ]; then
+    $NFT "add rule inet filter PREROUTING iifname $EXT_IFACE fib saddr . iif oif missing counter drop" >> $CONF_DIR/tuxfrw.nft
+  fi
+  if [ "$INT_IFACE" != "" ]; then
+    $NFT "add rule inet filter PREROUTING iifname $INT_IFACE fib saddr . iif oif missing counter drop" >> $CONF_DIR/tuxfrw.nft
+  fi
+  if [ "$DMZ_IFACE" != "" ]; then
+    $NFT "add rule inet filter PREROUTING iifname $DMZ_IFACE fib saddr . iif oif missing counter drop" >> $CONF_DIR/tuxfrw.nft
+  fi
+}
+
+#
 # Create and load the rules and chains
 #
 create_rules()
@@ -113,6 +138,11 @@ create_rules()
   # DOCKER MODE: Focus strictly on host protection (INPUT) and container access control (FORWARD/tf_DOCKER.mod)
   if [ "$DOCKER_SUPPORT" = "1" ]; then
      $NFT 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
+
+     # Ingress Anti-Spoofing / uRPF via FIB
+     setup_urpf
+     echo -n "Loading uRPF (Anti-Spoofing)"
+     evaluate_retval
 
      # Host Protection Chain (INPUT)
      $NFT 'add chain inet filter INPUT { type filter hook input priority 0; policy drop; }' >> $CONF_DIR/tuxfrw.nft
@@ -166,6 +196,11 @@ create_rules()
 
   # base I/O rules
   $NFT 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
+
+  # Ingress Anti-Spoofing / uRPF via FIB
+  setup_urpf
+  echo -n "Loading uRPF (Anti-Spoofing)"
+  evaluate_retval
   $NFT 'add chain inet filter https-synproxy { type filter hook prerouting priority raw; policy accept; }' >> $CONF_DIR/tuxfrw.nft
   $NFT 'add chain inet filter https-synprxv6 { type filter hook prerouting priority raw; policy accept; }' >> $CONF_DIR/tuxfrw.nft
   $NFT 'add chain inet filter INPUT { type filter hook input priority 0; policy drop; }' >> $CONF_DIR/tuxfrw.nft

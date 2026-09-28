@@ -14,10 +14,17 @@ and this project adheres to semantic release versioning.
   - Added dedicated module `rules/tf_DOCKER.mod` for fine-grained container traffic control on the `FORWARD` hook using high priority (`priority -5`).
   - Added atomic reloading command: `tuxfrw-nft load DOCKER`.
   - Added non-destructive table teardown: `clear_rules()` cleans only TuxFrw tables (`inet filter`, `netdev filter`, `inet mangle`), preventing destruction of Docker daemon chains, virtual bridges (`docker0`, `br-*`), and container NAT.
+- **Native uRPF and Complete Anti-Spoofing Architecture (FIB & BCP 38)**:
+  - Added native Strict uRPF lookup (`fib saddr . iif oif missing counter drop`) in `PREROUTING` for both IPv4 and IPv6 across all active physical interfaces (`EXT`, `INT`, `DMZ`).
+  - Added IPv6 DAD and SLAAC link-local exemption (`ip6 saddr :: ip6 daddr ff02::/16 accept`) preventing initialization drops.
+  - Added atomic reloading command: `tuxfrw-nft load URPF`.
+  - Added Egress Anti-Spoofing (BCP 38 / RFC 2827) in `rules/tf_INT-EXT.mod` and `rules/tf_DMZ-EXT.mod` dropping forged source packets leaving local subnets.
+  - Added strict isolation in `rules/tf_EXT-INT.mod` dropping unsolicited inbound connections (`ct state new`) from the Internet into the LAN.
+  - Added DDoS reflection and amplification mitigation in `rules/tf_EXT-DMZ.mod` blocking high-risk UDP abuse ports (NTP 123, Memcached 11211, SSDP 1900, SNMP 161/162, CLDAP 389, WS-Discovery 3702, mDNS 5353, Chargen 19, QOTD 17) and applying rate-limiting to public DNS resolvers.
 - **Dedicated Systemd Service**:
   - Added `tuxfrw-nft.service` unit (`Type=oneshot`, `RemainAfterExit=yes`, `Before=network-pre.target`).
 - **Modern Markdown Documentation**:
-  - Converted documentation files to GitHub Flavored Markdown (`README.md`, `README.pt-br.md`, `INSTALL.md`, `INSTALL.pt-br.md`, `CHANGELOG.md`).
+  - Converted documentation files to GitHub Flavored Markdown (`README.md`, `README.pt-br.md`, `INSTALL.md`, `INSTALL.pt-br.md`, `CHANGELOG.md`, `CREDITS.md`).
   - Renamed legacy `.Portuguese` documentation to standard `.pt-br.md`.
   - Rewrote technical reference manuals in `manual/` (`tuxfrw-manual-5.00-pt-br.md` and `tuxfrw-manual-5.00-en.md`).
 

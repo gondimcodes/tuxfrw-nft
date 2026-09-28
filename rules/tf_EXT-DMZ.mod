@@ -28,18 +28,36 @@
 # EXT->DMZ directional chain
 #
 
+# Block high-risk UDP DDoS reflection & amplification abuse ports:
+# QOTD (17), Chargen (19), NTP (123), SNMP (161,162), CLDAP (389), SSDP (1900), WS-Discovery (3702), mDNS (5353), Memcached (11211)
+$NFT 'add rule inet filter EXT2DMZ udp dport { 17, 19, 123, 161, 162, 389, 1900, 3702, 5353, 11211 } counter drop'
+
 $NFT "add rule inet filter EXT2DMZ ip protocol tcp ip daddr $IP_WWW1 tcp dport { 80,443 } counter accept" 
 $NFT "add rule inet filter EXT2DMZ meta l4proto tcp ip6 daddr $IP6_WWW1 tcp dport { 80,443 } counter accept"
 $NFT "add rule inet filter EXT2DMZ ip protocol tcp ip daddr $IP_SMTP tcp dport { 25,110 } counter accept" 
 $NFT "add rule inet filter EXT2DMZ meta l4proto tcp ip6 daddr $IP6_SMTP tcp dport { 25,110 } counter accept"
-$NFT "add rule inet filter EXT2DMZ ip daddr $IP_DNS1 udp dport 53 counter accept"
-$NFT "add rule inet filter EXT2DMZ ip6 daddr $IP6_DNS1 udp dport 53 counter accept"
-$NFT "add rule inet filter EXT2DMZ ip daddr $IP_DNS1 tcp dport 53 counter accept"
-$NFT "add rule inet filter EXT2DMZ ip6 daddr $IP6_DNS1 tcp dport 53 counter accept"
-$NFT "add rule inet filter EXT2DMZ ip daddr $IP_DNS2 udp dport 53 counter accept"
-$NFT "add rule inet filter EXT2DMZ ip6 daddr $IP6_DNS2 udp dport 53 counter accept"
-$NFT "add rule inet filter EXT2DMZ ip daddr $IP_DNS2 tcp dport 53 counter accept"
-$NFT "add rule inet filter EXT2DMZ ip6 daddr $IP6_DNS2 tcp dport 53 counter accept"
+
+# DNS with rate-limiting against UDP reflection/amplification abuse
+if [ "$IP_DNS1" != "" ]; then
+   $NFT "add rule inet filter EXT2DMZ ip daddr $IP_DNS1 udp dport 53 limit rate over 100/second burst 200 packets counter drop"
+   $NFT "add rule inet filter EXT2DMZ ip daddr $IP_DNS1 udp dport 53 counter accept"
+   $NFT "add rule inet filter EXT2DMZ ip daddr $IP_DNS1 tcp dport 53 counter accept"
+fi
+if [ "$IP6_DNS1" != "" ]; then
+   $NFT "add rule inet filter EXT2DMZ ip6 daddr $IP6_DNS1 udp dport 53 limit rate over 100/second burst 200 packets counter drop"
+   $NFT "add rule inet filter EXT2DMZ ip6 daddr $IP6_DNS1 udp dport 53 counter accept"
+   $NFT "add rule inet filter EXT2DMZ ip6 daddr $IP6_DNS1 tcp dport 53 counter accept"
+fi
+if [ "$IP_DNS2" != "" ]; then
+   $NFT "add rule inet filter EXT2DMZ ip daddr $IP_DNS2 udp dport 53 limit rate over 100/second burst 200 packets counter drop"
+   $NFT "add rule inet filter EXT2DMZ ip daddr $IP_DNS2 udp dport 53 counter accept"
+   $NFT "add rule inet filter EXT2DMZ ip daddr $IP_DNS2 tcp dport 53 counter accept"
+fi
+if [ "$IP6_DNS2" != "" ]; then
+   $NFT "add rule inet filter EXT2DMZ ip6 daddr $IP6_DNS2 udp dport 53 limit rate over 100/second burst 200 packets counter drop"
+   $NFT "add rule inet filter EXT2DMZ ip6 daddr $IP6_DNS2 udp dport 53 counter accept"
+   $NFT "add rule inet filter EXT2DMZ ip6 daddr $IP6_DNS2 tcp dport 53 counter accept"
+fi
 
 # log and reject all the unmatched packets
 #$NFT 'add rule ip filter EXT2DMZ limit rate 1/minute burst 5 packets counter log prefix "tuxfrw: EXT->DMZ! "'

@@ -132,6 +132,14 @@ load_chain() {
         run_nft
         exit
      fi
+     if [ "$1" == "URPF" ]; then
+        $NFT "flush chain inet filter PREROUTING" >> $CONF_DIR/tuxfrw.nft
+        setup_urpf 2> /tmp/tf_error
+        echo -n "Loading URPF ..." 
+	evaluate_retval
+        run_nft
+        exit
+     fi
      if [ "$1" == "NETDEV" ]; then
         if [ "$EXT_IFACE" != "" ]; then
            $NFT "flush chain netdev filter $EXT_IFACE" >> $CONF_DIR/tuxfrw.nft

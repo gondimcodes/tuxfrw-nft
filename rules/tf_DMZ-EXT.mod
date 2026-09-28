@@ -28,6 +28,14 @@
 # DMZ->EXT directional chain
 #
 
+# BCP 38 / Egress Anti-Spoofing: drop packets not originating from the DMZ network
+if [ "$DMZ_NET" != "" ]; then
+   $NFT "add rule inet filter DMZ2EXT ip saddr != $DMZ_NET counter drop"
+fi
+if [ "$DMZ_NET6" != "" ]; then
+   $NFT "add rule inet filter DMZ2EXT ip6 saddr != $DMZ_NET6 counter drop"
+fi
+
 $NFT "add rule inet filter DMZ2EXT ip saddr $IP_DNS1 udp dport 53 counter accept" 
 $NFT "add rule inet filter DMZ2EXT ip saddr $IP_DNS1 tcp dport 53 counter accept" 
 $NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_DNS1 udp dport 53 counter accept" 

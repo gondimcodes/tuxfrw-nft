@@ -28,5 +28,10 @@
 # EXT->INT directional chain
 #
 
+# Block unsolicited incoming packets from Internet to internal network
+# Prevents attackers from reaching internal services with spoofed victim IPs (DDoS reflection/amplification abuse)
+$NFT 'add rule inet filter EXT2INT ct state new counter drop'
+$NFT 'add rule inet filter EXT2INT ct state invalid counter drop'
+
 # log and reject all the unmatched packets
 #$NFT 'add rule inet filter EXT2INT limit rate 1/minute burst 5 packets counter log prefix "tuxfrw: EXT->INT! "'

@@ -57,6 +57,11 @@ In classic gateway mode (`DOCKER_SUPPORT="0"`), provides full NAT support:
 ### 5. Native Isolated Docker Integration (`DOCKER_SUPPORT="1"`)
 Runs seamlessly on Docker host servers without interfering with Docker's virtual bridges (`docker0`, `br-*`) or internal NAT tables, hardening the physical host on `INPUT` and controlling container port access on `FORWARD` using higher priority (`priority -5`).
 
+### 6. Full-Fledged Anti-Spoofing (uRPF via FIB & BCP 38)
+- **Strict Dynamic uRPF in PREROUTING**: Reverse path lookup (`fib saddr . iif oif missing drop`) for both IPv4 and IPv6 at the ingress stage, killing packets with forged internal or unroutable addresses before routing evaluation.
+- **Egress Anti-Spoofing (BCP 38 / RFC 2827)**: Directional enforcement in `INT-EXT` and `DMZ-EXT` ensuring internal hosts and DMZ servers strictly emit packets with sources belonging to their assigned subnets.
+- **DDoS Amplification & Reflection Mitigation**: Complete block of unsolicited inbound connections into the LAN (`EXT->INT`), drops on high-risk UDP reflection vectors in the DMZ (Memcached, NTP, SSDP, SNMP, etc.), and rate-limiting for public DNS resolvers.
+
 ---
 
 ## 3. Modular Structure and Execution Flow
@@ -141,6 +146,7 @@ The `load` command atomically recompiles and reapplies only the specified module
 ```bash
 sudo tuxfrw-nft load INPUT     # Reload tf_INPUT.mod (e.g. updated SSH IPs)
 sudo tuxfrw-nft load DOCKER    # Reload tf_DOCKER.mod (e.g. published container ports)
+sudo tuxfrw-nft load URPF      # Reload PREROUTING chain with uRPF anti-spoofing
 sudo tuxfrw-nft load OUTPUT    # Reload tf_OUTPUT.mod
 sudo tuxfrw-nft load NETDEV    # Reload tf_NETDEV.mod
 sudo tuxfrw-nft load INT-EXT   # Reload tf_INT-EXT.mod

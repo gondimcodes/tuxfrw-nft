@@ -28,6 +28,14 @@
 # INT->EXT directional chains
 #
 
+# BCP 38 / Egress Anti-Spoofing: drop packets not originating from the internal network
+if [ "$INT_NET" != "" ]; then
+   $NFT "add rule inet filter INT2EXT ip saddr != $INT_NET counter drop"
+fi
+if [ "$INT_NET6" != "" ]; then
+   $NFT "add rule inet filter INT2EXT ip6 saddr != $INT_NET6 counter drop"
+fi
+
 $NFT 'add rule inet filter INT2EXT tcp dport { 80,443,25,21,110,53 } counter accept'
 $NFT 'add rule inet filter INT2EXT udp dport 53 counter accept'
 

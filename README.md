@@ -49,6 +49,10 @@ The tool compiles rule definitions into an atomic ruleset batch file (`/etc/tuxf
   - Granular container access control on the `FORWARD` hook using `rules/tf_DOCKER.mod` running at higher priority (`priority -5`);
   - Non-destructive lifecycle: avoids `flush ruleset`, keeping Docker virtual bridges (`docker0`, `br-*`), daemon chains, and internal NAT intact;
   - Unrestricted outbound container traffic and fine-grained access policies for published container services (`-p`).
+- **Native uRPF and Complete Anti-Spoofing (FIB & BCP 38)**:
+  - Strict uRPF via `fib saddr . iif oif` in the `prerouting` hook for IPv4 and IPv6, dropping forged packets before routing decisions;
+  - Egress Anti-Spoofing (BCP 38) ensuring packets leaving INT and DMZ destined for the Internet strictly originate from authorized subnets;
+  - Defense against DDoS amplification & reflection abuse targeting the DMZ, and strict isolation against unsolicited Internet connections into the internal LAN (`EXT->INT`).
 - **Ingress Pre-Filtering (`netdev`)**:
   - Drops invalid TCP flags (Xmas, NULL, SYN/FIN) directly on physical network cards, saving CPU cycles;
   - Anti-spoofing and optional Bogon filtering decoupled from private RFC 1918 subnets.
@@ -56,7 +60,7 @@ The tool compiles rule definitions into an atomic ruleset batch file (`/etc/tuxf
 - **Classic Gateway / Router Mode (`DOCKER_SUPPORT="0"`)**:
   - Full directional matrix: `EXT`, `INT`, `DMZ`, and VPN tunnels (`OpenVPN`, `PPTP`);
   - Native nftables NAT: DNAT/Port Forwarding (`tf_NAT-IN.mod`) and SNAT/Masquerade (`tf_NAT-OUT.mod`).
-- **Dynamic Atomic Reloading**: Reload individual modules on the fly without bouncing the entire firewall (e.g., `tuxfrw-nft load DOCKER`).
+- **Dynamic Atomic Reloading**: Reload individual modules on the fly without bouncing the entire firewall (e.g., `tuxfrw-nft load DOCKER`, `tuxfrw-nft load URPF`).
 - **Native Systemd Integration**: Dedicated `tuxfrw-nft.service` unit configured to run before network initialization targets.
 
 ---
@@ -174,6 +178,9 @@ The `/usr/sbin/tuxfrw-nft` launcher supports the following operations:
 ```bash
 # Apply container policy adjustments after editing rules/tf_DOCKER.mod
 tuxfrw-nft load DOCKER
+
+# Reload anti-spoofing / uRPF rules
+tuxfrw-nft load URPF
 
 # Refresh host protections after updating rules/tf_INPUT.mod
 tuxfrw-nft load INPUT
