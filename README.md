@@ -176,6 +176,7 @@ In-depth technical manuals and architecture guides:
 - [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.00-br.txt)
 - [Installation Guide (English)](INSTALL.md)
 - [Guia de Instalação (Português)](INSTALL.pt-br.md)
+- [Release Notes & Changelog](CHANGELOG.md)
 
 ---
 
