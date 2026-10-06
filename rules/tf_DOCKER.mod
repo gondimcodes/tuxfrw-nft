@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.1
+# TuxFrw-NFT 5.2
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -73,6 +73,16 @@ $NFT 'add rule inet filter FORWARD iifname "br-*" oifname "br-*" counter accept'
 # Allow a database container (e.g. PostgreSQL 5432) only from application server:
 # $NFT 'add rule inet filter FORWARD ip saddr 192.168.1.10 tcp dport 5432 counter accept'
 # $NFT 'add rule inet filter FORWARD tcp dport 5432 counter drop'
+#
+# Allow Web container (e.g. Nginx, Traefik, Caddy) ONLY from Cloudflare proxies:
+# Requires CF_IPV4 and CF_IPV6 populated by 'tuxfrw-nft cf-update'
+# if [ "$CF_IPV4" != "" ]; then
+#    $NFT 'add rule inet filter FORWARD ip saddr $cf_ipv4 tcp dport { 80, 443 } counter accept'
+# fi
+# if [ "$CF_IPV6" != "" ]; then
+#    $NFT 'add rule inet filter FORWARD ip6 saddr $cf_ipv6 tcp dport { 80, 443 } counter accept'
+# fi
+# $NFT 'add rule inet filter FORWARD tcp dport { 80, 443 } counter drop'
 #==============================================================================
 
 #==============================================================================

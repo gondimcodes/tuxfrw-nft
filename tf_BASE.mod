@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.1
+# TuxFrw-NFT 5.2
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -51,6 +51,12 @@ defines()
   local v6="${BOGONS_V6:-0100::/64, 2001:2::/48, 2001:10::/28, 2001:db8::/32, 3ffe::/16, fc00::/7, fec0::/10, ff00::/8}"
   echo "define bogons_v4 = { $v4 }" >> $CONF_DIR/tuxfrw.nft
   echo "define bogons_v6 = { $v6 }" >> $CONF_DIR/tuxfrw.nft
+  if [ "$CF_IPV4" != "" ]; then
+    echo "define cf_ipv4 = { $CF_IPV4 }" >> $CONF_DIR/tuxfrw.nft
+  fi
+  if [ "$CF_IPV6" != "" ]; then
+    echo "define cf_ipv6 = { $CF_IPV6 }" >> $CONF_DIR/tuxfrw.nft
+  fi
 }
 
 run_nft()

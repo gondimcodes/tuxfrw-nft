@@ -7,6 +7,16 @@ and this project adheres to semantic release versioning.
 
 ---
 
+## [5.2] - 2026-10-06
+
+### Added
+- **Cloudflare Reverse Proxy Shielding (`cf-update`)**:
+  - Added CLI command `tuxfrw-nft cf-update` to automatically fetch, validate, and format official Cloudflare IPv4 and IPv6 proxy CIDR blocks via HTTPS with strict regex sanitization against injection or corrupted feeds.
+  - Implemented satellite file architecture `/etc/tuxfrw-nft/cloudflare.conf` (`0600`) isolating dynamic CDN IP feeds from static host networking configs.
+  - Integrated `CF_IPV4` and `CF_IPV6` variables into `tf_BASE.mod` defines (`$cf_ipv4` and `$cf_ipv6`) with ready-to-use rule templates in `rules/tf_INPUT.mod`, `rules/tf_DOCKER.mod`, and `rules/tf_EXT-DMZ.mod` to shield web origin servers and containers from direct IP bypass.
+
+---
+
 ## [5.1] - 2026-09-28
 
 ### Added

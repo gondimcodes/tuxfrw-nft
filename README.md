@@ -1,7 +1,7 @@
 # TuxFrw-NFT
 
 > **The ultimate Linux firewall automation and management tool using Netfilter/nftables.**  
-> *Version 5.1*
+> *Version 5.2*
 
 [![License: GPLv2](https://img.shields.io/badge/License-GPLv2-blue.svg)](LICENSE)
 [![Netfilter](https://img.shields.io/badge/Netfilter-nftables-orange.svg)](https://wiki.nftables.org/)
@@ -60,6 +60,9 @@ The tool compiles rule definitions into an atomic ruleset batch file (`/etc/tuxf
 - **Classic Gateway / Router Mode (`DOCKER_SUPPORT="0"`)**:
   - Full directional matrix: `EXT`, `INT`, `DMZ`, and VPN tunnels (`OpenVPN`, `PPTP`);
   - Native nftables NAT: DNAT/Port Forwarding (`tf_NAT-IN.mod`) and SNAT/Masquerade (`tf_NAT-OUT.mod`).
+- **Cloudflare Anti-Bypass Shielding**:
+  - Query and update official Cloudflare proxy IP ranges on demand via `tuxfrw-nft cf-update`;
+  - Isolate Web traffic (HTTP/HTTPS) on hosts and Docker containers strictly to Cloudflare origins, blocking direct origin IP bypass attacks.
 - **Dynamic Atomic Reloading**: Reload individual modules on the fly without bouncing the entire firewall (e.g., `tuxfrw-nft load DOCKER`, `tuxfrw-nft load URPF`).
 - **Native Systemd Integration**: Dedicated `tuxfrw-nft.service` unit configured to run before network initialization targets.
 
@@ -99,15 +102,15 @@ tuxfrw-nft/
 │   ├── tf_DMZ-VPN.mod            # DMZ to VPN tunnels traffic
 │   └── tf_VPN-DMZ.mod            # VPN tunnels to DMZ traffic
 ├── manual/                       # In-depth technical documentation manuals
-│   ├── tuxfrw-manual-5.1-pt-br.md  # Complete technical manual in Brazilian Portuguese
-│   └── tuxfrw-manual-5.1-en.md     # Complete technical manual in English
+│   ├── tuxfrw-manual-5.2-pt-br.md  # Complete technical manual in Brazilian Portuguese
+│   └── tuxfrw-manual-5.2-en.md     # Complete technical manual in English
 ├── README.md & README.pt-br.md   # Project overview and main documentation (EN / PT-BR)
 ├── INSTALL.md & INSTALL.pt-br.md # Installation and validation guides (EN / PT-BR)
 ├── CHANGELOG.md                  # Release notes and change history (Keep a Changelog)
 ├── CREDITS.md                    # Historical credits from legacy versions (IPTables/CFTK)
 ├── AUTHORS                       # Project author and maintainer
 ├── LICENSE                       # GNU General Public License v2 (GPLv2)
-└── VERSION                       # Current release version string (5.1)
+└── VERSION                       # Current release version string (5.2)
 ```
 
 ### OS Deployment Layout
@@ -172,6 +175,7 @@ The `/usr/sbin/tuxfrw-nft` launcher supports the following operations:
 | `tuxfrw-nft load <MODULE>` | Atomically recompiles and reloads only the specified module |
 | `tuxfrw-nft panic` | Emergency lockdown: immediately drops all network traffic |
 | `tuxfrw-nft natopen` | *(Gateway Mode)* Dynamically loads DNAT rules on demand |
+| `tuxfrw-nft cf-update` | Fetches and updates official Cloudflare proxy IPs into `cloudflare.conf` |
 
 ### Dynamic Reloading Examples
 
@@ -211,8 +215,8 @@ Recommended for perimeter routers and corporate firewalls.
 ## Technical Documentation
 
 In-depth technical manuals and architecture guides:
-- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.1-en.md)
-- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.1-pt-br.md)
+- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.2-en.md)
+- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.2-pt-br.md)
 - [Installation Guide (English)](INSTALL.md)
 - [Guia de Instalação (Português)](INSTALL.pt-br.md)
 - [Release Notes & Changelog](CHANGELOG.md)
@@ -222,7 +226,7 @@ In-depth technical manuals and architecture guides:
 ## Authorship & Historical Credits
 
 **The TuxFrw Team**
-- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 5.1)
+- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 5.2)
 
 Acknowledgments and contributions to legacy project versions (Netfilter/IPTables and Conectiva CFTK) are documented in [CREDITS.md](CREDITS.md).
 

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.1
+# TuxFrw-NFT 5.2
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -133,12 +133,15 @@ fi
 # Example of custom subnet blocking rules (using RFC 5737 documentation blocks):
 #$NFT "add rule inet filter INPUT ip saddr { 198.51.100.0/24, 203.0.113.0/24 } tcp dport { 587, 465 } counter drop"
 
-
-
-
-
-
-
+# Cloudflare reverse proxy only for Web (HTTP/HTTPS) example:
+# Restricts incoming Web traffic on EXT_IFACE exclusively to official Cloudflare IP ranges.
+# Run 'tuxfrw-nft cf-update' first to generate /etc/tuxfrw-nft/cloudflare.conf.
+#if [ "$CF_IPV4" != "" -a "$EXT_IFACE" != "" ]; then
+#   $NFT "add rule inet filter INPUT iif $EXT_IFACE ip saddr \$cf_ipv4 tcp dport { 80, 443 } counter accept"
+#fi
+#if [ "$CF_IPV6" != "" -a "$EXT_IFACE" != "" ]; then
+#   $NFT "add rule inet filter INPUT iif $EXT_IFACE ip6 saddr \$cf_ipv6 tcp dport { 80, 443 } counter accept"
+#fi
 #==============================================================================
 # reject all the unmatched packets. Insert your rules above this line.
 #$NFT 'add rule inet filter INPUT limit rate 1/minute burst 5 packets counter log prefix "tuxfrw: INPUT! "'

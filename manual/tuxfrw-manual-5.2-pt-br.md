@@ -1,7 +1,7 @@
 # Manual Técnico do TuxFrw-NFT
 
 > **Guia Completo de Arquitetura, Operação, Integração Docker e Diagnóstico**  
-> *Versão 5.1*
+> *Versão 5.2*
 
 ---
 
@@ -159,6 +159,12 @@ sudo tuxfrw-nft panic
 ```
 Interrompe imediatamente todo o tráfego do sistema e encerra conexões ativas.
 
+### 6. Atualização de IPs dos Proxies Cloudflare (`cf-update`)
+```bash
+sudo tuxfrw-nft cf-update
+```
+Consulta os endpoints oficiais da Cloudflare (`ips-v4` e `ips-v6`), valida rigorosamente a sintaxe CIDR de cada prefixo contra injeção de dados, grava atomicamente em `/etc/tuxfrw-nft/cloudflare.conf` (`0600`) e disponibiliza as variáveis `CF_IPV4` / `CF_IPV6` e definições `$cf_ipv4` / `$cf_ipv6` para regras de firewall.
+
 ---
 
 ## 6. Modo de Compatibilidade com Docker (`DOCKER_SUPPORT="1"`)
@@ -199,7 +205,59 @@ sudo tuxfrw-nft load DOCKER
 
 ---
 
-## 7. Diagnóstico e Tratamento de Falhas
+## 7. Proteção de Servidores Web com Proxies Cloudflare (Anti-Bypass)
+
+Quando servidores web (Nginx, Apache, Caddy, Traefik) operam atrás da Cloudflare, atacantes frequentemente tentam atingir o IP real do servidor diretamente para contornar proteções de WAF, anti-DDoS e rate-limiting.
+
+O TuxFrw-NFT oferece suporte nativo para isolar o tráfego HTTP/HTTPS (portas 80 e 443) exclusivamente para os proxies reversos da Cloudflare.
+
+### 1. Atualizando as faixas de IP
+Execute o comando:
+```bash
+sudo tuxfrw-nft cf-update
+```
+Isso baixa os blocos IPv4 e IPv6 oficiais, valida cada prefixo via regex e grava de forma atômica no arquivo satélite `/etc/tuxfrw-nft/cloudflare.conf` (`0600`), disponibilizando `$cf_ipv4` e `$cf_ipv6` no batch do nftables.
+
+### 2. Uso no Host Físico (`rules/tf_INPUT.mod`)
+Descomente ou inclua no final de `tf_INPUT.mod`:
+```bash
+if [ "$CF_IPV4" != "" -a "$EXT_IFACE" != "" ]; then
+   $NFT "add rule inet filter INPUT iif $EXT_IFACE ip saddr \$cf_ipv4 tcp dport { 80, 443 } counter accept"
+fi
+if [ "$CF_IPV6" != "" -a "$EXT_IFACE" != "" ]; then
+   $NFT "add rule inet filter INPUT iif $EXT_IFACE ip6 saddr \$cf_ipv6 tcp dport { 80, 443 } counter accept"
+fi
+```
+Recarregue a chain de entrada:
+```bash
+sudo tuxfrw-nft load INPUT
+```
+
+### 3. Uso em Contêineres Docker (`rules/tf_DOCKER.mod`)
+No módulo de contêineres, restrinja o encaminhamento das portas 80/443 apenas para a Cloudflare e descarte o tráfego direto de terceiros:
+```bash
+if [ "$CF_IPV4" != "" ]; then
+   $NFT "add rule inet filter FORWARD ip saddr \$cf_ipv4 tcp dport { 80, 443 } counter accept"
+fi
+if [ "$CF_IPV6" != "" ]; then
+   $NFT "add rule inet filter FORWARD ip6 saddr \$cf_ipv6 tcp dport { 80, 443 } counter accept"
+fi
+$NFT "add rule inet filter FORWARD tcp dport { 80, 443 } counter drop"
+```
+Recarregue a chain de contêineres:
+```bash
+sudo tuxfrw-nft load DOCKER
+```
+
+### 4. Agendamento Automático via Cron
+Para manter as faixas sempre atualizadas automaticamente (ex: semanalmente), adicione ao cron do sistema (`/etc/cron.weekly/tuxfrw-cf-update` ou `crontab -e` do root):
+```bash
+0 3 * * 0 /usr/sbin/tuxfrw-nft cf-update >/dev/null 2>&1 && /usr/sbin/tuxfrw-nft restart >/dev/null 2>&1
+```
+
+---
+
+## 8. Diagnóstico e Tratamento de Falhas
 
 O TuxFrw-NFT gera o arquivo batch `/etc/tuxfrw-nft/tuxfrw.nft` e o submete atomicamente ao utilitário `nft`. Se houver algum erro de sintaxe ou inconsistência:
 
@@ -226,7 +284,7 @@ O TuxFrw-NFT gera o arquivo batch `/etc/tuxfrw-nft/tuxfrw.nft` e o submete atomi
 
 ---
 
-## 8. Instalação e Inicialização com Systemd
+## 9. Instalação e Inicialização com Systemd
 
 Para o guia detalhado de instalação, consulte [INSTALL.pt-br.md](../INSTALL.pt-br.md).
 
@@ -248,7 +306,7 @@ O instalador:
 
 ---
 
-## 9. Referências e Créditos
+## 10. Referências e Créditos
 
 - **Autor e Mantenedor**: Marcelo Gondim <gondim@gmail.com>
 - **Repositório Oficial**: [https://github.com/gondimcodes/tuxfrw-nft](https://github.com/gondimcodes/tuxfrw-nft)
