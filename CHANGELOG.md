@@ -5,6 +5,15 @@ All notable changes to the **TuxFrw-NFT** project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to semantic release versioning.
 
+## [5.3] - 2026-10-12
+
+### Added
+- **Fail2ban & Third-Party Daemon Zero-Touch Coexistence**:
+  - Abolished global `flush ruleset` across all operational modes in `tf_BASE.mod:clear_rules()`, shifting to strict, surgical table-level deletion (`inet filter`, `netdev filter`, `inet mangle`, `ip nat`, `ip6 nat`).
+  - Completely preserves foreign Netfilter namespaces in kernel memory, ensuring Fail2ban (`table inet f2b-table` or `table ip filter`), Docker bridges, WireGuard, and Tailscale rulesets remain 100% intact across `tuxfrw-nft start`, `stop`, `restart`, and `load` commands.
+  - Aligned systemd boot ordering in `tuxfrw-nft.service` via `Before=network-pre.target shutdown.target fail2ban.service` to establish base packet filtering before Fail2ban jail initialisation.
+  - Documented hook priority chaining in the technical manuals: Fail2ban blocks banned IPs at `priority -1` on the outer edge before TuxFrw rules execute at `priority 0`.
+
 ---
 
 ## [5.2] - 2026-10-06

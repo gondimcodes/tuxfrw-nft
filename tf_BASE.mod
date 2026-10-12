@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.2
+# TuxFrw-NFT 5.3
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -31,18 +31,19 @@
 clear_rules()
 {
   echo '#!/usr/sbin/nft -f' > $CONF_DIR/tuxfrw.nft
-  if [ "$DOCKER_SUPPORT" = "1" ]; then
-    # In Docker mode, NEVER flush ruleset (it would destroy Docker chains & bridges)!
-    # Delete only TuxFrw's own tables. We add empty tables first so delete never fails if table doesn't exist.
-    echo 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
-    echo 'delete table inet filter' >> $CONF_DIR/tuxfrw.nft
-    echo 'add table netdev filter' >> $CONF_DIR/tuxfrw.nft
-    echo 'delete table netdev filter' >> $CONF_DIR/tuxfrw.nft
-    echo 'add table inet mangle' >> $CONF_DIR/tuxfrw.nft
-    echo 'delete table inet mangle' >> $CONF_DIR/tuxfrw.nft
-  else
-    echo 'flush ruleset' >> $CONF_DIR/tuxfrw.nft
-  fi
+  # Non-destructive table-level isolation: NEVER flush ruleset!
+  # Preserves third-party daemons (Fail2ban 'f2b-table', Docker bridges, WireGuard, etc.)
+  # We add empty tables first so delete never fails if table doesn't exist.
+  echo 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
+  echo 'delete table inet filter' >> $CONF_DIR/tuxfrw.nft
+  echo 'add table netdev filter' >> $CONF_DIR/tuxfrw.nft
+  echo 'delete table netdev filter' >> $CONF_DIR/tuxfrw.nft
+  echo 'add table inet mangle' >> $CONF_DIR/tuxfrw.nft
+  echo 'delete table inet mangle' >> $CONF_DIR/tuxfrw.nft
+  echo 'add table ip nat' >> $CONF_DIR/tuxfrw.nft
+  echo 'delete table ip nat' >> $CONF_DIR/tuxfrw.nft
+  echo 'add table ip6 nat' >> $CONF_DIR/tuxfrw.nft
+  echo 'delete table ip6 nat' >> $CONF_DIR/tuxfrw.nft
 }
 
 defines()

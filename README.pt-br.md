@@ -1,7 +1,7 @@
 # TuxFrw-NFT
 
 > **A ferramenta definitiva de automação e gerenciamento de firewall Linux com Netfilter/nftables.**  
-> *Versão 5.2*
+> *Versão 5.3*
 
 [![Licença: GPLv2](https://img.shields.io/badge/License-GPLv2-blue.svg)](LICENSE)
 [![Netfilter](https://img.shields.io/badge/Netfilter-nftables-orange.svg)](https://wiki.nftables.org/)
@@ -63,6 +63,9 @@ O sistema opera compilando dinamicamente um arquivo batch atômico de regras (`/
 - **Blindagem Anti-Bypass com Cloudflare**:
   - Consulta e atualização sob demanda de blocos IP oficiais da Cloudflare via `tuxfrw-nft cf-update`;
   - Isolamento do tráfego Web (HTTP/HTTPS) no host físico ou contêineres Docker exclusivamente para a CDN, impedindo ataques diretos ao IP de origem.
+- **Coexistência com Fail2ban e Daemons de Terceiros (Zero-Touch)**:
+  - Isolamento cirúrgico de tabelas eliminou o uso de `flush ruleset` global, mantendo namespaces externos como Fail2ban (`table inet f2b-table` / `table ip filter`) totalmente íntegros e operacionais entre recargas;
+  - Encadeamento ótimo de hooks no kernel: Fail2ban bloqueia na borda com `priority -1` antes que as regras do TuxFrw sejam processadas na `priority 0`.
 - **Recargas Atômicas Dinâmicas**: Recarregue módulos isoladamente sem reiniciar todo o firewall (ex: `tuxfrw-nft load DOCKER`, `tuxfrw-nft load URPF`).
 - **Integração Nativa com Systemd**: Unidade `tuxfrw-nft.service` ordenada antes de targets de rede para inicialização segura.
 
@@ -102,15 +105,15 @@ tuxfrw-nft/
 │   ├── tf_DMZ-VPN.mod            # Tráfego da DMZ para túneis VPN
 │   └── tf_VPN-DMZ.mod            # Tráfego de túneis VPN para a DMZ
 ├── manual/                       # Manuais técnicos aprofundados
-│   ├── tuxfrw-manual-5.2-pt-br.md  # Manual técnico completo em Português do Brasil
-│   └── tuxfrw-manual-5.2-en.md     # Manual técnico completo em Inglês
+│   ├── tuxfrw-manual-5.3-pt-br.md  # Manual técnico completo em Português do Brasil
+│   └── tuxfrw-manual-5.3-en.md     # Manual técnico completo em Inglês
 ├── README.md & README.pt-br.md   # Documentação principal do projeto (EN / PT-BR)
 ├── INSTALL.md & INSTALL.pt-br.md # Guias de instalação e validação (EN / PT-BR)
 ├── CHANGELOG.md                  # Histórico de alterações seguindo Keep a Changelog
 ├── CREDITS.md                    # Créditos históricos das versões legadas (IPTables/CFTK)
 ├── AUTHORS                       # Autor e mantenedor do projeto
 ├── LICENSE                       # Licença GNU General Public License v2 (GPLv2)
-└── VERSION                       # Versão da release atual (5.2)
+└── VERSION                       # Versão da release atual (5.3)
 ```
 
 ### Layout de Implantação no Sistema Operacional
@@ -215,8 +218,8 @@ Ideal para roteadores corporativos e firewalls de borda.
 ## Documentação Técnica
 
 Guias aprofundados sobre arquitetura, boas práticas e diagnóstico:
-- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.2-pt-br.md)
-- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.2-en.md)
+- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.3-pt-br.md)
+- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.3-en.md)
 - [Guia de Instalação (Português)](INSTALL.pt-br.md)
 - [Installation Guide (English)](INSTALL.md)
 - [Notas de Versão e Changelog](CHANGELOG.md)
@@ -226,7 +229,7 @@ Guias aprofundados sobre arquitetura, boas práticas e diagnóstico:
 ## Autoria e Créditos Históricos
 
 **The TuxFrw Team**
-- **Marcelo Gondim** <gondim@gmail.com> (Autor e Mantenedor Principal - TuxFrw-NFT 5.2)
+- **Marcelo Gondim** <gondim@gmail.com> (Autor e Mantenedor Principal - TuxFrw-NFT 5.3)
 
 Reconhecimentos e contribuições para as versões legadas do projeto (Netfilter/IPTables e Conectiva CFTK) estão documentados no arquivo [CREDITS.md](CREDITS.md).
 

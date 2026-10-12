@@ -2,7 +2,7 @@
 Description=TuxFrw-NFT Automated Firewall Service
 Documentation=https://github.com/gondimcodes/tuxfrw-nft
 DefaultDependencies=no
-Before=network-pre.target shutdown.target
+Before=network-pre.target shutdown.target fail2ban.service
 Wants=network-pre.target
 Conflicts=shutdown.target
 

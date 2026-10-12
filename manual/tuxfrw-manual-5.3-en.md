@@ -1,7 +1,7 @@
 # TuxFrw-NFT Technical Manual
 
 > **Comprehensive Guide on Architecture, Operations, Docker Integration, and Diagnostics**  
-> *Version 5.2*
+> *Version 5.3*
 
 ---
 
@@ -16,9 +16,11 @@
   - [The Default Docker Security Pitfall](#the-default-docker-security-pitfall)
   - [The TuxFrw-NFT Architectural Solution](#the-tuxfrw-nft-architectural-solution)
   - [Practical Container Rule Examples](#practical-container-rule-examples)
-- [7. Troubleshooting & Error Diagnosis](#7-troubleshooting--error-diagnosis)
-- [8. Installation and Systemd Boot Initialization](#8-installation-and-systemd-boot-initialization)
-- [9. References and Credits](#9-references-and-credits)
+- [7. Protecting Web Servers with Cloudflare Proxies (Anti-Bypass)](#7-protecting-web-servers-with-cloudflare-proxies-anti-bypass)
+- [8. Native Coexistence with Fail2ban & Third-Party Daemons (Zero-Touch)](#8-native-coexistence-with-fail2ban--third-party-daemons-zero-touch)
+- [9. Troubleshooting & Error Diagnosis](#9-troubleshooting--error-diagnosis)
+- [10. Installation and Systemd Boot Initialization](#10-installation-and-systemd-boot-initialization)
+- [11. References and Credits](#11-references-and-credits)
 
 ---
 
@@ -257,7 +259,26 @@ To keep Cloudflare IP blocks up-to-date automatically (e.g. weekly), configure a
 
 ---
 
-## 8. Troubleshooting & Error Diagnosis
+---
+
+## 8. Native Coexistence with Fail2ban & Third-Party Daemons (Zero-Touch)
+
+Starting with version 5.3, TuxFrw-NFT employs **surgical table-level isolation** and has permanently abolished the use of global `flush ruleset` across all operational modes.
+
+### How Zero-Touch Coexistence Works
+1. **Complete Preservation of Foreign Tables**:
+   - Daemons such as **Fail2ban** (via `table inet f2b-table` or `table ip filter`) and Docker maintain their own Netfilter namespaces.
+   - TuxFrw-NFT deletes and recreates strictly its own managed tables (`inet filter`, `netdev filter`, `inet mangle`, `ip nat`, `ip6 nat`), ensuring that ban sets and active Fail2ban chains remain **100% untouched** in kernel memory during `tuxfrw-nft restart`, `tuxfrw-nft stop`, or `tuxfrw-nft load INPUT`.
+2. **Hook Priority Chaining in Netfilter**:
+   - Fail2ban configures its chains with priority `-1` (`priority filter - 1`).
+   - TuxFrw-NFT's `INPUT` chain runs with priority `0` (`NF_IP_PRI_FILTER`).
+   - Netfilter evaluates priority `-1` before priority `0`: traffic from banned IPs is rejected or dropped immediately at the edge before consuming any processing cycles in TuxFrw rules.
+3. **Boot Ordering with Systemd**:
+   - The `tuxfrw-nft.service` unit defines `Before=network-pre.target shutdown.target fail2ban.service`, ensuring base network filtering is established before Fail2ban initialises its jails.
+
+---
+
+## 9. Troubleshooting & Error Diagnosis
 
 TuxFrw-NFT compiles batch rules to `/etc/tuxfrw-nft/tuxfrw.nft` and executes them via `nft`. In case of syntax or configuration issues:
 
@@ -284,7 +305,7 @@ TuxFrw-NFT compiles batch rules to `/etc/tuxfrw-nft/tuxfrw.nft` and executes the
 
 ---
 
-## 9. Installation and Systemd Boot Initialization
+## 10. Installation and Systemd Boot Initialization
 
 For a complete installation walkthrough, see [INSTALL.md](../INSTALL.md).
 
@@ -306,7 +327,7 @@ The installer:
 
 ---
 
-## 10. References and Credits
+## 11. References and Credits
 
 - **Author and Maintainer**: Marcelo Gondim <gondim@gmail.com>
 - **Official Repository**: [https://github.com/gondimcodes/tuxfrw-nft](https://github.com/gondimcodes/tuxfrw-nft)

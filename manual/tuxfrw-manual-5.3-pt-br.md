@@ -1,7 +1,7 @@
 # Manual Técnico do TuxFrw-NFT
 
 > **Guia Completo de Arquitetura, Operação, Integração Docker e Diagnóstico**  
-> *Versão 5.2*
+> *Versão 5.3*
 
 ---
 
@@ -16,9 +16,11 @@
   - [O Problema de Segurança Padrão do Docker](#o-problema-de-segurança-padrão-do-docker)
   - [A Solução Arquitetural do TuxFrw-NFT](#a-solução-arquitetural-do-tuxfrw-nft)
   - [Exemplos Práticos de Regras para Contêineres](#exemplos-práticos-de-regras-para-contêineres)
-- [7. Diagnóstico e Tratamento de Falhas](#7-diagnóstico-e-tratamento-de-falhas)
-- [8. Instalação e Inicialização com Systemd](#8-instalação-e-inicialização-com-systemd)
-- [9. Referências e Créditos](#9-referências-e-créditos)
+- [7. Proteção de Servidores Web com Proxies Cloudflare (Anti-Bypass)](#7-proteção-de-servidores-web-com-proxies-cloudflare-anti-bypass)
+- [8. Coexistência Nativa com Fail2ban e Daemons de Terceiros (Zero-Touch)](#8-coexistência-nativa-com-fail2ban-e-daemons-de-terceiros-zero-touch)
+- [9. Diagnóstico e Tratamento de Falhas](#9-diagnóstico-e-tratamento-de-falhas)
+- [10. Instalação e Inicialização com Systemd](#10-instalação-e-inicialização-com-systemd)
+- [11. Referências e Créditos](#11-referências-e-créditos)
 
 ---
 
@@ -257,7 +259,26 @@ Para manter as faixas sempre atualizadas automaticamente (ex: semanalmente), adi
 
 ---
 
-## 8. Diagnóstico e Tratamento de Falhas
+---
+
+## 8. Coexistência Nativa com Fail2ban e Daemons de Terceiros (Zero-Touch)
+
+A partir da versão 5.3, o TuxFrw-NFT opera com **isolamento cirúrgico de tabelas** e aboliu definitivamente o uso de `flush ruleset` global em todos os seus modos operacionais.
+
+### Como Funciona a Coexistência Zero-Touch
+1. **Preservação Total de Tabelas Alheias**:
+   - Daemons como o **Fail2ban** (via `table inet f2b-table` ou `table ip filter`) e Docker criam e mantêm seus próprios namespaces no Netfilter.
+   - O TuxFrw-NFT limpa e recria estritamente suas próprias tabelas (`inet filter`, `netdev filter`, `inet mangle`, `ip nat`, `ip6 nat`), garantindo que sets de IPs banidos e chains do Fail2ban permaneçam **100% intactos** no kernel durante comandos como `tuxfrw-nft restart`, `tuxfrw-nft stop` ou `tuxfrw-nft load INPUT`.
+2. **Encadeamento de Prioridades no Netfilter**:
+   - O Fail2ban configura suas chains com prioridade `-1` (`priority filter - 1`).
+   - A chain `INPUT` do TuxFrw-NFT roda com prioridade `0` (`NF_IP_PRI_FILTER`).
+   - O kernel avalia `-1` antes de `0`: conexões de IPs banidos pelo Fail2ban são rejeitadas ou descartadas imediatamente na borda, antes de consumir processamento das regras do TuxFrw.
+3. **Ordem de Inicialização no Boot**:
+   - A unidade `tuxfrw-nft.service` define `Before=network-pre.target shutdown.target fail2ban.service`, assegurando que o firewall base esteja consolidado antes que o Fail2ban inicialize suas jails.
+
+---
+
+## 9. Diagnóstico e Tratamento de Falhas
 
 O TuxFrw-NFT gera o arquivo batch `/etc/tuxfrw-nft/tuxfrw.nft` e o submete atomicamente ao utilitário `nft`. Se houver algum erro de sintaxe ou inconsistência:
 
@@ -284,7 +305,7 @@ O TuxFrw-NFT gera o arquivo batch `/etc/tuxfrw-nft/tuxfrw.nft` e o submete atomi
 
 ---
 
-## 9. Instalação e Inicialização com Systemd
+## 10. Instalação e Inicialização com Systemd
 
 Para o guia detalhado de instalação, consulte [INSTALL.pt-br.md](../INSTALL.pt-br.md).
 
@@ -306,7 +327,7 @@ O instalador:
 
 ---
 
-## 10. Referências e Créditos
+## 11. Referências e Créditos
 
 - **Autor e Mantenedor**: Marcelo Gondim <gondim@gmail.com>
 - **Repositório Oficial**: [https://github.com/gondimcodes/tuxfrw-nft](https://github.com/gondimcodes/tuxfrw-nft)
