@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -27,11 +27,12 @@
 
 #
 # INPUT chains
-#
-# SYNPROXY protection
-# check mss and wscale with command: tcpdump -pni eth0 -c 1 'tcp[tcpflags] == (tcp-syn|tcp-ack)' and port 443
-$NFT 'add synproxy inet filter https-synproxy mss 1460 wscale 13 timestamp sack-perm'
-$NFT 'add synproxy inet filter https-synprxv6 mss 1360 wscale 13 timestamp sack-perm'
+# SYNPROXY protection (if enabled in tuxfrw.conf)
+# Protects designated public TCP ports against SYN flood attacks using kernel-level SYN cookies.
+if [ "$SYNPROXY" = "1" -a "$SYNPROXY_PORTS" != "" ]; then
+   $NFT 'add synproxy inet filter synproxy-v4 mss 1460 wscale 7 timestamp sack-perm'
+   $NFT 'add synproxy inet filter synproxy-v6 mss 1440 wscale 7 timestamp sack-perm'
+fi
 
 # accept input packets from lo
 $NFT 'add rule inet filter INPUT iifname "lo" counter accept'
@@ -43,8 +44,10 @@ $NFT 'add rule inet filter INPUT ct state related,established counter accept'
 
 $NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type echo-reply counter accept'
 
-$NFT 'add rule inet filter INPUT ct state invalid,untracked synproxy name "https-synproxy" counter'
-$NFT 'add rule inet filter INPUT ct state invalid,untracked synproxy name "https-synprxv6" counter'
+if [ "$SYNPROXY" = "1" -a "$SYNPROXY_PORTS" != "" ]; then
+   $NFT "add rule inet filter INPUT meta nfproto ipv4 tcp dport { $SYNPROXY_PORTS } ct state invalid,untracked synproxy name \"synproxy-v4\" counter"
+   $NFT "add rule inet filter INPUT meta nfproto ipv6 tcp dport { $SYNPROXY_PORTS } ct state invalid,untracked synproxy name \"synproxy-v6\" counter"
+fi
 
 $NFT 'add rule inet filter INPUT ct state invalid counter drop'
 
@@ -82,15 +85,19 @@ $NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp ip6 saddr fe80::/10 icmp
 #$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type 146 counter accept'
 #$NFT 'add rule inet filter INPUT meta l4proto ipv6-icmp icmpv6 type 147 counter accept'
 
+# DHCPv6 (clients and servers)
 $NFT 'add rule inet filter INPUT ip6 saddr fe80::/10 udp sport { 546, 547 } udp dport { 546, 547 } counter accept'
-$NFT 'add rule inet filter INPUT ip6 daddr ff02::fb udp dport 5353 counter accept'
-$NFT 'add rule inet filter INPUT ip6 daddr { ff02::c, ff05::c } udp dport 1900 counter accept'
 
+# DHCPv4 (clients and servers)
 $NFT 'add rule inet filter INPUT udp sport { 67, 68 } udp dport { 67, 68 } counter accept'
 
-$NFT 'add rule inet filter INPUT ip daddr 224.0.0.251 udp dport 5353 counter accept'
-
-$NFT 'add rule inet filter INPUT ip daddr 239.255.255.250 udp dport 1900 counter accept'
+# Local Network Discovery: mDNS (5353) and SSDP (1900) - restricted strictly to internal network
+if [ "$INT_IFACE" != "" ]; then
+   $NFT "add rule inet filter INPUT iifname $INT_IFACE ip6 daddr ff02::fb udp dport 5353 counter accept"
+   $NFT "add rule inet filter INPUT iifname $INT_IFACE ip6 daddr { ff02::c, ff05::c } udp dport 1900 counter accept"
+   $NFT "add rule inet filter INPUT iifname $INT_IFACE ip daddr 224.0.0.251 udp dport 5353 counter accept"
+   $NFT "add rule inet filter INPUT iifname $INT_IFACE ip daddr 239.255.255.250 udp dport 1900 counter accept"
+fi
 
 # accept SSH input from remote administrator IP
 if [ "$RMT_ADMIN_IP" != "" ]; then
@@ -105,30 +112,47 @@ if [ "$PROXY_PORT" != "" -a "$INT_IFACE" != "" ]; then
    $NFT "add rule inet filter INPUT iifname $INT_IFACE tcp dport $PROXY_PORT counter accept"
 fi
 
-# accept OpenVPN between this firewall and another
-if [ "$OpenVPN_IP" != "" -a "$OpenVPN_PORT" != "" ]; then
-   $NFT "add rule inet filter INPUT ip saddr $OpenVPN_IP tcp dport $OpenVPN_PORT counter accept"
-fi
-if [ "$OpenVPN_IP6" != "" -a "$OpenVPN_PORT" != "" ]; then
-   $NFT "add rule inet filter INPUT ip6 saddr $OpenVPN_IP6 tcp dport $OpenVPN_PORT counter accept"
+# accept incoming VPN connections (OpenVPN, WireGuard, L2TP/IPsec)
+if [ "$OpenVPN_PORT" != "" -a "$OpenVPN_IFACE" != "" ]; then
+   local ovpn_proto="${OpenVPN_PROTO:-udp}"
+   if [ "$OpenVPN_PEER_IP" != "" ]; then
+      $NFT "add rule inet filter INPUT ip saddr $OpenVPN_PEER_IP $ovpn_proto dport $OpenVPN_PORT counter accept"
+   else
+      $NFT "add rule inet filter INPUT $ovpn_proto dport $OpenVPN_PORT counter accept"
+   fi
+   if [ "$OpenVPN_PEER_IP6" != "" ]; then
+      $NFT "add rule inet filter INPUT ip6 saddr $OpenVPN_PEER_IP6 $ovpn_proto dport $OpenVPN_PORT counter accept"
+   fi
 fi
 
-# accept VPN between this firewall and another (using PPTP)
-if [ "$PPTP_IP" != "" ]; then
-   $NFT "add rule inet filter INPUT ip protocol gre ip saddr $PPTP_IP counter accept"
-   $NFT "add rule inet filter INPUT ip saddr $PPTP_IP tcp dport 1723 counter accept"
+if [ "$WG_PORT" != "" -a "$WG_IFACE" != "" ]; then
+   if [ "$WG_PEER_IP" != "" ]; then
+      $NFT "add rule inet filter INPUT ip saddr $WG_PEER_IP udp dport $WG_PORT counter accept"
+   else
+      $NFT "add rule inet filter INPUT udp dport $WG_PORT counter accept"
+   fi
+   if [ "$WG_PEER_IP6" != "" ]; then
+      $NFT "add rule inet filter INPUT ip6 saddr $WG_PEER_IP6 udp dport $WG_PORT counter accept"
+   fi
 fi
-if [ "$PPTP_IP6" != "" ]; then
-   $NFT "add rule inet filter INPUT meta l4proto gre ip6 saddr $PPTP_IP6 counter accept"
-   $NFT "add rule inet filter INPUT ip6 saddr $PPTP_IP6 tcp dport 1723 counter accept"
+
+if [ "$L2TP_IFACE" != "" ]; then
+   if [ "$L2TP_PEER_IP" != "" ]; then
+      $NFT "add rule inet filter INPUT ip saddr $L2TP_PEER_IP udp dport { 500, 4500, 1701 } counter accept"
+      $NFT "add rule inet filter INPUT ip saddr $L2TP_PEER_IP ip protocol esp counter accept"
+   else
+      $NFT "add rule inet filter INPUT udp dport { 500, 4500, 1701 } counter accept"
+      $NFT "add rule inet filter INPUT ip protocol esp counter accept"
+      $NFT "add rule inet filter INPUT meta l4proto esp counter accept"
+   fi
+   if [ "$L2TP_PEER_IP6" != "" ]; then
+      $NFT "add rule inet filter INPUT ip6 saddr $L2TP_PEER_IP6 udp dport { 500, 4500, 1701 } counter accept"
+      $NFT "add rule inet filter INPUT ip6 saddr $L2TP_PEER_IP6 meta l4proto esp counter accept"
+   fi
 fi
 #==============================================================================
 # Place your rules below
 #==============================================================================
-
-# SYNPROXY HTTPS protection example:
-#$NFT "add rule inet filter https-synproxy ip saddr 0/0 tcp dport 443 tcp flags syn notrack counter"
-#$NFT "add rule inet filter https-synprxv6 ip6 saddr ::/0 tcp dport 443 tcp flags syn notrack counter"
 
 # Example of custom subnet blocking rules (using RFC 5737 documentation blocks):
 #$NFT "add rule inet filter INPUT ip saddr { 198.51.100.0/24, 203.0.113.0/24 } tcp dport { 587, 465 } counter drop"

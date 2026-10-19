@@ -1,7 +1,7 @@
 # TuxFrw-NFT Technical Manual
 
 > **Comprehensive Guide on Architecture, Operations, Docker Integration, and Diagnostics**  
-> *Version 5.3*
+> *Version 6.0.0*
 
 ---
 
@@ -18,9 +18,11 @@
   - [Practical Container Rule Examples](#practical-container-rule-examples)
 - [7. Protecting Web Servers with Cloudflare Proxies (Anti-Bypass)](#7-protecting-web-servers-with-cloudflare-proxies-anti-bypass)
 - [8. Native Coexistence with Fail2ban & Third-Party Daemons (Zero-Touch)](#8-native-coexistence-with-fail2ban--third-party-daemons-zero-touch)
-- [9. Troubleshooting & Error Diagnosis](#9-troubleshooting--error-diagnosis)
-- [10. Installation and Systemd Boot Initialization](#10-installation-and-systemd-boot-initialization)
-- [11. References and Credits](#11-references-and-credits)
+- [9. SYN Flood Mitigation via TCP SYNPROXY](#9-syn-flood-mitigation-via-tcp-synproxy)
+- [10. Modern VPN Directional Matrix (OpenVPN, WireGuard, L2TP/IPsec)](#10-modern-vpn-directional-matrix-openvpn-wireguard-l2tpipsec)
+- [11. Troubleshooting & Error Diagnosis](#11-troubleshooting--error-diagnosis)
+- [12. Installation and Systemd Boot Initialization](#12-installation-and-systemd-boot-initialization)
+- [13. References and Credits](#13-references-and-credits)
 
 ---
 
@@ -63,6 +65,18 @@ Runs seamlessly on Docker host servers without interfering with Docker's virtual
 - **Strict Dynamic uRPF in PREROUTING**: Reverse path lookup (`fib saddr . iif oif missing drop`) for both IPv4 and IPv6 at the ingress stage, killing packets with forged internal or unroutable addresses before routing evaluation.
 - **Egress Anti-Spoofing (BCP 38 / RFC 2827)**: Directional enforcement in `INT-EXT` and `DMZ-EXT` ensuring internal hosts and DMZ servers strictly emit packets with sources belonging to their assigned subnets.
 - **DDoS Amplification & Reflection Mitigation**: Complete block of unsolicited inbound connections into the LAN (`EXT->INT`), drops on high-risk UDP reflection vectors in the DMZ (Memcached, NTP, SSDP, SNMP, etc.), and rate-limiting for public DNS resolvers.
+
+### 7. Advanced SYN Flood Mitigation via TCP SYNPROXY
+Protects designated public TCP services against volumetric connection exhaustion attacks directly within the Linux kernel via cryptographic SYN cookies (RFC 4987). Operates in `PREROUTING raw` with `notrack`, shielding conntrack until 3-way handshakes complete. Dual-Stack compliant (`synproxy-v4` MSS 1460, `synproxy-v6` MSS 1440), adjusts kernel sysctls automatically (`nf_conntrack_tcp_loose=0`, `tcp_syncookies=1`, `tcp_timestamps=1`), and supports atomic hot-reloading via `tuxfrw-nft load SYNPROXY`.
+
+### 8. Modern VPN Directional Matrix (OpenVPN, WireGuard, L2TP/IPsec)
+Replaces insecure and legacy PPTP protocols with native, modular support for modern VPN standards: OpenVPN, WireGuard, and L2TP/IPsec. Seamlessly routes and isolates traffic across internal, external, and DMZ zones (`INT2VPN`, `VPN2INT`, `EXT2VPN`, `VPN2EXT`, `DMZ2VPN`, `VPN2DMZ`) with conditional kernel module autoloading (`wireguard`, `tun`, `ppp_generic`, `l2tp_core`, `esp4`, `esp6`).
+
+### 9. Dual-Stack ICMPv6 and Path MTU Discovery (RFC 8201)
+Because IPv6 routers do not fragment packets in transit, the `FORWARD` chain explicitly accepts `icmpv6 type packet-too-big`, preventing "IPv6 Black Hole" anomalies where TCP sessions with large payloads hang silently after completing handshakes.
+
+### 10. Security by Default & Local Hardening
+All DMZ service ports and 1:1 NAT mapping rules are commented out by default as clean, documented examples, preventing accidental exposure of arbitrary addresses. Furthermore, local discovery protocols (mDNS 5353 UDP and SSDP 1900 UDP) are strictly bound to `INT_IFACE`, eliminating WAN-facing service enumeration.
 
 ---
 
@@ -147,6 +161,7 @@ Displays compiled rulesets currently active in the nftables subsystem.
 The `load` command atomically recompiles and reapplies only the specified module chain without dropping existing connections across other chains:
 ```bash
 sudo tuxfrw-nft load INPUT     # Reload tf_INPUT.mod (e.g. updated SSH IPs)
+sudo tuxfrw-nft load SYNPROXY  # Reload raw prerouting and SYNPROXY rules
 sudo tuxfrw-nft load DOCKER    # Reload tf_DOCKER.mod (e.g. published container ports)
 sudo tuxfrw-nft load URPF      # Reload PREROUTING chain with uRPF anti-spoofing
 sudo tuxfrw-nft load OUTPUT    # Reload tf_OUTPUT.mod
@@ -278,7 +293,55 @@ Starting with version 5.3, TuxFrw-NFT employs **surgical table-level isolation**
 
 ---
 
-## 9. Troubleshooting & Error Diagnosis
+## 9. SYN Flood Mitigation via TCP SYNPROXY
+
+Starting with version 6.0.0, TuxFrw-NFT implements a modular **TCP SYNPROXY** architecture, enabling highly exposed service ports (e.g., HTTP 80, HTTPS 443) to withstand volumetric denial-of-service (SYN Flood) attacks without exhausting the conntrack state table.
+
+### How It Works
+1. **`notrack` Marking in Raw PREROUTING**:
+   - When `SYNPROXY="1"`, TuxFrw-NFT creates a `synproxy-prerouting` chain with `raw` priority.
+   - Incoming TCP SYN packets destined for ports listed in `SYNPROXY_PORTS` are flagged with `notrack`, preventing conntrack from allocating tentative session tracking objects in memory.
+2. **Kernel-Level Handshake Simulation**:
+   - Upon hitting the `INPUT` chain, dedicated `synproxy-v4` (MSS 1460, WScale 7) and `synproxy-v6` (MSS 1440, WScale 7) objects reply to the client SYN using cryptographic SYN Cookies (RFC 4987).
+   - Only after the client verifies legitimacy by completing the 3-way handshake with a valid ACK, the conntrack session is initialized and dispatched to the local service socket.
+3. **Automatic Kernel Tuning via sysctl**:
+   - The `tf_KERNEL.mod` module automatically configures optimal kernel parameters when `SYNPROXY="1"`:
+     - `net.netfilter.nf_conntrack_tcp_loose=0`: Demands strict 3-way handshake before establishing conntrack sessions;
+     - `net.ipv4.tcp_syncookies=1`: Enables cryptographic SYN cookies;
+     - `net.ipv4.tcp_timestamps=1`: Encodes Window Scale and SACK options inside TCP timestamps.
+
+### Configuration in `tuxfrw.conf`
+```bash
+SYNPROXY="1"
+SYNPROXY_PORTS="80, 443"
+```
+To reload only the SYNPROXY module and chains:
+```bash
+sudo tuxfrw-nft load SYNPROXY
+```
+
+---
+
+## 10. Modern VPN Directional Matrix (OpenVPN, WireGuard, L2TP/IPsec)
+
+TuxFrw-NFT 6.0.0 has permanently deprecated and removed support for the legacy, insecure PPTP protocol (TCP port 1723 / GRE proto 47), introducing full native support for the modern VPN trio:
+
+### 1. Supported Standards & Configuration Variables in `tuxfrw.conf`
+- **OpenVPN**: `OpenVPN_IFACE="tun+"`, `OpenVPN_PORT="1194"`, `OpenVPN_PROTO="udp"`, `OpenVPN_PEER_IP` (optional).
+- **WireGuard**: `WG_IFACE="wg+"`, `WG_PORT="51820"`, `WG_PEER_IP` (optional).
+- **L2TP/IPsec**: `L2TP_IFACE="ppp+"`, `L2TP_PEER_IP` (optional). Automatically accepts UDP 500 (IKE), UDP 4500 (NAT-T), UDP 1701 (L2TP), and IP protocol 50 (ESP Dual-Stack).
+
+### 2. Directional FORWARD Routing Matrix
+When one or more VPN interfaces are configured, TuxFrw-NFT dynamically generates and attaches directional routing chains between VPN interfaces and firewall security zones:
+- **`VPN->*`**: `VPN2INT` (to Internal LAN), `VPN2EXT` (to Internet), `VPN2DMZ` (to DMZ).
+- **`*->VPN`**: `INT2VPN` (from Internal LAN), `EXT2VPN` (from Internet), `DMZ2VPN` (from DMZ).
+
+### 3. Kernel Module Autoloader
+When `KERN_MOD="1"`, TuxFrw-NFT dynamically loads the corresponding kernel drivers based on configured VPNs (`wireguard`, `tun`, `ppp_generic`, `l2tp_core`, `esp4`, `esp6`).
+
+---
+
+## 11. Troubleshooting & Error Diagnosis
 
 TuxFrw-NFT compiles batch rules to `/etc/tuxfrw-nft/tuxfrw.nft` and executes them via `nft`. In case of syntax or configuration issues:
 
@@ -305,7 +368,7 @@ TuxFrw-NFT compiles batch rules to `/etc/tuxfrw-nft/tuxfrw.nft` and executes the
 
 ---
 
-## 10. Installation and Systemd Boot Initialization
+## 12. Installation and Systemd Boot Initialization
 
 For a complete installation walkthrough, see [INSTALL.md](../INSTALL.md).
 
@@ -327,7 +390,7 @@ The installer:
 
 ---
 
-## 11. References and Credits
+## 13. References and Credits
 
 - **Author and Maintainer**: Marcelo Gondim <gondim@gmail.com>
 - **Official Repository**: [https://github.com/gondimcodes/tuxfrw-nft](https://github.com/gondimcodes/tuxfrw-nft)

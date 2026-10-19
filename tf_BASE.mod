@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -129,6 +129,17 @@ setup_urpf()
 }
 
 #
+# Setup TCP SYNPROXY (SYN Flood Mitigation via raw PREROUTING notrack)
+#
+setup_synproxy()
+{
+  if [ "$SYNPROXY" = "1" -a "$SYNPROXY_PORTS" != "" ]; then
+    $NFT 'add chain inet filter synproxy-prerouting { type filter hook prerouting priority raw; policy accept; }' >> $CONF_DIR/tuxfrw.nft
+    $NFT "add rule inet filter synproxy-prerouting tcp dport { $SYNPROXY_PORTS } tcp flags syn notrack counter" >> $CONF_DIR/tuxfrw.nft
+  fi
+}
+
+#
 # Create and load the rules and chains
 #
 create_rules()
@@ -150,6 +161,13 @@ create_rules()
      setup_urpf 2> /tmp/tf_error
      echo -n "Loading uRPF (Anti-Spoofing)"
      evaluate_retval
+
+     # TCP SYNPROXY (if enabled)
+     if [ "$SYNPROXY" = "1" ]; then
+       setup_synproxy 2> /tmp/tf_error
+       echo -n "Loading SYNPROXY"
+       evaluate_retval
+     fi
 
      # Host Protection Chain (INPUT)
      $NFT 'add chain inet filter INPUT { type filter hook input priority 0; policy drop; }' >> $CONF_DIR/tuxfrw.nft
@@ -208,8 +226,14 @@ create_rules()
   setup_urpf 2> /tmp/tf_error
   echo -n "Loading uRPF (Anti-Spoofing)"
   evaluate_retval
-  $NFT 'add chain inet filter https-synproxy { type filter hook prerouting priority raw; policy accept; }' >> $CONF_DIR/tuxfrw.nft
-  $NFT 'add chain inet filter https-synprxv6 { type filter hook prerouting priority raw; policy accept; }' >> $CONF_DIR/tuxfrw.nft
+
+  # TCP SYNPROXY (if enabled)
+  if [ "$SYNPROXY" = "1" ]; then
+    setup_synproxy 2> /tmp/tf_error
+    echo -n "Loading SYNPROXY"
+    evaluate_retval
+  fi
+
   $NFT 'add chain inet filter INPUT { type filter hook input priority 0; policy drop; }' >> $CONF_DIR/tuxfrw.nft
   . $CONF_DIR/rules/tf_INPUT.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
   echo -n "Loading INPUT" 
@@ -257,7 +281,7 @@ create_rules()
 
   # INT<->VPN rules
   if [ "$INT_IFACE" != "" ]; then
-     if [ "$PPTP_IFACE" != "" -o "$OpenVPN_IFACE" != "" ]; then
+     if [ "$OpenVPN_IFACE" != "" -o "$WG_IFACE" != "" -o "$L2TP_IFACE" != "" ]; then
         $NFT 'add chain inet filter INT2VPN' >> $CONF_DIR/tuxfrw.nft
         $NFT 'add chain inet filter VPN2INT' >> $CONF_DIR/tuxfrw.nft
         . $CONF_DIR/rules/tf_INT-VPN.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
@@ -271,7 +295,7 @@ create_rules()
   
   # EXT<->VPN rules
   if [ "$EXT_IFACE" != "" ]; then
-     if [ "$PPTP_IFACE" != "" -o "$OpenVPN_IFACE" != "" ]; then
+     if [ "$OpenVPN_IFACE" != "" -o "$WG_IFACE" != "" -o "$L2TP_IFACE" != "" ]; then
         $NFT 'add chain inet filter EXT2VPN' >> $CONF_DIR/tuxfrw.nft
         $NFT 'add chain inet filter VPN2EXT' >> $CONF_DIR/tuxfrw.nft
         . $CONF_DIR/rules/tf_EXT-VPN.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
@@ -285,7 +309,7 @@ create_rules()
 
   # DMZ<->VPN rules
   if [ "$DMZ_IFACE" != "" ]; then
-     if [ "$PPTP_IFACE" != "" -o "$OpenVPN_IFACE" != "" ]; then
+     if [ "$OpenVPN_IFACE" != "" -o "$WG_IFACE" != "" -o "$L2TP_IFACE" != "" ]; then
         $NFT 'add chain inet filter DMZ2VPN' >> $CONF_DIR/tuxfrw.nft
         $NFT 'add chain inet filter VPN2DMZ' >> $CONF_DIR/tuxfrw.nft
         . $CONF_DIR/rules/tf_DMZ-VPN.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft

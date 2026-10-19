@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -36,16 +36,35 @@ if [ "$DMZ_NET6" != "" ]; then
    $NFT "add rule inet filter DMZ2EXT ip6 saddr != $DMZ_NET6 counter drop"
 fi
 
-$NFT "add rule inet filter DMZ2EXT ip saddr $IP_DNS1 udp dport 53 counter accept" 
-$NFT "add rule inet filter DMZ2EXT ip saddr $IP_DNS1 tcp dport 53 counter accept" 
-$NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_DNS1 udp dport 53 counter accept" 
-$NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_DNS1 tcp dport 53 counter accept" 
-$NFT "add rule inet filter DMZ2EXT ip saddr $IP_DNS2 udp dport 53 counter accept" 
-$NFT "add rule inet filter DMZ2EXT ip saddr $IP_DNS2 tcp dport 53 counter accept" 
-$NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_DNS2 udp dport 53 counter accept" 
-$NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_DNS2 tcp dport 53 counter accept" 
-$NFT "add rule inet filter DMZ2EXT ip saddr $IP_SMTP tcp dport 25 counter accept" 
-$NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_SMTP tcp dport 25 counter accept" 
+#==============================================================================
+# DMZ Outbound Services (Examples)
+# Uncomment and adjust according to the outbound traffic needed by DMZ servers:
+#==============================================================================
+# DNS queries/zone transfers to Internet:
+#if [ "$IP_DNS1" != "" ]; then
+#   $NFT "add rule inet filter DMZ2EXT ip saddr $IP_DNS1 udp dport 53 counter accept" 
+#   $NFT "add rule inet filter DMZ2EXT ip saddr $IP_DNS1 tcp dport 53 counter accept" 
+#fi
+#if [ "$IP6_DNS1" != "" ]; then
+#   $NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_DNS1 udp dport 53 counter accept" 
+#   $NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_DNS1 tcp dport 53 counter accept" 
+#fi
+#if [ "$IP_DNS2" != "" ]; then
+#   $NFT "add rule inet filter DMZ2EXT ip saddr $IP_DNS2 udp dport 53 counter accept" 
+#   $NFT "add rule inet filter DMZ2EXT ip saddr $IP_DNS2 tcp dport 53 counter accept" 
+#fi
+#if [ "$IP6_DNS2" != "" ]; then
+#   $NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_DNS2 udp dport 53 counter accept" 
+#   $NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_DNS2 tcp dport 53 counter accept" 
+#fi
+#
+# Mail server sending outbound emails:
+#if [ "$IP_SMTP" != "" ]; then
+#   $NFT "add rule inet filter DMZ2EXT ip saddr $IP_SMTP tcp dport 25 counter accept" 
+#fi
+#if [ "$IP6_SMTP" != "" ]; then
+#   $NFT "add rule inet filter DMZ2EXT ip6 saddr $IP6_SMTP tcp dport 25 counter accept" 
+#fi
 
 # log and reject all the unmatched packets
 #$NFT 'add rule inet filter DMZ2EXT counter log prefix "tuxfrw: DMZ->EXT! "'

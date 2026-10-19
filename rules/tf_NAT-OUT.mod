@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -29,11 +29,22 @@
 # create NAT_OUT rules
 #
 
-# Makes 1:1 NAT with public and private IP
-$NFT "add rule ip nat POSTROUTING ip saddr $IP_DNS1 counter snat to $IP_DNS1_NAT"
-$NFT "add rule ip nat POSTROUTING ip saddr $IP_DNS2 counter snat to $IP_DNS2_NAT"
-$NFT "add rule ip nat POSTROUTING ip saddr $IP_WWW1 counter snat to $IP_WWW1_NAT"
-$NFT "add rule ip nat POSTROUTING ip saddr $IP_SMTP counter snat to $IP_SMTP_NAT"
+#==============================================================================
+# 1:1 NAT Examples (SNAT - Outbound)
+# Uncomment and configure if you have public IP aliases dedicated to DMZ servers:
+#==============================================================================
+#if [ "$IP_DNS1" != "" -a "$IP_DNS1_NAT" != "" ]; then
+#   $NFT "add rule ip nat POSTROUTING ip saddr $IP_DNS1 counter snat to $IP_DNS1_NAT"
+#fi
+#if [ "$IP_DNS2" != "" -a "$IP_DNS2_NAT" != "" ]; then
+#   $NFT "add rule ip nat POSTROUTING ip saddr $IP_DNS2 counter snat to $IP_DNS2_NAT"
+#fi
+#if [ "$IP_WWW1" != "" -a "$IP_WWW1_NAT" != "" ]; then
+#   $NFT "add rule ip nat POSTROUTING ip saddr $IP_WWW1 counter snat to $IP_WWW1_NAT"
+#fi
+#if [ "$IP_SMTP" != "" -a "$IP_SMTP_NAT" != "" ]; then
+#   $NFT "add rule ip nat POSTROUTING ip saddr $IP_SMTP counter snat to $IP_SMTP_NAT"
+#fi
 
 if [ "$DMZ_IFACE" != "" -a "$DMZ_NET" != "" -a "$DMZ_IP" != "" ]; then
   $NFT "add rule ip nat POSTROUTING oifname $DMZ_IFACE ip saddr $DMZ_NET ip daddr $DMZ_NET counter snat to $DMZ_IP"

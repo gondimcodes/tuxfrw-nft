@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -25,20 +25,25 @@
 #
 # ----------------------------------------------------------------------------
 
-#
-# create NAT_IN rules
-#
-
-# Makes 1:1 NAT with public and private IP
-# Don't forget to create eth0 aliases for the public IPs
-
 # Rule for Transparent Proxy
-if [ "$PROXY_PORT" != "" -a "$INT_IFACE" != "" -a "$PROXY_T" -eq 1 ]; then
+if [ "$PROXY_PORT" != "" -a "$INT_IFACE" != "" -a "$PROXY_T" = "1" ]; then
    $NFT "add rule ip nat PREROUTING iifname $INT_IFACE tcp dport 80 counter redirect to :$PROXY_PORT"
    $NFT "add rule ip6 nat PREROUTING iifname $INT_IFACE tcp dport 80 counter redirect to :$PROXY_PORT"
 fi
 
-$NFT "add rule ip nat PREROUTING ip daddr $IP_DNS1_NAT counter dnat to $IP_DNS1"
-$NFT "add rule ip nat PREROUTING ip daddr $IP_DNS2_NAT counter dnat to $IP_DNS2"
-$NFT "add rule ip nat PREROUTING ip daddr $IP_WWW1_NAT counter dnat to $IP_WWW1"
-$NFT "add rule ip nat PREROUTING ip daddr $IP_SMTP_NAT counter dnat to $IP_SMTP"
+#==============================================================================
+# 1:1 NAT Examples (DNAT - Inbound)
+# Uncomment and configure if you have public IP aliases dedicated to DMZ servers:
+#==============================================================================
+#if [ "$IP_DNS1_NAT" != "" -a "$IP_DNS1" != "" ]; then
+#   $NFT "add rule ip nat PREROUTING ip daddr $IP_DNS1_NAT counter dnat to $IP_DNS1"
+#fi
+#if [ "$IP_DNS2_NAT" != "" -a "$IP_DNS2" != "" ]; then
+#   $NFT "add rule ip nat PREROUTING ip daddr $IP_DNS2_NAT counter dnat to $IP_DNS2"
+#fi
+#if [ "$IP_WWW1_NAT" != "" -a "$IP_WWW1" != "" ]; then
+#   $NFT "add rule ip nat PREROUTING ip daddr $IP_WWW1_NAT counter dnat to $IP_WWW1"
+#fi
+#if [ "$IP_SMTP_NAT" != "" -a "$IP_SMTP" != "" ]; then
+#   $NFT "add rule ip nat PREROUTING ip daddr $IP_SMTP_NAT counter dnat to $IP_SMTP"
+#fi

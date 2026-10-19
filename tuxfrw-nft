@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -120,6 +120,11 @@ load_chain() {
         exit
      fi
      if [ "$1" == "INPUT" -o "$1" == "OUTPUT" ]; then
+        if [ "$1" == "INPUT" -a "$SYNPROXY" = "1" ]; then
+           $NFT "add chain inet filter synproxy-prerouting { type filter hook prerouting priority raw; policy accept; }" >> $CONF_DIR/tuxfrw.nft
+           $NFT "flush chain inet filter synproxy-prerouting" >> $CONF_DIR/tuxfrw.nft
+           setup_synproxy 2> /tmp/tf_error
+        fi
         $NFT "flush chain inet filter $1" >> $CONF_DIR/tuxfrw.nft
         . $CONF_DIR/rules/tf_$1.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
         echo -n "Loading $1 ..." 
@@ -141,6 +146,19 @@ load_chain() {
         echo -n "Loading URPF ..." 
 	evaluate_retval
         run_nft
+        exit
+     fi
+     if [ "$1" == "SYNPROXY" ]; then
+        if [ "$SYNPROXY" = "1" ]; then
+           $NFT "add chain inet filter synproxy-prerouting { type filter hook prerouting priority raw; policy accept; }" >> $CONF_DIR/tuxfrw.nft
+           $NFT "flush chain inet filter synproxy-prerouting" >> $CONF_DIR/tuxfrw.nft
+           setup_synproxy 2> /tmp/tf_error
+           echo -n "Loading SYNPROXY ..." 
+           evaluate_retval
+           run_nft
+        else
+           echo "SYNPROXY is disabled in tuxfrw.conf (SYNPROXY=\"0\")"
+        fi
         exit
      fi
      if [ "$1" == "NETDEV" ]; then
@@ -339,7 +357,7 @@ EOF
 
 header() {
   echo "========================================================================="
-  echo "=== TuxFrw-NFT 5.3                                                    ==="
+  echo "=== TuxFrw-NFT 6.0.0                                                  ==="
   echo "=== Copyright (C) 2001-2026                                           ===" 
   echo "=== Marcelo Gondim <gondim@gmail.com>                                 ===" 
   echo "+-----------------------------------------------------------------------+"

@@ -1,7 +1,7 @@
 # TuxFrw-NFT
 
 > **The ultimate Linux firewall automation and management tool using Netfilter/nftables.**  
-> *Version 5.3*
+> *Version 6.0.0*
 
 [![License: GPLv2](https://img.shields.io/badge/License-GPLv2-blue.svg)](LICENSE)
 [![Netfilter](https://img.shields.io/badge/Netfilter-nftables-orange.svg)](https://wiki.nftables.org/)
@@ -44,6 +44,16 @@ The tool compiles rule definitions into an atomic ruleset batch file (`/etc/tuxf
 
 - **Atomic Compilation**: Rules are compiled in batch and committed to the kernel in a single atomic transaction, preventing intermediate states or packet loss during updates.
 - **Native Dual-Stack**: Unified handling of IPv4 and IPv6 traffic via the `inet` family, eliminating the historical split between `iptables` and `ip6tables`.
+- **Modular TCP SYNPROXY (Anti-SYN Flood DDoS)**:
+  - High-performance kernel SYNPROXY defense for public services (HTTP/HTTPS) using cryptographic SYN cookies (RFC 4987);
+  - Bypasses conntrack allocation during initial handshakes via `notrack` in raw `PREROUTING`;
+  - Automatic kernel sysctl tuning (`tcp_loose=0`, `tcp_syncookies=1`, `tcp_timestamps=1`).
+- **Modern Directional VPN Matrix (OpenVPN, WireGuard, L2TP/IPsec)**:
+  - Native multi-tunnel routing between VPNs and `INT`, `EXT`, `DMZ` zones;
+  - Legacy and insecure PPTP permanently removed;
+  - Automatic on-demand kernel module loading for active VPN protocols.
+- **RFC 8201 ICMPv6 PMTUD & IPv6 Black Hole Prevention**:
+  - Full forwarding transit for essential ICMPv6 error messages (`packet-too-big`, `destination-unreachable`, `time-exceeded`, `parameter-problem`), preventing Path MTU broken sessions.
 - **Native Docker Compatibility (`DOCKER_SUPPORT="1"`)**:
   - Full host hardening in the `INPUT` hook;
   - Granular container access control on the `FORWARD` hook using `rules/tf_DOCKER.mod` running at higher priority (`priority -5`);
@@ -58,7 +68,7 @@ The tool compiles rule definitions into an atomic ruleset batch file (`/etc/tuxf
   - Anti-spoofing and optional Bogon filtering decoupled from private RFC 1918 subnets.
 - **Stateful Packet Inspection**: Rigorous connection tracking (`ct state established, related`) with explicit dropping of invalid states.
 - **Classic Gateway / Router Mode (`DOCKER_SUPPORT="0"`)**:
-  - Full directional matrix: `EXT`, `INT`, `DMZ`, and VPN tunnels (`OpenVPN`, `PPTP`);
+  - Full directional matrix: `EXT`, `INT`, `DMZ`, and VPN tunnels (`OpenVPN`, `WireGuard`, `L2TP/IPsec`);
   - Native nftables NAT: DNAT/Port Forwarding (`tf_NAT-IN.mod`) and SNAT/Masquerade (`tf_NAT-OUT.mod`).
 - **Cloudflare Anti-Bypass Shielding**:
   - Query and update official Cloudflare proxy IP ranges on demand via `tuxfrw-nft cf-update`;
@@ -66,7 +76,7 @@ The tool compiles rule definitions into an atomic ruleset batch file (`/etc/tuxf
 - **Fail2ban & Third-Party Daemon Coexistence (Zero-Touch)**:
   - Surgical table-level isolation permanently abolishes global `flush ruleset`, keeping external namespaces like Fail2ban (`table inet f2b-table` / `table ip filter`) completely intact across reloads;
   - Optimal hook priority chaining: Fail2ban blocks at `priority -1` on the outer edge before TuxFrw rules execute at `priority 0`.
-- **Dynamic Atomic Reloading**: Reload individual modules on the fly without bouncing the entire firewall (e.g., `tuxfrw-nft load DOCKER`, `tuxfrw-nft load URPF`).
+- **Dynamic Atomic Reloading**: Reload individual modules on the fly without bouncing the entire firewall (e.g., `tuxfrw-nft load SYNPROXY`, `tuxfrw-nft load DOCKER`, `tuxfrw-nft load URPF`).
 - **Native Systemd Integration**: Dedicated `tuxfrw-nft.service` unit configured to run before network initialization targets.
 
 ---
@@ -105,15 +115,15 @@ tuxfrw-nft/
 │   ├── tf_DMZ-VPN.mod            # DMZ to VPN tunnels traffic
 │   └── tf_VPN-DMZ.mod            # VPN tunnels to DMZ traffic
 ├── manual/                       # In-depth technical documentation manuals
-│   ├── tuxfrw-manual-5.3-pt-br.md  # Complete technical manual in Brazilian Portuguese
-│   └── tuxfrw-manual-5.3-en.md     # Complete technical manual in English
+│   ├── tuxfrw-manual-6.0.0-pt-br.md # Complete technical manual in Brazilian Portuguese
+│   └── tuxfrw-manual-6.0.0-en.md    # Complete technical manual in English
 ├── README.md & README.pt-br.md   # Project overview and main documentation (EN / PT-BR)
 ├── INSTALL.md & INSTALL.pt-br.md # Installation and validation guides (EN / PT-BR)
 ├── CHANGELOG.md                  # Release notes and change history (Keep a Changelog)
 ├── CREDITS.md                    # Historical credits from legacy versions (IPTables/CFTK)
 ├── AUTHORS                       # Project author and maintainer
 ├── LICENSE                       # GNU General Public License v2 (GPLv2)
-└── VERSION                       # Current release version string (5.3)
+└── VERSION                       # Current release version string (6.0.0)
 ```
 
 ### OS Deployment Layout
@@ -192,6 +202,9 @@ tuxfrw-nft load URPF
 # Refresh host protections after updating rules/tf_INPUT.mod
 tuxfrw-nft load INPUT
 
+# Reload raw prerouting and TCP SYNPROXY rules
+tuxfrw-nft load SYNPROXY
+
 # Update internal routing rules after editing rules/tf_INT-EXT.mod
 tuxfrw-nft load INT-EXT
 ```
@@ -218,8 +231,8 @@ Recommended for perimeter routers and corporate firewalls.
 ## Technical Documentation
 
 In-depth technical manuals and architecture guides:
-- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-5.3-en.md)
-- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-5.3-pt-br.md)
+- [Complete TuxFrw-NFT Technical Manual (English)](manual/tuxfrw-manual-6.0.0-en.md)
+- [Manual Completo do TuxFrw-NFT (Português)](manual/tuxfrw-manual-6.0.0-pt-br.md)
 - [Installation Guide (English)](INSTALL.md)
 - [Guia de Instalação (Português)](INSTALL.pt-br.md)
 - [Release Notes & Changelog](CHANGELOG.md)
@@ -229,7 +242,7 @@ In-depth technical manuals and architecture guides:
 ## Authorship & Historical Credits
 
 **The TuxFrw Team**
-- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 5.3)
+- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 6.0.0)
 
 Acknowledgments and contributions to legacy project versions (Netfilter/IPTables and Conectiva CFTK) are documented in [CREDITS.md](CREDITS.md).
 

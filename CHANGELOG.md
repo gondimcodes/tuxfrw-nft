@@ -5,6 +5,41 @@ All notable changes to the **TuxFrw-NFT** project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to semantic release versioning.
 
+## [6.0.0] - 2026-10-19
+
+### Added
+- **Modular TCP SYNPROXY (Anti-SYN Flood DDoS Mitigation)**:
+  - Implemented modular TCP SYNPROXY architecture controlled via `SYNPROXY` and `SYNPROXY_PORTS` in `tuxfrw.conf`.
+  - Added `synproxy-prerouting` chain at raw priority in `tf_BASE.mod` marking incoming SYNs on protected ports as `notrack` to bypass premature conntrack session allocation.
+  - Implemented Dual-Stack SYNPROXY objects (`synproxy-v4` MSS 1460, WScale 7; `synproxy-v6` MSS 1440, WScale 7) in `rules/tf_INPUT.mod` with RFC 4987 cryptographic cookie verification.
+  - Automated kernel sysctl parameter tuning in `tf_KERNEL.mod` (`nf_conntrack_tcp_loose=0`, `tcp_syncookies=1`, `tcp_timestamps=1`) upon enabling SYNPROXY.
+  - Added atomic CLI reloading command: `tuxfrw-nft load SYNPROXY`.
+- **Modern Directional VPN Matrix (OpenVPN, WireGuard, L2TP/IPsec)**:
+  - Added full native support in `tuxfrw.conf` for OpenVPN (`OpenVPN_IFACE`, `OpenVPN_PORT`, `OpenVPN_PROTO`, `OpenVPN_PEER_IP/6`), WireGuard (`WG_IFACE`, `WG_PORT`, `WG_PEER_IP/6`), and L2TP/IPsec (`L2TP_IFACE`, `L2TP_PEER_IP/6`, UDP 500, 4500, 1701 and ESP protocol 50 Dual-Stack).
+  - Dynamic DRY forwarding attachment loop in `rules/tf_FORWARD.mod` interconnecting active VPN interfaces with `INT`, `EXT`, and `DMZ` directional chains (`VPN2INT`, `VPN2EXT`, `VPN2DMZ`, `INT2VPN`, `EXT2VPN`, `DMZ2VPN`).
+  - Added dynamic kernel module autoloader in `tf_KERNEL.mod` loading necessary drivers on demand (`wireguard`, `tun`, `ppp_generic`, `l2tp_core`, `esp4`, `esp6`).
+- **RFC 8201 ICMPv6 PMTUD in Forwarding Path**:
+  - Added full transit forwarding for essential ICMPv6 types in `rules/tf_FORWARD.mod` (`packet-too-big`, `destination-unreachable`, `time-exceeded`, `parameter-problem`, `echo-request`), preventing IPv6 Black Hole MTU negotiation failures.
+
+### Changed
+- **Semantic Versioning Transition**:
+  - Migrated project versioning scheme to 3-digit Semantic Versioning (`MAJOR.MINOR.PATCH`).
+- **Security by Default in DMZ and NAT**:
+  - Converted placeholder server IP variables (`IP_DNS*`, `IP_WWW*`, `IP_SMTP*`, `IP6_*`) and 1:1 NAT mapping rules in `tuxfrw.conf` and `rules/tf_*.mod` to commented documentation examples with `if [ "$VAR" != "" ]` guards, preventing accidental exposure of ports to unconfigured IPs on clean setups.
+- **LAN Discovery Protocol Hardening**:
+  - Restricted mDNS (UDP 5353) and SSDP (UDP 1900) services in `rules/tf_INPUT.mod` strictly to the internal LAN interface (`iifname $INT_IFACE`).
+
+### Removed
+- **Abolished PPTP Protocol**:
+  - Permanently removed support for legacy and vulnerable PPTP VPN (TCP port 1723 / GRE protocol 47) from `tuxfrw.conf`, `tf_KERNEL.mod`, `tf_BASE.mod`, `rules/tf_INPUT.mod`, and `rules/tf_FORWARD.mod`.
+
+### Fixed
+- Fixed chain name typo in `rules/tf_DMZ-VPN.mod` (corrected from non-existent `DMZ-VPN` to `DMZ2VPN`).
+- Fixed table family declarations in `rules/tf_VPN-INT.mod`, `rules/tf_VPN-EXT.mod`, and `rules/tf_VPN-DMZ.mod` (corrected from `ip filter` to `inet filter`).
+- Removed duplicate rules for NULL scan and FIN-without-ACK in `rules/tf_NETDEV.mod`.
+
+---
+
 ## [5.3] - 2026-10-12
 
 ### Added

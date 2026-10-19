@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -29,4 +29,4 @@
 #
 
 # log and reject all the unmatched packets
-#$NFT 'add rule ip filter VPN2DMZ counter log prefix "tuxfrw: VPN->DMZ! "'
+#$NFT 'add rule inet filter VPN2DMZ counter log prefix "tuxfrw: VPN->DMZ! "'

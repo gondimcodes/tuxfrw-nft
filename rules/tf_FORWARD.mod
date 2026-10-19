@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -38,6 +38,13 @@ $NFT 'add rule inet filter FORWARD icmp type time-exceeded counter accept'
 $NFT 'add rule inet filter FORWARD icmp type parameter-problem counter accept'
 $NFT 'add rule inet filter FORWARD icmp type echo-request counter accept'
 
+# icmpv6 allow (including packet-too-big for IPv6 Path MTU Discovery - RFC 8201)
+$NFT 'add rule inet filter FORWARD meta l4proto ipv6-icmp icmpv6 type destination-unreachable counter accept'
+$NFT 'add rule inet filter FORWARD meta l4proto ipv6-icmp icmpv6 type packet-too-big counter accept'
+$NFT 'add rule inet filter FORWARD meta l4proto ipv6-icmp icmpv6 type time-exceeded counter accept'
+$NFT 'add rule inet filter FORWARD meta l4proto ipv6-icmp icmpv6 type parameter-problem counter accept'
+$NFT 'add rule inet filter FORWARD meta l4proto ipv6-icmp icmpv6 type echo-request counter accept'
+
 # accept the forwardings of the nets
 if [ "$DMZ_IFACE" != "" ]; then $NFT "add rule inet filter FORWARD iifname $DMZ_IFACE oifname $DMZ_IFACE counter accept"; fi
 if [ "$INT_IFACE" != "" ]; then $NFT "add rule inet filter FORWARD iifname $INT_IFACE oifname $INT_IFACE counter accept"; fi
@@ -56,28 +63,21 @@ if [ "$DMZ_IFACE" != "" -a "$EXT_IFACE" != "" ]; then
   $NFT "add rule inet filter FORWARD iifname $DMZ_IFACE oifname $EXT_IFACE counter jump DMZ2EXT" 
   $NFT "add rule inet filter FORWARD iifname $EXT_IFACE oifname $DMZ_IFACE counter jump EXT2DMZ" 
 fi
-if [ "$INT_IFACE" != "" -a "$PPTP_IFACE" != "" ]; then
-  $NFT "add rule inet filter FORWARD iifname $INT_IFACE oifname $PPTP_IFACE counter jump INT2VPN" 
-  $NFT "add rule inet filter FORWARD iifname $PPTP_IFACE oifname $INT_IFACE counter jump VPN2INT" 
-fi
-if [ "$EXT_IFACE" != "" -a "$PPTP_IFACE" != "" ]; then
-  $NFT "add rule inet filter FORWARD iifname $EXT_IFACE oifname $PPTP_IFACE counter jump EXT2VPN" 
-  $NFT "add rule inet filter FORWARD iifname $PPTP_IFACE oifname $EXT_IFACE counter jump VPN2EXT" 
-fi
-if [ "$DMZ_IFACE" != "" -a "$PPTP_IFACE" != "" ]; then
-  $NFT "add rule inet filter FORWARD iifname $DMZ_IFACE oifname $PPTP_IFACE counter jump DMZ2VPN" 
-  $NFT "add rule inet filter FORWARD iifname $PPTP_IFACE oifname $DMZ_IFACE counter jump VPN2DMZ" 
-fi
-if [ "$INT_IFACE" != "" -a "$OpenVPN_IFACE" != "" ]; then
-  $NFT "add rule inet filter FORWARD iifname $INT_IFACE oifname $OpenVPN_IFACE counter jump INT2VPN" 
-  $NFT "add rule inet filter FORWARD iifname $OpenVPN_IFACE oifname $INT_IFACE counter jump VPN2INT" 
-fi
-if [ "$EXT_IFACE" != "" -a "$OpenVPN_IFACE" != "" ]; then
-  $NFT "add rule inet filter FORWARD iifname $EXT_IFACE oifname $OpenVPN_IFACE counter jump EXT2VPN" 
-  $NFT "add rule inet filter FORWARD iifname $OpenVPN_IFACE oifname $EXT_IFACE counter jump VPN2EXT" 
-fi
-if [ "$DMZ_IFACE" != "" -a "$OpenVPN_IFACE" != "" ]; then
-  $NFT "add rule inet filter FORWARD iifname $DMZ_IFACE oifname $OpenVPN_IFACE counter jump DMZ2VPN" 
-  $NFT "add rule inet filter FORWARD iifname $OpenVPN_IFACE oifname $DMZ_IFACE counter jump VPN2DMZ" 
-fi
+# "link" active VPN interfaces (OpenVPN, WireGuard, L2TP/IPsec)
+for vpn_dev in "$OpenVPN_IFACE" "$WG_IFACE" "$L2TP_IFACE"; do
+  if [ "$vpn_dev" != "" ]; then
+    if [ "$INT_IFACE" != "" ]; then
+      $NFT "add rule inet filter FORWARD iifname $INT_IFACE oifname $vpn_dev counter jump INT2VPN" 
+      $NFT "add rule inet filter FORWARD iifname $vpn_dev oifname $INT_IFACE counter jump VPN2INT" 
+    fi
+    if [ "$EXT_IFACE" != "" ]; then
+      $NFT "add rule inet filter FORWARD iifname $EXT_IFACE oifname $vpn_dev counter jump EXT2VPN" 
+      $NFT "add rule inet filter FORWARD iifname $vpn_dev oifname $EXT_IFACE counter jump VPN2EXT" 
+    fi
+    if [ "$DMZ_IFACE" != "" ]; then
+      $NFT "add rule inet filter FORWARD iifname $DMZ_IFACE oifname $vpn_dev counter jump DMZ2VPN" 
+      $NFT "add rule inet filter FORWARD iifname $vpn_dev oifname $DMZ_IFACE counter jump VPN2DMZ" 
+    fi
+  fi
+done
 

@@ -3,14 +3,14 @@
 > **Registro histórico de colaboradores e raízes do projeto TuxFrw.**
 
 [![Status: Legacy Credits](https://img.shields.io/badge/History-CFTK%20%2F%20IPTables-lightgrey.svg)](#)
-[![Modern: TuxFrw-NFT 5.3](https://img.shields.io/badge/TuxFrw--NFT-5.3%20(nftables)-blue.svg)](README.md)
+[![Modern: TuxFrw-NFT 6.0.0](https://img.shields.io/badge/TuxFrw--NFT-6.0.0%20(nftables)-blue.svg)](README.md)
 
 ---
 
 > [!NOTE]
 > **Nota de Contexto Histórico / Historical Context Note**:  
 > Os reconhecimentos e contribuições listados neste documento referem-se exclusivamente às **versões legadas** do projeto TuxFrw e suas raízes históricas no ecossistema GNU/Linux — abrangendo o projeto pioneiro **CFTK da Conectiva Linux** (Linux 2.2 com `ipchains`), as primeiras versões para Linux 2.4 com **IPTables**, e as ramificações legadas **TuxFrw 2.x e 3.x**.  
-> A versão atual, **TuxFrw-NFT 5.3**, representa uma reengenharia completa e independente projetada exclusivamente para compilação atômica no subsistema **Netfilter/nftables**.
+> A versão atual, **TuxFrw-NFT 6.0.0**, representa uma reengenharia completa e independente projetada exclusivamente para compilação atômica no subsistema **Netfilter/nftables**.
 
 ---
 
@@ -68,7 +68,7 @@ Colaboradores que enviaram regras, correções e sugestões durante a série 2.x
 
 ---
 
-## Autoria e Manutenção da Versão 5.0+ (TuxFrw-NFT)
+## Autoria e Manutenção da Versão 6.0.0 (TuxFrw-NFT)
 
 - **Marcelo Gondim** <gondim@gmail.com>  
   *Autor, mantenedor principal e arquiteto da migração completa para Netfilter/nftables.*

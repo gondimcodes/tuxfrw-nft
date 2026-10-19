@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -28,18 +28,43 @@
 # INT->DMZ directional chain
 #
 
-$NFT "add rule inet filter INT2DMZ ip daddr $IP_DNS1 udp dport 53 counter accept"
-$NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_DNS1 udp dport 53 counter accept"
-$NFT "add rule inet filter INT2DMZ ip daddr $IP_DNS1 tcp dport 53 counter accept"
-$NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_DNS1 tcp dport 53 counter accept"
-$NFT "add rule inet filter INT2DMZ ip daddr $IP_DNS2 udp dport 53 counter accept"
-$NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_DNS2 udp dport 53 counter accept"
-$NFT "add rule inet filter INT2DMZ ip daddr $IP_DNS2 tcp dport 53 counter accept"
-$NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_DNS2 tcp dport 53 counter accept"
-$NFT "add rule inet filter INT2DMZ ip protocol tcp ip daddr $IP_SMTP tcp dport { 25,110 } counter accept" 
-$NFT "add rule inet filter INT2DMZ meta l4proto tcp ip6 daddr $IP6_SMTP tcp dport { 25,110 } counter accept"
-$NFT "add rule inet filter INT2DMZ ip protocol tcp ip daddr $IP_WWW1 tcp dport { 80,443 } counter accept" 
-$NFT "add rule inet filter INT2DMZ meta l4proto tcp ip6 daddr $IP6_WWW1 tcp dport { 80,443 } counter accept"
+#==============================================================================
+# INT->DMZ Services (Examples)
+# Uncomment and adjust according to the services you want internal hosts to reach:
+#==============================================================================
+# DNS servers in DMZ:
+#if [ "$IP_DNS1" != "" ]; then
+#   $NFT "add rule inet filter INT2DMZ ip daddr $IP_DNS1 udp dport 53 counter accept"
+#   $NFT "add rule inet filter INT2DMZ ip daddr $IP_DNS1 tcp dport 53 counter accept"
+#fi
+#if [ "$IP6_DNS1" != "" ]; then
+#   $NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_DNS1 udp dport 53 counter accept"
+#   $NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_DNS1 tcp dport 53 counter accept"
+#fi
+#if [ "$IP_DNS2" != "" ]; then
+#   $NFT "add rule inet filter INT2DMZ ip daddr $IP_DNS2 udp dport 53 counter accept"
+#   $NFT "add rule inet filter INT2DMZ ip daddr $IP_DNS2 tcp dport 53 counter accept"
+#fi
+#if [ "$IP6_DNS2" != "" ]; then
+#   $NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_DNS2 udp dport 53 counter accept"
+#   $NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_DNS2 tcp dport 53 counter accept"
+#fi
+#
+# Mail server in DMZ:
+#if [ "$IP_SMTP" != "" ]; then
+#   $NFT "add rule inet filter INT2DMZ ip daddr $IP_SMTP tcp dport { 25, 110 } counter accept"
+#fi
+#if [ "$IP6_SMTP" != "" ]; then
+#   $NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_SMTP tcp dport { 25, 110 } counter accept"
+#fi
+#
+# Web server in DMZ:
+#if [ "$IP_WWW1" != "" ]; then
+#   $NFT "add rule inet filter INT2DMZ ip daddr $IP_WWW1 tcp dport { 80, 443 } counter accept"
+#fi
+#if [ "$IP6_WWW1" != "" ]; then
+#   $NFT "add rule inet filter INT2DMZ ip6 daddr $IP6_WWW1 tcp dport { 80, 443 } counter accept"
+#fi
 
 # log and reject all the unmatched packets
-#$NFT 'add rule inet filter INT2DMZ counter log prefix \"tuxfrw: INT->DMZ! \"'
+#$NFT 'add rule inet filter INT2DMZ counter log prefix "tuxfrw: INT->DMZ! "'

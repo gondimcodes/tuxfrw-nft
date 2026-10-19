@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -26,16 +26,15 @@
 # ----------------------------------------------------------------------------
 
 if [ "$EXT_IFACE" != "" ]; then
+   # Drop TCP flag anomalies (Port Scans / Invalid combinations)
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn|rst|psh|ack|urg) == 0x0 counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn) == fin|syn counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (syn|rst) == syn|rst counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|rst) == fin|rst counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|ack) == fin counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (ack|urg) == urg counter drop"
-   $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|ack) == fin counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (psh|ack) == psh counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn|rst|psh|ack|urg) == fin|syn|rst|psh|ack|urg counter drop"
-   $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn|rst|psh|ack|urg) == 0x0 counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn|rst|psh|ack|urg) == fin|psh|urg counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn|rst|psh|ack|urg) == fin|syn|psh|urg counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn|rst|psh|ack|urg) == fin|syn|rst|ack|urg counter drop"

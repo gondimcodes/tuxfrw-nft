@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 5.3
+# TuxFrw-NFT 6.0.0
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -35,11 +35,21 @@ load_kernel_modules()
   $MODPROBE nf_conntrack_ftp
   $MODPROBE nf_nat_ftp
 
-  if [ "$PPTP_IFACE" != "" ]; then
-    $MODPROBE nf_conntrack_pptp
-    $MODPROBE nf_nat_pptp
-    $MODPROBE ip_gre
-    $MODPROBE ip6_gre
+  if [ "$OpenVPN_IFACE" != "" ]; then
+    $MODPROBE tun > /dev/null 2>&1 || true
+  fi
+
+  if [ "$WG_IFACE" != "" ]; then
+    $MODPROBE wireguard > /dev/null 2>&1 || true
+  fi
+
+  if [ "$L2TP_IFACE" != "" ]; then
+    $MODPROBE ppp_generic > /dev/null 2>&1 || true
+    $MODPROBE l2tp_core > /dev/null 2>&1 || true
+    $MODPROBE l2tp_netlink > /dev/null 2>&1 || true
+    $MODPROBE l2tp_ppp > /dev/null 2>&1 || true
+    $MODPROBE esp4 > /dev/null 2>&1 || true
+    $MODPROBE esp6 > /dev/null 2>&1 || true
   fi
 }
 
@@ -57,5 +67,12 @@ set_sysctl()
   else
     $SYSCTL -w net.ipv4.conf.all.forwarding=0 > /dev/null 2>&1 || true
     $SYSCTL -w net.ipv6.conf.all.forwarding=0 > /dev/null 2>&1 || true
+  fi
+
+  # Configure TCP SYNPROXY kernel options if enabled
+  if [ "$SYNPROXY" = "1" ]; then
+    $SYSCTL -w net.netfilter.nf_conntrack_tcp_loose=0 > /dev/null 2>&1 || true
+    $SYSCTL -w net.ipv4.tcp_syncookies=1 > /dev/null 2>&1 || true
+    $SYSCTL -w net.ipv4.tcp_timestamps=1 > /dev/null 2>&1 || true
   fi
 }
