@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - TuxFrw-NFT Web{% endblock %}
+{% block nav_dashboard %}class="active"{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title" data-i18n="quick_actions">Ações Rápidas de Operação</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;" data-i18n="quick_actions_sub">
+                Dispare comandos administrativos do firewall em tempo de execução
+            </p>
+        </div>
+        <span class="badge badge-success" data-i18n="service_ready">Serviço Pronto</span>
+    </div>
+
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+        <div class="btn-group">
+            <button class="btn btn-success" onclick="runAction('start')" data-i18n="btn_start">▶ Iniciar (Start)</button>
+            <button class="btn btn-secondary" onclick="runAction('restart')" data-i18n="btn_restart">🔄 Reiniciar (Restart)</button>
+            <button class="btn btn-secondary" onclick="runAction('stop')" data-i18n="btn_stop">⏹ Parar (Stop Seguro)</button>
+            <button class="btn btn-secondary" onclick="runAction('cf-update')" data-i18n="btn_cf_update">☁️ Atualizar Cloudflare</button>
+            <button class="btn btn-danger" onclick="confirmPanic()" data-i18n="btn_panic">🚨 MODO PÂNICO (Lockdown)</button>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center;">
+            <label for="module-select" style="font-size: 0.875rem; font-weight: 600; color: var(--text-muted);" data-i18n="lbl_atomic_reload">Recarga Atômica:</label>
+            <select id="module-select" style="padding: 0.5rem; background: #020617; color: #fff; border: 1px solid var(--border); border-radius: var(--radius); font-weight: 600;">
+                {% for m in modules %}
+                <option value="{{ m }}">{{ m }}</option>
+                {% endfor %}
+            </select>
+            <button class="btn btn-primary" onclick="loadSelectedModule()" data-i18n="btn_reload_module">⚡ Recarregar Módulo</button>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title" data-i18n="console_title">Terminal de Execução / Console de Saída</h3>
+        <span id="exec-status" class="badge" data-i18n="waiting_command">Aguardando comando</span>
+    </div>
+    <div id="console-output" class="console" data-i18n="console_initial">Selecione uma ação acima para visualizar a execução ao vivo do tuxfrw-nft...</div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title" data-i18n="nft_state_title">Estado do Netfilter / nftables</h3>
+        <button class="btn btn-secondary" onclick="fetchStatus()" data-i18n="btn_refresh_status">Atualizar Status</button>
+    </div>
+    <div id="status-output" class="console">{{ initial_status }}</div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function runAction(action) {
+        const consoleEl = document.getElementById('console-output');
+        const statusEl = document.getElementById('exec-status');
+        consoleEl.innerText = `${t('executing')} tuxfrw-nft ${action}...`;
+        statusEl.className = 'badge';
+        statusEl.innerText = t('processing');
+
+        try {
+            const resp = await fetch(`/api/action/${action}`, { method: 'POST' });
+            const data = await resp.json();
+            
+            const rawOutput = (data.stdout ? data.stdout : "") + (data.stderr ? "\n[STDERR]:\n" + data.stderr : "");
+            consoleEl.innerHTML = ansiToHtml(rawOutput);
+
+            if (data.success) {
+                statusEl.className = 'badge badge-success';
+                statusEl.innerText = t('success_code', { code: data.exit_code });
+            } else {
+                statusEl.className = 'badge badge-danger';
+                statusEl.innerText = t('failure_code', { code: data.exit_code });
+            }
+            fetchStatus();
+        } catch (e) {
+            consoleEl.innerText = `Erro: ${e}`;
+            statusEl.className = 'badge badge-danger';
+            statusEl.innerText = t('network_error');
+        }
+    }
+
+    async function loadSelectedModule() {
+        const mod = document.getElementById('module-select').value;
+        const consoleEl = document.getElementById('console-output');
+        const statusEl = document.getElementById('exec-status');
+        consoleEl.innerText = `${t('executing')} tuxfrw-nft load ${mod}...`;
+        statusEl.className = 'badge';
+        statusEl.innerText = t('processing');
+
+        try {
+            const resp = await fetch(`/api/load/${mod}`, { method: 'POST' });
+            const data = await resp.json();
+            
+            const rawOutput = (data.stdout ? data.stdout : "") + (data.stderr ? "\n[STDERR]:\n" + data.stderr : "");
+            consoleEl.innerHTML = ansiToHtml(rawOutput);
+
+            if (data.success) {
+                statusEl.className = 'badge badge-success';
+                statusEl.innerText = t('module_reloaded_success', { mod: mod });
+            } else {
+                statusEl.className = 'badge badge-danger';
+                statusEl.innerText = t('module_reload_error', { mod: mod });
+            }
+            fetchStatus();
+        } catch (e) {
+            consoleEl.innerText = `Erro: ${e}`;
+            statusEl.className = 'badge badge-danger';
+            statusEl.innerText = t('network_error');
+        }
+    }
+
+    function confirmPanic() {
+        if (confirm(t('panic_confirm'))) {
+            runAction('panic');
+        }
+    }
+
+    async function fetchStatus() {
+        try {
+            const resp = await fetch('/api/status');
+            const data = await resp.json();
+            document.getElementById('status-output').innerHTML = ansiToHtml(data.output || t('no_rules_or_error'));
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const statusEl = document.getElementById('status-output');
+        if (statusEl && statusEl.innerText) {
+            statusEl.innerHTML = ansiToHtml(statusEl.innerText);
+        }
+    });
+</script>
+{% endblock %}
+

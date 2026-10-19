@@ -7,3 +7,7 @@ tuxfrw.nft
 *.swp
 *.bak
 .DS_Store
+
+# Rust build artifacts
+target/
+**/target/

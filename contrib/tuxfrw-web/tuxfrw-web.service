@@ -1,0 +1,22 @@
+[Unit]
+Description=TuxFrw-NFT Web Management Daemon (HTTPS Dual-Stack)
+Documentation=https://github.com/gondimcodes/tuxfrw-nft
+After=network-online.target tuxfrw-nft.service
+Wants=network-online.target tuxfrw-nft.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/local/bin/tuxfrw-web
+Restart=on-failure
+RestartSec=5s
+
+# Hardening e limites de descritores de arquivo
+LimitNOFILE=65535
+TimeoutStopSec=10s
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+

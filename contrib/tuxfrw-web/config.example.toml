@@ -1,0 +1,52 @@
+# ==============================================================================
+# TuxFrw-Web Configuration
+# Default production path: /etc/tuxfrw-nft/config.toml
+# ==============================================================================
+
+[server]
+# Dual-Stack binding (IPv6 + IPv4 simultaneously):
+# "[::]:8443" binds to all IPv6 and IPv4 interfaces.
+# Use "0.0.0.0:8443" for IPv4-only or "[::1]:8443" for IPv6 localhost only.
+listen = "[::]:8443"
+
+# Base URL prefix if running behind a reverse proxy sub-path (e.g. "/" or "/tuxfrw/")
+base_path = "/"
+
+# HTTPS (TLS) configuration
+tls_enabled = true
+
+# Path to TLS certificates
+cert_path = "/etc/tuxfrw-nft/tls/cert.pem"
+key_path = "/etc/tuxfrw-nft/tls/key.pem"
+
+# If certificates are missing at the paths above, automatically generate a secure
+# self-signed ECDSA certificate on first run so HTTPS is immediately functional.
+auto_generate_self_signed = true
+
+[auth]
+# Web administrator username
+username = "admin"
+
+# Password hash (Argon2id format).
+# Generated for initial default password: "admin"
+# IMPORTANT: Change this password immediately after the first login!
+password_hash = "$argon2id$v=19$m=19456,t=2,p=1$c29tZXNhbHQ$59f1rFvjDsmE8Fj2kU+sV3R6/pL2y3rB8Q2wVb1zKxY"
+
+# Session timeout in minutes
+session_timeout_minutes = 60
+
+# Secret key used for signing session cookies (leave empty for auto-generation per daemon boot)
+secret_key = ""
+
+[firewall]
+# Absolute path to the TuxFrw-NFT launcher CLI
+tuxfrw_bin = "/usr/sbin/tuxfrw-nft"
+
+# Configuration and rules directory
+config_dir = "/etc/tuxfrw-nft"
+
+# Path to nft utility for querying status and counters
+nft_bin = "/usr/sbin/nft"
+
+# Execution timeout in seconds for firewall operations
+command_timeout_seconds = 15

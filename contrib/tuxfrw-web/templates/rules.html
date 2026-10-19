@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Módulos de Regras (rules/*.mod) - TuxFrw-NFT Web{% endblock %}
+{% block nav_rules %}class="active"{% endblock %}
+
+{% block content %}
+<div class="grid-2" style="grid-template-columns: 280px 1fr; gap: 1.5rem;">
+    <div class="card" style="padding: 1rem;">
+        <h3 class="card-title" style="margin-bottom: 0.75rem;" data-i18n="rules_modules">Módulos de Regras</h3>
+        <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;" data-i18n="select_file">
+            Selecione o arquivo para editar:
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 0.35rem; max-height: calc(100vh - 280px); min-height: 600px; overflow-y: auto;">
+            {% for m in modules %}
+            <a href="/rules?file={{ m.file_name }}" class="btn btn-secondary" style="justify-content: flex-start; text-align: left; font-family: var(--font-mono); font-size: 0.8rem; {% if m.is_selected %}background-color: var(--bg-primary); border-left: 3px solid var(--accent);{% endif %}">
+                📄 {{ m.file_name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h2 class="card-title"><span data-i18n="editing">Editando:</span> <code>{{ current_file }}</code></h2>
+                <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                    {{ description }}
+                </p>
+            </div>
+            <div class="btn-group">
+                <button type="button" class="btn btn-primary" onclick="saveRule(false)" data-i18n="btn_save">💾 Salvar</button>
+                <button type="button" class="btn btn-success" onclick="saveRule(true)" data-i18n="btn_save_reload">⚡ Salvar & Recarregar Módulo</button>
+            </div>
+        </div>
+
+        <div id="rule-alert" style="display: none; white-space: pre-wrap;" class="alert"></div>
+
+        <form id="rule-form" onsubmit="event.preventDefault(); saveRule(false);">
+            <textarea id="rule-content" class="code-editor" spellcheck="false">{{ content }}</textarea>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const currentModuleFile = "{{ current_file }}";
+    const currentModuleName = "{{ module_short_name }}";
+
+    async function saveRule(reloadAfter) {
+        const content = document.getElementById('rule-content').value;
+        const alertEl = document.getElementById('rule-alert');
+        alertEl.style.display = 'block';
+        alertEl.className = 'alert alert-info';
+        alertEl.style.fontFamily = 'inherit';
+        alertEl.innerText = t('saving_module');
+
+        try {
+            const resp = await fetch(`/api/rules/${currentModuleFile}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: content })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                alertEl.className = 'alert alert-success';
+                alertEl.innerText = t('module_saved_success', { file: currentModuleFile });
+
+                if (reloadAfter && currentModuleName) {
+                    alertEl.innerText += t('reloading_chain', { mod: currentModuleName });
+                    const lResp = await fetch(`/api/load/${currentModuleName}`, { method: 'POST' });
+                    const lData = await lResp.json();
+                    if (lData.success) {
+                        alertEl.innerText = t('module_and_chain_success', { file: currentModuleFile, mod: currentModuleName });
+                    } else {
+                        alertEl.className = 'alert alert-danger';
+                        alertEl.style.fontFamily = 'var(--font-mono)';
+                        alertEl.innerText = t('chain_reload_failed') + lData.stderr;
+                    }
+                }
+            } else {
+                alertEl.className = 'alert alert-danger';
+                alertEl.style.fontFamily = 'var(--font-mono)';
+                alertEl.innerText = t('write_blocked') + data.error;
+            }
+        } catch (e) {
+            alertEl.className = 'alert alert-danger';
+            alertEl.innerText = `Erro: ${e}`;
+        }
+    }
+</script>
+{% endblock %}
+

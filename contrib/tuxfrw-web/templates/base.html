@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TuxFrw-NFT Web{% endblock %}</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --border: #475569;
+            --radius: 8px;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 9999px;
+            background-color: var(--bg-tertiary);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .badge-success { background-color: rgba(34, 197, 94, 0.2); color: var(--success); border: 1px solid var(--success); }
+        .badge-danger { background-color: rgba(239, 68, 68, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+        nav { display: flex; gap: 1rem; align-items: center; }
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.4rem 0.8rem;
+            border-radius: var(--radius);
+            transition: all 0.2s;
+        }
+        nav a:hover, nav a.active { color: var(--text-main); background-color: var(--bg-tertiary); }
+        main { flex: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }
+        .card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .card-title { font-size: 1.1rem; font-weight: 600; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-primary { background-color: var(--accent); color: #0f172a; }
+        .btn-primary:hover { background-color: var(--accent-hover); }
+        .btn-success { background-color: var(--success); color: #0f172a; }
+        .btn-danger { background-color: var(--danger); color: #fff; }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+        .btn-secondary { background-color: var(--bg-tertiary); color: var(--text-main); }
+        .btn-secondary:hover { background-color: #475569; }
+        .btn-warning { background-color: var(--warning); color: #0f172a; }
+        .btn-group { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .console {
+            background-color: #020617;
+            color: #38bdf8;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            padding: 1rem;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            white-space: pre-wrap;
+            min-height: 120px;
+            max-height: 400px;
+            border: 1px solid #1e293b;
+        }
+        textarea.code-editor {
+            width: 100%;
+            height: calc(100vh - 280px);
+            min-height: 600px;
+            background-color: #020617;
+            color: #f8fafc;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            padding: 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            line-height: 1.5;
+            resize: vertical;
+        }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media(max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+        .alert {
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .alert-danger { background-color: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid var(--danger); }
+        .alert-success { background-color: rgba(34, 197, 94, 0.15); color: #86efac; border: 1px solid var(--success); }
+        .alert-info { background-color: rgba(56, 189, 248, 0.15); color: #7dd3fc; border: 1px solid var(--accent); }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header>
+        <a href="/" class="brand">
+            🛡️ TuxFrw-NFT
+            <span class="badge">v6.0.0</span>
+            <span class="badge badge-success">Dual-Stack IPv6/IPv4</span>
+            <span class="badge" style="background-color: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid var(--accent);">TuxFrw-Web 1.0.0</span>
+        </a>
+        <nav>
+            <select id="lang-select" onchange="applyLanguage(this.value)" style="background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.35rem 0.6rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; outline: none; margin-right: 0.5rem;">
+                <option value="pt">🇧🇷 PT-BR</option>
+                <option value="en">🇺🇸 English</option>
+            </select>
+            <a href="/" {% block nav_dashboard %}{% endblock %} data-i18n="nav_dashboard">Dashboard</a>
+            <a href="/config" {% block nav_config %}{% endblock %} data-i18n="nav_config">tuxfrw.conf</a>
+            <a href="/rules" {% block nav_rules %}{% endblock %} data-i18n="nav_rules">Módulos Rules</a>
+            <a href="/logout" style="color: var(--danger);" data-i18n="nav_logout">Sair</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+        function escapeHtml(str) {
+            if (!str) return "";
+            return str
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function ansiToHtml(text) {
+            if (!text) return "";
+
+            const cleanText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const lines = cleanText.split('\n');
+
+            const processedLines = lines.map(line => {
+                let col = 0;
+                let html = '';
+                let openSpans = 0;
+
+                const ansiRegex = /\x1b\[([0-9;]*)([A-Za-z])/g;
+                let lastIdx = 0;
+                let match;
+
+                while ((match = ansiRegex.exec(line)) !== null) {
+                    const rawText = line.substring(lastIdx, match.index);
+                    if (rawText.length > 0) {
+                        html += escapeHtml(rawText);
+                        col += rawText.length;
+                    }
+
+                    const params = match[1];
+                    const cmd = match[2];
+
+                    if (cmd === 'G') {
+                        // Cursor Horizontal Absolute (column 1-based)
+                        const targetCol = parseInt(params, 10) || 1;
+                        const spacesNeeded = Math.max(1, (targetCol - 1) - col);
+                        html += ' '.repeat(spacesNeeded);
+                        col += spacesNeeded;
+                    } else if (cmd === 'm') {
+                        // SGR color & style
+                        const codes = params ? params.split(';').map(c => parseInt(c, 10) || 0) : [0];
+
+                        if (codes.length === 0 || (codes.length === 1 && (codes[0] === 0 || codes[0] === 39))) {
+                            while (openSpans > 0) {
+                                html += '</span>';
+                                openSpans--;
+                            }
+                        } else {
+                            let isBold = false;
+                            let color = null;
+
+                            for (const code of codes) {
+                                if (code === 0) {
+                                    while (openSpans > 0) {
+                                        html += '</span>';
+                                        openSpans--;
+                                    }
+                                } else if (code === 1) {
+                                    isBold = true;
+                                } else if (code === 31 || code === 91) {
+                                    color = '#ef4444';
+                                } else if (code === 32 || code === 92) {
+                                    color = '#22c55e';
+                                } else if (code === 33 || code === 93) {
+                                    color = '#f59e0b';
+                                } else if (code === 34 || code === 94) {
+                                    color = '#38bdf8';
+                                } else if (code === 35 || code === 95) {
+                                    color = '#ec4899';
+                                } else if (code === 36 || code === 96) {
+                                    color = '#06b6d4';
+                                } else if (code === 37 || code === 97) {
+                                    color = '#f8fafc';
+                                } else if (code === 39) {
+                                    color = null;
+                                }
+                            }
+
+                            let style = '';
+                            if (color) style += `color: ${color};`;
+                            if (isBold) style += 'font-weight: bold;';
+
+                            if (style) {
+                                html += `<span style="${style}">`;
+                                openSpans++;
+                            }
+                        }
+                    }
+
+                    lastIdx = ansiRegex.lastIndex;
+                }
+
+                const remaining = line.substring(lastIdx);
+                if (remaining.length > 0) {
+                    html += escapeHtml(remaining.replace(/\x1b/g, ''));
+                    col += remaining.length;
+                }
+
+                while (openSpans > 0) {
+                    html += '</span>';
+                    openSpans--;
+                }
+
+                return html;
+            });
+
+            return processedLines.join('\n');
+        }
+
+        const I18N = {
+            'pt': {
+                'nav_dashboard': 'Dashboard',
+                'nav_config': 'tuxfrw.conf',
+                'nav_rules': 'Módulos Rules',
+                'nav_logout': 'Sair',
+                'quick_actions': 'Ações Rápidas de Operação',
+                'quick_actions_sub': 'Dispare comandos administrativos do firewall em tempo de execução',
+                'service_ready': 'Serviço Pronto',
+                'btn_start': '▶ Iniciar (Start)',
+                'btn_restart': '🔄 Reiniciar (Restart)',
+                'btn_stop': '⏹ Parar (Stop Seguro)',
+                'btn_cf_update': '☁️ Atualizar Cloudflare',
+                'btn_panic': '🚨 MODO PÂNICO (Lockdown)',
+                'lbl_atomic_reload': 'Recarga Atômica:',
+                'btn_reload_module': '⚡ Recarregar Módulo',
+                'console_title': 'Terminal de Execução / Console de Saída',
+                'waiting_command': 'Aguardando comando',
+                'console_initial': 'Selecione uma ação acima para visualizar a execução ao vivo do tuxfrw-nft...',
+                'nft_state_title': 'Estado do Netfilter / nftables',
+                'btn_refresh_status': 'Atualizar Status',
+                'executing': 'Executando',
+                'processing': 'Processando...',
+                'success_code': 'Sucesso (código {code})',
+                'failure_code': 'Falha (código {code})',
+                'network_error': 'Erro de Rede',
+                'module_reloaded_success': 'Módulo {mod} recarregado com sucesso!',
+                'module_reload_error': 'Erro ao carregar módulo {mod}',
+                'panic_confirm': 'ATENÇÃO: O Modo Pânico interrompe imediatamente todo o tráfego do servidor e descarta todas as conexões!\n\nTem certeza absoluta que deseja ativar o Modo Pânico?',
+                'no_rules_or_error': 'Nenhuma regra ativa ou erro de consulta.',
+                'rules_modules': 'Módulos de Regras',
+                'select_file': 'Selecione o arquivo para editar:',
+                'editing': 'Editando:',
+                'btn_save': '💾 Salvar',
+                'btn_save_reload': '⚡ Salvar & Recarregar Módulo',
+                'saving_module': 'Validando sintaxe e salvando módulo no disco...',
+                'module_saved_success': '✓ Módulo {file} validado com sucesso e salvo em disco!',
+                'reloading_chain': ' -> Recarregando chain {mod} com tuxfrw-nft load...',
+                'module_and_chain_success': '✓ Módulo {file} salvo e chain {mod} recarregada atomicamente!',
+                'chain_reload_failed': 'Módulo salvo, mas falha ao recarregar chain:\n\n',
+                'write_blocked': '❌ GRAVAÇÃO BLOQUEADA PELO VALIDADOR (arquivo original NÃO foi alterado):\n\n',
+                'config_title': 'Editor de Configuração:',
+                'file_loaded_from': 'Arquivo carregado de:',
+                'btn_save_changes': '💾 Salvar Alterações',
+                'btn_save_restart': '💾 Salvar & Reiniciar Firewall',
+                'saving_config': 'Salvando arquivo no disco...',
+                'config_saved': 'Configuração gravada com sucesso em ',
+                'restarting_firewall': ' -> Reiniciando firewall tuxfrw-nft...',
+                'config_saved_and_restarted': 'Configuração salva e firewall reiniciado com sucesso!',
+                'config_saved_restart_failed': 'Configuração salva, mas o restart falhou: '
+            },
+            'en': {
+                'nav_dashboard': 'Dashboard',
+                'nav_config': 'tuxfrw.conf',
+                'nav_rules': 'Rules Modules',
+                'nav_logout': 'Logout',
+                'quick_actions': 'Quick Operations',
+                'quick_actions_sub': 'Trigger administrative firewall commands at runtime',
+                'service_ready': 'Service Ready',
+                'btn_start': '▶ Start Firewall',
+                'btn_restart': '🔄 Restart Firewall',
+                'btn_stop': '⏹ Stop Firewall (Safe)',
+                'btn_cf_update': '☁️ Update Cloudflare',
+                'btn_panic': '🚨 PANIC MODE (Lockdown)',
+                'lbl_atomic_reload': 'Atomic Reload:',
+                'btn_reload_module': '⚡ Reload Module',
+                'console_title': 'Execution Terminal / Output Console',
+                'waiting_command': 'Waiting for command',
+                'console_initial': 'Select an action above to view live execution of tuxfrw-nft...',
+                'nft_state_title': 'Netfilter / nftables State',
+                'btn_refresh_status': 'Refresh Status',
+                'executing': 'Executing',
+                'processing': 'Processing...',
+                'success_code': 'Success (code {code})',
+                'failure_code': 'Failed (code {code})',
+                'network_error': 'Network Error',
+                'module_reloaded_success': 'Module {mod} successfully reloaded!',
+                'module_reload_error': 'Error loading module {mod}',
+                'panic_confirm': 'WARNING: Panic Mode immediately stops all server network traffic and drops all connections!\n\nAre you sure you want to activate Panic Mode?',
+                'no_rules_or_error': 'No active rules or query error.',
+                'rules_modules': 'Rules Modules',
+                'select_file': 'Select file to edit:',
+                'editing': 'Editing:',
+                'btn_save': '💾 Save',
+                'btn_save_reload': '⚡ Save & Reload Module',
+                'saving_module': 'Validating syntax and saving module to disk...',
+                'module_saved_success': '✓ Module {file} successfully validated and saved to disk!',
+                'reloading_chain': ' -> Reloading chain {mod} via tuxfrw-nft load...',
+                'module_and_chain_success': '✓ Module {file} saved and chain {mod} atomically reloaded!',
+                'chain_reload_failed': 'Module saved, but failed to reload chain:\n\n',
+                'write_blocked': '❌ WRITE BLOCKED BY VALIDATOR (original file was NOT modified):\n\n',
+                'config_title': 'Configuration Editor:',
+                'file_loaded_from': 'File loaded from:',
+                'btn_save_changes': '💾 Save Changes',
+                'btn_save_restart': '💾 Save & Restart Firewall',
+                'saving_config': 'Saving file to disk...',
+                'config_saved': 'Configuration successfully saved to ',
+                'restarting_firewall': ' -> Restarting tuxfrw-nft firewall...',
+                'config_saved_and_restarted': 'Configuration saved and firewall successfully restarted!',
+                'config_saved_restart_failed': 'Configuration saved, but restart failed: '
+            }
+        };
+
+        function getCurrentLanguage() {
+            return localStorage.getItem('tuxfrw_lang') || 'pt';
+        }
+
+        function t(key, params = {}) {
+            const lang = getCurrentLanguage();
+            let text = (I18N[lang] && I18N[lang][key]) || (I18N['pt'] && I18N['pt'][key]) || key;
+            for (const [k, v] of Object.entries(params)) {
+                text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+            }
+            return text;
+        }
+
+        function applyLanguage(lang) {
+            if (lang !== 'pt' && lang !== 'en') lang = 'pt';
+            localStorage.setItem('tuxfrw_lang', lang);
+            document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+
+            const select = document.getElementById('lang-select');
+            if (select) select.value = lang;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (key && I18N[lang] && I18N[lang][key]) {
+                    el.innerText = I18N[lang][key];
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (key && I18N[lang] && I18N[lang][key]) {
+                    el.setAttribute('placeholder', I18N[lang][key]);
+                }
+            });
+
+            window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            applyLanguage(getCurrentLanguage());
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+

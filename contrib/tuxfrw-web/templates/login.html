@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - TuxFrw-NFT Web</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --danger: #ef4444;
+            --border: #475569;
+            --radius: 8px;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .login-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #020617;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus {
+            border-color: var(--accent);
+        }
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: var(--accent);
+            color: #0f172a;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 0.5rem;
+        }
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+        .error {
+            background-color: rgba(239, 68, 68, 0.15);
+            color: #fca5a5;
+            border: 1px solid var(--danger);
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+        .footer-note {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        .captcha-box {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .captcha-svg-wrap {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #020617;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 4px;
+            min-height: 58px;
+        }
+        .captcha-svg-wrap svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .btn-reload {
+            background-color: var(--bg-primary);
+            color: var(--accent);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            width: 48px;
+            height: 58px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .btn-reload:hover {
+            border-color: var(--accent);
+            background-color: rgba(56, 189, 248, 0.1);
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div style="display: flex; justify-content: flex-end; margin-bottom: 1rem;">
+            <select id="lang-select" onchange="applyLanguage(this.value)" style="background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.3rem 0.5rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; outline: none;">
+                <option value="pt">🇧🇷 PT-BR</option>
+                <option value="en">🇺🇸 English</option>
+            </select>
+        </div>
+
+        <div class="header">
+            <h1>🛡️ TuxFrw-NFT</h1>
+            <p data-i18n="login_title">Painel de Gestão do Firewall Web (HTTPS Dual-Stack)</p>
+        </div>
+
+        <div id="error-box" class="error" {% if error_message.is_none() %}style="display:none;"{% endif %}>
+            {{ error_message.as_deref().unwrap_or("") }}
+        </div>
+
+        <form id="login-form" method="POST" action="/login">
+            <div class="form-group">
+                <label for="username" data-i18n="lbl_username">Usuário Administrador</label>
+                <input type="text" id="username" name="username" required autofocus autocomplete="username" placeholder="Digite seu usuário">
+            </div>
+            <div class="form-group">
+                <label for="password" data-i18n="lbl_password">Senha de Acesso</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Digite sua senha">
+            </div>
+
+            <div class="form-group">
+                <label for="captcha_code" data-i18n="lbl_captcha">Verificação de Segurança</label>
+                <div class="captcha-box">
+                    <div class="captcha-svg-wrap" id="captcha-container">
+                        <span style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="loading_captcha">Gerando desafio...</span>
+                    </div>
+                    <button type="button" class="btn-reload" onclick="reloadCaptcha()" title="Recarregar novo código" aria-label="Recarregar">
+                        🔄
+                    </button>
+                </div>
+                <input type="hidden" id="captcha_id" name="captcha_id" required>
+                <input type="text" id="captcha_code" name="captcha_code" required autocomplete="off" maxlength="6" placeholder="Digite os 5 caracteres" style="text-transform: uppercase; letter-spacing: 3px; font-weight: 700; text-align: center;">
+            </div>
+
+            <button type="submit" id="btn-login-submit" class="btn" data-i18n="btn_login">Entrar no Painel</button>
+        </form>
+    </div>
+    <script>
+        const I18N = {
+            'pt': {
+                'login_title': 'Painel de Gestão do Firewall Web (HTTPS Dual-Stack)',
+                'lbl_username': 'Usuário Administrador',
+                'lbl_password': 'Senha de Acesso',
+                'lbl_captcha': 'Verificação de Segurança',
+                'btn_login': 'Entrar no Painel',
+                'authenticating': 'Autenticando...',
+                'ph_username': 'Digite seu usuário',
+                'ph_password': 'Digite sua senha',
+                'ph_captcha': 'Digite os 5 caracteres',
+                'loading_captcha': 'Gerando desafio...',
+                'invalid_credentials': 'Credenciais ou código CAPTCHA incorretos.',
+                'conn_error': 'Erro de conexão com o servidor.'
+            },
+            'en': {
+                'login_title': 'Web Firewall Management Panel (HTTPS Dual-Stack)',
+                'lbl_username': 'Administrator Username',
+                'lbl_password': 'Access Password',
+                'lbl_captcha': 'Security Verification',
+                'btn_login': 'Log In to Panel',
+                'authenticating': 'Authenticating...',
+                'ph_username': 'Enter your username',
+                'ph_password': 'Enter your password',
+                'ph_captcha': 'Type the 5 characters',
+                'loading_captcha': 'Generating challenge...',
+                'invalid_credentials': 'Invalid credentials or CAPTCHA code.',
+                'conn_error': 'Server connection error.'
+            }
+        };
+
+        function getCurrentLanguage() {
+            return localStorage.getItem('tuxfrw_lang') || 'pt';
+        }
+
+        async function reloadCaptcha() {
+            const container = document.getElementById('captcha-container');
+            const idInput = document.getElementById('captcha_id');
+            const codeInput = document.getElementById('captcha_code');
+            if (codeInput) codeInput.value = '';
+
+            try {
+                const res = await fetch('/api/captcha');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.success) {
+                        if (container) container.innerHTML = data.captcha_svg;
+                        if (idInput) idInput.value = data.captcha_id;
+                    }
+                }
+            } catch (err) {
+                console.error('Erro ao carregar CAPTCHA:', err);
+            }
+        }
+
+        function applyLanguage(lang) {
+            if (lang !== 'pt' && lang !== 'en') lang = 'pt';
+            localStorage.setItem('tuxfrw_lang', lang);
+            document.documentElement.lang = lang === 'pt' ? 'pt-BR' : 'en';
+
+            const select = document.getElementById('lang-select');
+            if (select) select.value = lang;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (key && I18N[lang] && I18N[lang][key]) {
+                    el.innerText = I18N[lang][key];
+                }
+            });
+
+            const userInput = document.getElementById('username');
+            const passInput = document.getElementById('password');
+            const captchaInput = document.getElementById('captcha_code');
+            if (userInput && I18N[lang]['ph_username']) userInput.placeholder = I18N[lang]['ph_username'];
+            if (passInput && I18N[lang]['ph_password']) passInput.placeholder = I18N[lang]['ph_password'];
+            if (captchaInput && I18N[lang]['ph_captcha']) captchaInput.placeholder = I18N[lang]['ph_captcha'];
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errBox = document.getElementById('error-box');
+            const btn = document.getElementById('btn-login-submit');
+            const lang = getCurrentLanguage();
+
+            errBox.style.display = 'none';
+            btn.disabled = true;
+            btn.innerText = I18N[lang]['authenticating'] || 'Autenticando...';
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const captcha_id = document.getElementById('captcha_id').value;
+            const captcha_code = document.getElementById('captcha_code').value;
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, captcha_id, captcha_code })
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    window.location.replace('/');
+                } else {
+                    errBox.innerText = data.error || (I18N[lang]['invalid_credentials'] || 'Credenciais inválidas.');
+                    errBox.style.display = 'block';
+                    reloadCaptcha();
+                    btn.disabled = false;
+                    btn.innerText = I18N[lang]['btn_login'] || 'Entrar no Painel';
+                }
+            } catch (err) {
+                errBox.innerText = I18N[lang]['conn_error'] || 'Erro de conexão com o servidor.';
+                errBox.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = I18N[lang]['btn_login'] || 'Entrar no Painel';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Expira e limpa qualquer cookie legado tuxfrw_lang do navegador
+            document.cookie = 'tuxfrw_lang=; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+            applyLanguage(getCurrentLanguage());
+            reloadCaptcha();
+        });
+    </script>
+</body>
+</html>
+

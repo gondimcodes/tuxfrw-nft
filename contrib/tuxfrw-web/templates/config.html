@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Configuração Central (tuxfrw.conf) - TuxFrw-NFT Web{% endblock %}
+{% block nav_config %}class="active"{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h2 class="card-title"><span data-i18n="config_title">Editor de Configuração:</span> <code>tuxfrw.conf</code></h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
+                <span data-i18n="file_loaded_from">Arquivo carregado de:</span> <code>{{ conf_path }}</code>
+            </p>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="saveConfig(false)" data-i18n="btn_save_changes">💾 Salvar Alterações</button>
+            <button class="btn btn-success" onclick="saveConfig(true)" data-i18n="btn_save_restart">💾 Salvar & Reiniciar Firewall</button>
+        </div>
+    </div>
+
+    <div id="save-alert" style="display: none;" class="alert"></div>
+
+    <form id="config-form" onsubmit="event.preventDefault(); saveConfig(false);">
+        <textarea id="raw-content" class="code-editor" spellcheck="false">{{ raw_content }}</textarea>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    async function saveConfig(restartAfter) {
+        const content = document.getElementById('raw-content').value;
+        const alertEl = document.getElementById('save-alert');
+        alertEl.style.display = 'block';
+        alertEl.className = 'alert alert-info';
+        alertEl.innerText = t('saving_config');
+
+        try {
+            const resp = await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ content: content })
+            });
+            const data = await resp.json();
+
+            if (data.success) {
+                alertEl.className = 'alert alert-success';
+                alertEl.innerText = t('config_saved') + data.path;
+
+                if (restartAfter) {
+                    alertEl.innerText += t('restarting_firewall');
+                    const rResp = await fetch('/api/action/restart', { method: 'POST' });
+                    const rData = await rResp.json();
+                    if (rData.success) {
+                        alertEl.innerText = t('config_saved_and_restarted');
+                    } else {
+                        alertEl.className = 'alert alert-danger';
+                        alertEl.innerText = t('config_saved_restart_failed') + rData.stderr;
+                    }
+                }
+            } else {
+                alertEl.className = 'alert alert-danger';
+                alertEl.innerText = 'Erro: ' + data.error;
+            }
+        } catch (e) {
+            alertEl.className = 'alert alert-danger';
+            alertEl.innerText = `Erro: ${e}`;
+        }
+    }
+</script>
+{% endblock %}
+
