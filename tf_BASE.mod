@@ -146,9 +146,7 @@ create_rules()
 {
 
   # load kernel modules
-  if [ "$KERN_MOD" != "0" ]; then
-    load_kernel_modules
-  fi
+  load_kernel_modules
 
   # set /proc options
   set_sysctl
@@ -338,9 +336,7 @@ create_rules()
 create_natopen()
 {
   # load kernel modules
-  if [ "$KERN_MOD" != "0" ]; then
-    load_kernel_modules
-  fi
+  load_kernel_modules
 
   # set /proc options
   set_sysctl

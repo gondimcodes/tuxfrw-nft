@@ -337,7 +337,7 @@ Quando uma ou mais interfaces de VPN são configuradas, o TuxFrw-NFT cria e vinc
 - **`*->VPN`**: `INT2VPN` (da Intranet), `EXT2VPN` (da Internet), `DMZ2VPN` (da DMZ).
 
 ### 3. Autoloader de Módulos de Kernel
-Se `KERN_MOD="1"`, o TuxFrw-NFT carrega automaticamente os drivers necessários conforme as VPNs ativas (`wireguard`, `tun`, `ppp_generic`, `l2tp_core`, `esp4`, `esp6`).
+O TuxFrw-NFT carrega automaticamente os drivers necessários conforme as VPNs ativas (`wireguard`, `tun`, `ppp_generic`, `l2tp_core`, `esp4`, `esp6`).
 
 ---
 

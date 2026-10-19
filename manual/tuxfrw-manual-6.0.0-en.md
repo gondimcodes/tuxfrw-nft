@@ -337,7 +337,7 @@ When one or more VPN interfaces are configured, TuxFrw-NFT dynamically generates
 - **`*->VPN`**: `INT2VPN` (from Internal LAN), `EXT2VPN` (from Internet), `DMZ2VPN` (from DMZ).
 
 ### 3. Kernel Module Autoloader
-When `KERN_MOD="1"`, TuxFrw-NFT dynamically loads the corresponding kernel drivers based on configured VPNs (`wireguard`, `tun`, `ppp_generic`, `l2tp_core`, `esp4`, `esp6`).
+TuxFrw-NFT automatically loads the corresponding kernel drivers based on configured VPNs (`wireguard`, `tun`, `ppp_generic`, `l2tp_core`, `esp4`, `esp6`).
 
 ---
 
