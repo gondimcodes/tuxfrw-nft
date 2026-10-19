@@ -26,9 +26,11 @@
 # ----------------------------------------------------------------------------
 
 #
-# PPPoE TCPMSS
+# TCP MSS Clamping (PMTU Discovery fix for VPNs, PPPoE or links with MTU < 1500)
+# Dynamically clamps TCP MSS to the route MTU to prevent packet fragmentation.
+# Uncomment the line below if experiencing MTU or packet blackhole issues across tunnels:
 #
-if [ "$MANGLE" = "1" -a "$PPPoE" = "1" ]; then
-   $NFT 'add rule inet mangle FORWARD tcp flags & (syn|rst) == syn counter tcp option maxseg size set rt mtu'
-fi
+# if [ "$MANGLE" = "1" ]; then
+#    $NFT 'add rule inet mangle FORWARD tcp flags & (syn|rst) == syn counter tcp option maxseg size set rt mtu'
+# fi
 
