@@ -24,12 +24,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # ----------------------------------------------------------------------------
-
-# Rule for Transparent Proxy
-if [ "$PROXY_PORT" != "" -a "$INT_IFACE" != "" -a "$PROXY_T" = "1" ]; then
-   $NFT "add rule ip nat PREROUTING iifname $INT_IFACE tcp dport 80 counter redirect to :$PROXY_PORT"
-   $NFT "add rule ip6 nat PREROUTING iifname $INT_IFACE tcp dport 80 counter redirect to :$PROXY_PORT"
-fi
+# PREROUTING chain (DNAT / Port Forwarding)
+# ----------------------------------------------------------------------------
 
 #==============================================================================
 # 1:1 NAT Examples (DNAT - Inbound)

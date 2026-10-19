@@ -107,11 +107,6 @@ if [ "$RMT_ADMIN_IP6" != "" ]; then
    $NFT "add rule inet filter INPUT ip6 saddr $RMT_ADMIN_IP6 tcp dport $SSH_PORT tcp flags & (fin|syn|rst|ack) == syn counter accept"
 fi
 
-# Proxy access - authorization
-if [ "$PROXY_PORT" != "" -a "$INT_IFACE" != "" ]; then
-   $NFT "add rule inet filter INPUT iifname $INT_IFACE tcp dport $PROXY_PORT counter accept"
-fi
-
 # accept incoming VPN connections (OpenVPN, WireGuard, L2TP/IPsec)
 if [ "$OpenVPN_PORT" != "" -a "$OpenVPN_IFACE" != "" ]; then
    local ovpn_proto="${OpenVPN_PROTO:-udp}"

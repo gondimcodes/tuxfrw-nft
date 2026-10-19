@@ -35,6 +35,8 @@ and this project adheres to semantic release versioning.
 ### Removed
 - **Abolished PPTP Protocol**:
   - Permanently removed support for legacy and vulnerable PPTP VPN (TCP port 1723 / GRE protocol 47) from `tuxfrw.conf`, `tf_KERNEL.mod`, `tf_BASE.mod`, `rules/tf_INPUT.mod`, and `rules/tf_FORWARD.mod`.
+- **Abolished Legacy Transparent Proxy (Squid/Lusca)**:
+  - Removed obsolete transparent HTTP proxy redirection and authorization parameters (`PROXY_PORT` and `PROXY_T`) from `tuxfrw.conf`, `rules/tf_NAT-IN.mod`, and `rules/tf_INPUT.mod`.
 
 ### Fixed
 - Fixed chain name typo in `rules/tf_DMZ-VPN.mod` (corrected from non-existent `DMZ-VPN` to `DMZ2VPN`).
