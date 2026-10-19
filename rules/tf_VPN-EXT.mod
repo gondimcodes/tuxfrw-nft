@@ -27,6 +27,21 @@
 #
 # VPN->EXT directional chain
 #
+# Controla conexoes originadas na VPN com destino a Internet (EXT).
+# Utilizado no cenario de Full Tunneling (clientes navegando pela Internet do firewall).
+# Nota: Para saida para a Internet, certifique-se de configurar o masquerade em tf_NAT-OUT.mod.
+
+# Exemplo 1: Permitir navegacao Web (HTTP, HTTPS) e consultas DNS para clientes da VPN
+#$NFT 'add rule inet filter VPN2EXT tcp dport { 80, 443 } counter accept'
+#$NFT 'add rule inet filter VPN2EXT udp dport 53 counter accept'
+#$NFT 'add rule inet filter VPN2EXT tcp dport 53 counter accept'
+#$NFT 'add rule inet filter VPN2EXT icmp type echo-request counter accept'
+
+# Exemplo 2: Permitir envio e recebimento de e-mails para clientes da VPN
+#$NFT 'add rule inet filter VPN2EXT tcp dport { 587, 993, 995 } counter accept'
+
+# Exemplo 3: Permitir saida irrestrita de qualquer trafego da VPN para a Internet
+#$NFT 'add rule inet filter VPN2EXT counter accept'
 
 # log and reject all the unmatched packets
 #$NFT 'add rule inet filter VPN2EXT counter log prefix "tuxfrw: VPN->EXT! "'

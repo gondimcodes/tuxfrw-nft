@@ -27,6 +27,17 @@
 #
 # VPN->DMZ directional chain
 #
+# Controla conexoes originadas na VPN com destino aos servidores da DMZ.
+
+# Exemplo 1: Permitir ping (ICMP Echo Request) para diagnostico de servidores da DMZ
+#$NFT 'add rule inet filter VPN2DMZ icmp type echo-request counter accept'
+#$NFT 'add rule inet filter VPN2DMZ icmpv6 type echo-request counter accept'
+
+# Exemplo 2: Permitir administracao remota de servidores da DMZ via VPN (SSH, HTTPS, RDP)
+#$NFT 'add rule inet filter VPN2DMZ tcp dport { 22, 443, 3389 } counter accept'
+
+# Exemplo 3: Permitir acesso a bancos de dados na DMZ apenas para hosts autorizados da VPN (MySQL, PostgreSQL)
+#$NFT 'add rule inet filter VPN2DMZ tcp dport { 3306, 5432 } counter accept'
 
 # log and reject all the unmatched packets
 #$NFT 'add rule inet filter VPN2DMZ counter log prefix "tuxfrw: VPN->DMZ! "'

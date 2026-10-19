@@ -27,6 +27,18 @@
 #
 # DMZ->VPN directional chain
 #
+# Controla conexoes originadas na DMZ com destino a hosts na VPN.
+# ATENCAO: A DMZ e uma zona exposta a Internet. Conexoes iniciadas a partir da DMZ
+# em direcao a VPN devem ser estritamente restritas.
+
+# Exemplo 1: Permitir que um servidor da DMZ envie backups para um storage na VPN (ex: 10.8.0.100:22)
+#$NFT 'add rule inet filter DMZ2VPN ip daddr 10.8.0.100 tcp dport 22 counter accept'
+
+# Exemplo 2: Permitir envio de logs (Syslog UDP 514) da DMZ para servidor coletor na VPN
+#$NFT 'add rule inet filter DMZ2VPN ip daddr 10.8.0.100 udp dport 514 counter accept'
+
+# Exemplo 3: Permitir integracao de monitoramento passivo (Zabbix/Prometheus exporter -> Server na VPN)
+#$NFT 'add rule inet filter DMZ2VPN ip daddr 10.8.0.100 tcp dport 10051 counter accept'
 
 # log and reject all the unmatched packets
 #$NFT 'add rule inet filter DMZ2VPN counter log prefix "tuxfrw: DMZ->VPN! "'

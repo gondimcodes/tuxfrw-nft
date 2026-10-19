@@ -27,6 +27,16 @@
 #
 # EXT->VPN directional chain
 #
+# Controla conexoes originadas na Internet (EXT) com destino a hosts na VPN.
+# ATENCAO: Por seguranca, conexoes novas nao solicitadas vindas da Internet
+# para a rede interna da VPN devem ser bloqueadas por padrao.
+
+# Protecao preventiva: descarta pacotes invalidos
+$NFT 'add rule inet filter EXT2VPN ct state invalid counter drop'
+
+# Exemplo 1: Permitir acesso a um servico em host da VPN atraves de Port Forwarding / DNAT
+# (Exemplo: servidor web ou aplicacao na VPN recebendo conexoes encaminhadas via tf_NAT-IN.mod)
+#$NFT 'add rule inet filter EXT2VPN ip daddr 10.8.0.50 tcp dport 80 counter accept'
 
 # log and reject all the unmatched packets
 #$NFT 'add rule inet filter EXT2VPN counter log prefix "tuxfrw: EXT->VPN! "'

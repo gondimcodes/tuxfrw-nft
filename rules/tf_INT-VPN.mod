@@ -27,6 +27,19 @@
 #
 # INT->VPN directional chain
 #
+# Controla conexoes originadas na rede local (INT) com destino a hosts nos tuneis de VPN.
+
+# Exemplo 1: Permitir ping (ICMP Echo Request) da rede local para hosts na VPN
+#$NFT 'add rule inet filter INT2VPN icmp type echo-request counter accept'
+#$NFT 'add rule inet filter INT2VPN icmpv6 type echo-request counter accept'
+
+# Exemplo 2: Permitir acesso a servicos em hosts ou filiais na VPN (SSH, RDP, HTTP, HTTPS)
+#$NFT 'add rule inet filter INT2VPN tcp dport { 22, 80, 443, 3389 } counter accept'
+
+# Exemplo 3: Permitir que toda a sub-rede interna acesse a rede VPN irrestritamente
+#if [ "$INT_NET" != "" ]; then
+#   $NFT "add rule inet filter INT2VPN ip saddr $INT_NET counter accept"
+#fi
 
 # log and reject all the unmatched packets
 #$NFT 'add rule inet filter INT2VPN counter log prefix "tuxfrw: INT->VPN! "'

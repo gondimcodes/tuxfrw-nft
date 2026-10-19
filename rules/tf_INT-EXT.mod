@@ -36,7 +36,7 @@ if [ "$INT_NET6" != "" ]; then
    $NFT "add rule inet filter INT2EXT ip6 saddr != $INT_NET6 counter drop"
 fi
 
-$NFT 'add rule inet filter INT2EXT tcp dport { 80,443,25,21,110,53 } counter accept'
+$NFT 'add rule inet filter INT2EXT tcp dport { 80,443,587,995,993,21,143,110,53 } counter accept'
 $NFT 'add rule inet filter INT2EXT udp dport 53 counter accept'
 
 # log and reject all the unmatched packets

@@ -20,6 +20,9 @@ and this project adheres to semantic release versioning.
   - Added dynamic kernel module autoloader in `tf_KERNEL.mod` loading necessary drivers on demand (`wireguard`, `tun`, `ppp_generic`, `l2tp_core`, `esp4`, `esp6`).
 - **RFC 8201 ICMPv6 PMTUD in Forwarding Path**:
   - Added full transit forwarding for essential ICMPv6 types in `rules/tf_FORWARD.mod` (`packet-too-big`, `destination-unreachable`, `time-exceeded`, `parameter-problem`, `echo-request`), preventing IPv6 Black Hole MTU negotiation failures.
+- **Directional VPN Rule Templates & INT2EXT Port Modernization**:
+  - Added structured, commented-by-default rule templates across all 6 directional VPN modules (`tf_VPN-INT`, `tf_INT-VPN`, `tf_VPN-EXT`, `tf_EXT-VPN`, `tf_VPN-DMZ`, `tf_DMZ-VPN`).
+  - Updated `rules/tf_INT-EXT.mod` default outbound TCP ports to modern mail and web standards (`80, 443, 587, 995, 993, 21, 143, 110, 53`).
 
 ### Changed
 - **Semantic Versioning Transition**:
