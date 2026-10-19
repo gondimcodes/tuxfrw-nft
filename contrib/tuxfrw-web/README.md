@@ -1,58 +1,64 @@
 # TuxFrw-Web
 
-> **Daemon e Interface Web de Gerenciamento para o Firewall TuxFrw-NFT**  
-> *Construído em Rust com Axum, Tokio, HTTPS nativo (TLS) e Dual-Stack IPv6/IPv4.*
+> **Web Management Dashboard and Control Daemon for TuxFrw-NFT Firewall**  
+> *Built in Rust with Axum, Tokio, Native HTTPS (TLS), Dual-Stack IPv6/IPv4, and Cryptographic CAPTCHA.*
 
 ---
 
-## Recursos Principais
+## Key Features
 
-- **Segurança de Memória e Alta Performance**: Desenvolvido 100% em **Rust**, compilando para um único binário executável estático sem dependências de interpretadores (Node.js, Python ou PHP) no servidor de produção.
-- **HTTPS Nativo (TLS)**: Suporte integrado via `rustls` com carregamento de certificados PEM ou geração automática de certificado auto-assinado ECDSA no primeiro boot.
-- **Dual-Stack Nativo (IPv6 + IPv4)**: O daemon escuta em `[::]:8443`, aceitando conexões simultâneas de clientes IPv6 e IPv4.
-- **Autenticação Segura via Argon2id**: Senhas armazenadas com algoritmo criptográfico Argon2id em `/etc/tuxfrw-nft/config.toml`, com sessões isoladas em cookies `HttpOnly; SameSite=Strict`.
-- **Painel de Operações Rápidas**:
-  - `start`, `stop` (não-destrutivo), `restart`, `cf-update` (Cloudflare CDN);
-  - **Modo Pânico (Lockdown Emergencial)** com diálogo de confirmação.
-- **Recarga Atômica Dinâmica de Módulos**:
-  - Seletor rápido para os 22 módulos de regras (`INPUT`, `SYNPROXY`, `DOCKER`, `FORWARD`, `URPF`, `NETDEV`, etc.), disparando `tuxfrw-nft load <MODULE>` com retorno imediato do log no console da web.
-- **Editor Web Integrado**:
-  - Edição direta e segura de `/etc/tuxfrw-nft/tuxfrw.conf` com opção de salvar ou salvar e reiniciar o firewall.
-  - Navegação e edição de todos os 22 módulos em `/etc/tuxfrw-nft/rules/*.mod` com opção de salvar e recarregar a respectiva chain instantaneamente.
-- **Validação de Sintaxe Pré-Salvamento (2 Níveis)**: Botão `🧪 Testar Sintaxe` e validação estrita automática com `bash -n` e `nft -c` (dry-run do kernel), impedindo a gravação de módulos com erros de sintaxe.
-- **Console de Execução em Tempo Real**: Visualização ao vivo com interpretação de cores ANSI e alinhamento de colunas no navegador.
+- **Memory Safety & High Performance**: Developed 100% in **Rust**, compiling into a single self-contained static executable with zero runtime dependencies (no Node.js, Python, or PHP required on production servers).
+- **Native HTTPS (TLS)**: Integrated TLS engine via `rustls` supporting standard PEM certificates or automatic ECDSA self-signed certificate generation on first startup.
+- **Native Dual-Stack (IPv6 + IPv4)**: Daemon binds to `[::]:8443` (or customizable port such as `9443`), concurrently serving both IPv6 and IPv4 clients.
+- **Secure Authentication via Argon2id & REST API**: Strong password hashing using Argon2id stored in `/etc/tuxfrw-nft/config.toml`, with session cookies hardened via `HttpOnly; Secure; SameSite=Lax`.
+- **Cryptographic SVG CAPTCHA**: Dynamic vector challenge with non-ambiguous characters, optical noise lines, neon glow dispersion filter, and stateless HMAC-SHA256 signature (5-minute TTL, anti-replay, and anti-brute-force).
+- **Multilingual Support (i18n)**: Instant dynamic language switching between **🇺🇸 English** and **🇧🇷 Português (Brasil)** across all templates and system messages.
+- **Quick Operations Panel**:
+  - `start`, `stop` (non-destructive), `restart`, `cf-update` (Cloudflare CDN IP ranges);
+  - **Panic Mode (Emergency Lockdown)** with confirmation dialog.
+- **Dynamic Atomic Module Reloading**:
+  - Quick selector for all 22 rules modules (`INPUT`, `SYNPROXY`, `DOCKER`, `FORWARD`, `URPF`, `NETDEV`, etc.), executing `tuxfrw-nft load <MODULE>` with live console feedback.
+- **Integrated Web Editor with Two-Tier Syntax Validation**:
+  - Direct and secure editing of `/etc/tuxfrw-nft/tuxfrw.conf` and all rule files under `/etc/tuxfrw-nft/rules/*.mod`.
+  - Automated pre-save validation using `bash -n` and `nft -c` (kernel dry-run), blocking disk writes upon syntax errors to protect system stability.
+- **Real-Time Execution Console**: Live terminal stream with full ANSI color decoding and monospace formatting.
 
-> Para o manual completo de instalação e configuração, consulte [**INSTALL.md (English)**](INSTALL.md) ou [**INSTALL.pt-br.md (Português)**](INSTALL.pt-br.md).
+> For complete installation and setup instructions, refer to [**INSTALL.md (English)**](INSTALL.md) or [**INSTALL.pt-br.md (Português)**](INSTALL.pt-br.md).
 
 ---
 
-## Estrutura do Projeto
+## Project Structure
 
 ```text
 contrib/tuxfrw-web/
-├── Cargo.toml               # Dependências Rust (Axum, Tokio, Rustls, Argon2, Askama)
-├── config.example.toml      # Modelo de configuração para /etc/tuxfrw-nft/config.toml
-├── README.md                # Documentação técnica
+├── Cargo.toml               # Rust dependencies (Axum, Tokio, Rustls, Argon2, HMAC, Askama)
+├── config.example.toml      # Reference configuration template for /etc/tuxfrw-nft/config.toml
+├── README.md                # English technical documentation
+├── README.pt-br.md          # Portuguese technical documentation
+├── INSTALL.md               # English installation guide
+├── INSTALL.pt-br.md         # Portuguese installation guide
+├── tuxfrw-web.service       # Systemd service unit definition
 ├── src/
-│   ├── main.rs              # Inicializador do daemon, bindings HTTPS e Dual-Stack
-│   ├── config.rs            # Loader e escritor atômico do config.toml
-│   ├── tls.rs               # Gestão e auto-geração de certificados TLS
-│   ├── auth/                # Hashing Argon2id e controle de sessões
+│   ├── main.rs              # Daemon entry point, HTTPS and Dual-Stack bindings
+│   ├── config.rs            # Configuration loader and atomic TOML writer
+│   ├── tls.rs               # TLS certificate loader and automatic generator
+│   ├── auth/                # Argon2id hashing, session store, and CaptchaEngine
 │   │   ├── mod.rs
+│   │   ├── captcha.rs
 │   │   ├── password.rs
 │   │   └── session.rs
-│   ├── firewall/            # Execução de comandos do tuxfrw-nft e parsing de configs
+│   ├── firewall/            # CLI command execution and syntax validation service
 │   │   ├── mod.rs
 │   │   ├── command.rs
 │   │   └── config_parser.rs
-│   └── routes/              # Handlers HTTP, API REST e middleware de autenticação
+│   └── routes/              # HTTP handlers, REST API endpoints, and auth middleware
 │       ├── mod.rs
 │       ├── auth.rs
 │       ├── dashboard.rs
 │       ├── config_view.rs
 │       ├── rules_view.rs
 │       └── api.rs
-└── templates/               # Templates HTML pré-compilados no binário (Askama)
+└── templates/               # Precompiled HTML templates via Askama
     ├── base.html
     ├── login.html
     ├── dashboard.html
@@ -62,64 +68,45 @@ contrib/tuxfrw-web/
 
 ---
 
-## Compilação e Instalação
+## Build & Installation
 
-### 1. Compilação do Binário
-No servidor de homologação ou build:
+### 1. Build the Binary
+On the build or staging server:
 ```bash
 cd contrib/tuxfrw-web
 cargo build --release
 ```
-O binário otimizado será gerado em `target/release/tuxfrw-web`.
+The optimized executable binary will be generated at `target/release/tuxfrw-web`.
 
-### 2. Instalação no Sistema Operacional
+### 2. Operating System Installation
 ```bash
-# Copiar o binário executável para o diretório de binários do sistema
+# Copy the compiled binary to system executable path
 sudo cp target/release/tuxfrw-web /usr/local/bin/tuxfrw-web
 sudo chmod 0700 /usr/local/bin/tuxfrw-web
 
-# Copiar o arquivo de configuração de exemplo para /etc/tuxfrw-nft/config.toml
+# Install sample configuration template to /etc/tuxfrw-nft/config.toml
 sudo cp config.example.toml /etc/tuxfrw-nft/config.toml
 sudo chmod 0600 /etc/tuxfrw-nft/config.toml
 ```
 
-### 3. Configuração do Serviço Systemd (`tuxfrw-web.service`)
-Crie a unidade `/etc/systemd/system/tuxfrw-web.service`:
+### 3. Systemd Service Configuration (`tuxfrw-web.service`)
+Deploy the unit file:
 
-```ini
-[Unit]
-Description=TuxFrw-NFT Web Management Daemon
-After=network.target tuxfrw-nft.service
-Wants=tuxfrw-nft.service
-
-[Service]
-Type=simple
-User=root
-ExecStart=/usr/local/bin/tuxfrw-web
-Restart=on-failure
-RestartSec=5s
-LimitNOFILE=65535
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Ative e inicie o serviço:
 ```bash
+sudo cp tuxfrw-web.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl enable --now tuxfrw-web
 ```
 
 ---
 
-## Acesso Inicial
+## Initial Access
 
-Acesse no navegador:
-`https://<IP_DO_SERVIDOR>:8443`
+Open your web browser and navigate to:
+`https://<SERVER_IP>:8443` (or configured port, e.g. `9443`)
 
-- **Usuário padrão**: `admin`
-- **Senha padrão**: `admin`
+- **Default Username**: `admin`
+- **Default Password**: `admin`
 
 > [!IMPORTANT]
-> Altere a senha padrão logo após o primeiro acesso ou gere um novo hash Argon2id para substituir no `/etc/tuxfrw-nft/config.toml`.
-
+> Change the default password immediately after initial login or generate a new Argon2id hash using `tuxfrw-web --hash-password <NEW_PASSWORD>` to replace the value in `/etc/tuxfrw-nft/config.toml`.
