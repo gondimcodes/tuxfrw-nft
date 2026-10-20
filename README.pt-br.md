@@ -1,7 +1,7 @@
 # TuxFrw-NFT
 
 > **A ferramenta definitiva de automação e gerenciamento de firewall Linux com Netfilter/nftables.**  
-> *Versão 6.0.0*
+> *Versão 6.0.1*
 
 [![Licença: GPLv2](https://img.shields.io/badge/License-GPLv2-blue.svg)](LICENSE)
 [![Netfilter](https://img.shields.io/badge/Netfilter-nftables-orange.svg)](https://wiki.nftables.org/)
@@ -161,7 +161,7 @@ tuxfrw-nft/
 ├── CREDITS.md                    # Créditos históricos das versões legadas (IPTables/CFTK)
 ├── AUTHORS                       # Autor e mantenedor do projeto
 ├── LICENSE                       # Licença GNU General Public License v2 (GPLv2)
-└── VERSION                       # Versão da release atual (6.0.0)
+└── VERSION                       # Versão da release atual (6.0.1)
 ```
 
 ### Layout de Implantação no Sistema Operacional

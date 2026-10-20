@@ -27,7 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    info!("Starting TuxFrw-NFT Web Management Daemon v1.0.0 (Dual-Stack IPv6/IPv4 & HTTPS)");
+    info!("Starting TuxFrw-NFT Web Management Daemon v1.0.1 (Dual-Stack IPv6/IPv4 & HTTPS)");
 
     // CLI helper: generate Argon2id password hash for /etc/tuxfrw-nft/config.toml
     let args: Vec<String> = std::env::args().collect();

@@ -48,7 +48,8 @@ pub fn create_router(state: AppState) -> Router {
         .route("/api/login", post(auth::handle_login_api))
         .route("/logout", get(auth::handle_logout))
         .route("/api/captcha", get(auth::get_captcha_api))
-        .route("/health", get(|| async { "OK" }));
+        .route("/health", get(|| async { "OK" }))
+        .route("/static/hero_bg.png", get(hero_bg_handler));
 
     Router::new()
         .merge(public_routes)
@@ -147,4 +148,16 @@ impl axum::extract::FromRef<AppState> for Arc<ConfigService> {
     fn from_ref(state: &AppState) -> Self {
         state.config_service.clone()
     }
+}
+
+async fn hero_bg_handler() -> Response {
+    const HERO_BG: &[u8] = include_bytes!("../../static/hero_bg.png");
+    (
+        [
+            (header::CONTENT_TYPE, "image/png"),
+            (header::CACHE_CONTROL, "public, max-age=31536000, immutable"),
+        ],
+        HERO_BG,
+    )
+        .into_response()
 }

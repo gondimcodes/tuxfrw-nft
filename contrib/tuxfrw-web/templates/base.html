@@ -29,11 +29,29 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background:
+                linear-gradient(180deg, rgba(15, 23, 42, 0.82) 0%, rgba(15, 23, 42, 0.88) 50%, rgba(15, 23, 42, 0.94) 100%),
+                url('/static/hero_bg.png') no-repeat center center fixed;
+            background-size: cover;
+            filter: blur(1.5px);
+            transform: scale(1.02);
+            pointer-events: none;
         }
         header {
-            background-color: var(--bg-secondary);
+            background-color: rgba(30, 41, 59, 0.92);
+            backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--border);
-            padding: 0.75rem 1.5rem;
+            padding: 0.75rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -68,9 +86,10 @@
             transition: all 0.2s;
         }
         nav a:hover, nav a.active { color: var(--text-main); background-color: var(--bg-tertiary); }
-        main { flex: 1; padding: 1.5rem; max-width: 1400px; margin: 0 auto; width: 100%; }
+        main { flex: 1; padding: 1.5rem 2rem; max-width: 100%; margin: 0; width: 100%; }
         .card {
-            background-color: var(--bg-secondary);
+            background-color: rgba(30, 41, 59, 0.90);
+            backdrop-filter: blur(8px);
             border: 1px solid var(--border);
             border-radius: var(--radius);
             padding: 1.25rem;
@@ -152,9 +171,9 @@
     <header>
         <a href="/" class="brand">
             🛡️ TuxFrw-NFT
-            <span class="badge">v6.0.0</span>
+            <span class="badge">v6.0.1</span>
             <span class="badge badge-success">Dual-Stack IPv6/IPv4</span>
-            <span class="badge" style="background-color: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid var(--accent);">TuxFrw-Web 1.0.0</span>
+            <span class="badge" style="background-color: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid var(--accent);">TuxFrw-Web 1.0.1</span>
         </a>
         <nav>
             <select id="lang-select" onchange="applyLanguage(this.value)" style="background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.35rem 0.6rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; outline: none; margin-right: 0.5rem;">
