@@ -5,6 +5,21 @@ All notable changes to the **TuxFrw-NFT** project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to semantic release versioning.
 
+## [6.0.2] - 2026-10-20
+
+### Added
+- **Dynamic TuxFrw-NFT Version Resolution in TuxFrw-Web**:
+  - Implemented `FirewallManager::get_tuxfrw_version()` with dynamic query cascade: first executes the configured `$tuxfrw_bin version` with a 2-second timeout, gracefully falls back to static header parsing of `$tuxfrw_bin` (supporting backward compatibility with legacy scripts), and maintains an in-memory cached read lock (`Arc<RwLock<Option<String>>>`) with cache invalidation upon firewall restarts or reloads.
+  - Dynamically injected the detected firewall version into the top navigation bar (`tuxfrw_version` badge in `templates/base.html`) across Dashboard, `tuxfrw.conf` editor, and Rules modules views, eliminating hardcoded version discrepancies between the web interface and the underlying firewall daemon.
+- **CLI Subcommand `version` in TuxFrw-NFT**:
+  - Added native `version`, `-v`, and `--version` options to `/usr/sbin/tuxfrw-nft` CLI, outputting the clean SemVer string for easy automated checks and daemon introspection.
+
+### Changed
+- **Unified Version Bump to 6.0.2**:
+  - Bumped version number across all core scripts and rule modules (`VERSION`, `tuxfrw-nft`, `tuxfrw.conf`, `install.sh`, `tf_KERNEL.mod`, `tf_BASE.mod`, all 20 rule modules in `rules/tf_*.mod`, `CREDITS.md`, `README.md`, and `README.pt-br.md`).
+
+---
+
 ## [6.0.1] - 2026-10-19
 
 ### Added

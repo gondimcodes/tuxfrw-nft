@@ -12,12 +12,15 @@ use std::sync::Arc;
 pub struct DashboardTemplate {
     pub modules: Vec<String>,
     pub initial_status: String,
+    pub tuxfrw_version: String,
+    pub web_version: &'static str,
 }
 
 pub async fn dashboard_page(
     State(firewall): State<Arc<FirewallManager>>,
 ) -> Response {
     tracing::info!("dashboard_page: renderizando tela principal...");
+    let tuxfrw_version = firewall.get_tuxfrw_version().await;
     let status_res = firewall.execute(FirewallAction::Status).await;
     let initial_status = match status_res {
         Ok(res) => {
@@ -37,6 +40,8 @@ pub async fn dashboard_page(
     let tpl = DashboardTemplate {
         modules,
         initial_status,
+        tuxfrw_version,
+        web_version: env!("CARGO_PKG_VERSION"),
     };
 
     match tpl.render() {

@@ -1,4 +1,4 @@
-use crate::firewall::ConfigService;
+use crate::firewall::{ConfigService, FirewallManager};
 use askama::Template;
 use axum::{
     extract::{Path, Query, State},
@@ -21,6 +21,8 @@ pub struct RulesTemplate {
     pub module_short_name: String,
     pub content: String,
     pub description: String,
+    pub tuxfrw_version: String,
+    pub web_version: &'static str,
 }
 
 #[derive(Deserialize)]
@@ -40,9 +42,11 @@ pub struct UpdateRuleResponse {
 }
 
 pub async fn rules_page(
+    State(firewall): State<Arc<FirewallManager>>,
     State(config_service): State<Arc<ConfigService>>,
     Query(query): Query<RulesQuery>,
 ) -> Html<String> {
+    let tuxfrw_version = firewall.get_tuxfrw_version().await;
     let module_files = config_service.list_rule_modules().unwrap_or_default();
     let selected_file = query
         .file
@@ -75,6 +79,8 @@ pub async fn rules_page(
         module_short_name: rule_file.name,
         content: rule_file.content,
         description: rule_file.description,
+        tuxfrw_version,
+        web_version: env!("CARGO_PKG_VERSION"),
     };
 
     Html(tpl.render().unwrap_or_default())

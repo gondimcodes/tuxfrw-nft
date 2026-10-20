@@ -171,9 +171,9 @@
     <header>
         <a href="/" class="brand">
             🛡️ TuxFrw-NFT
-            <span class="badge">v6.0.1</span>
+            <span class="badge" id="tuxfrw-version-badge">{{ tuxfrw_version }}</span>
             <span class="badge badge-success">Dual-Stack IPv6/IPv4</span>
-            <span class="badge" style="background-color: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid var(--accent);">TuxFrw-Web 1.0.1</span>
+            <span class="badge" style="background-color: rgba(56, 189, 248, 0.15); color: var(--accent); border: 1px solid var(--accent);">TuxFrw-Web {{ web_version }}</span>
         </a>
         <nav>
             <select id="lang-select" onchange="applyLanguage(this.value)" style="background: var(--bg-primary); color: var(--text-main); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.35rem 0.6rem; font-size: 0.8rem; font-weight: 600; cursor: pointer; outline: none; margin-right: 0.5rem;">

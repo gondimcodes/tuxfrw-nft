@@ -1,8 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::process::Stdio;
+use std::sync::Arc;
 use std::time::Duration;
 use thiserror::Error;
 use tokio::process::Command;
+use tokio::sync::RwLock;
 use tokio::time::timeout;
 use tracing::{error, info};
 
@@ -52,6 +54,7 @@ pub struct FirewallManager {
     tuxfrw_bin: String,
     nft_bin: String,
     timeout_duration: Duration,
+    cached_version: Arc<RwLock<Option<String>>>,
 }
 
 impl FirewallManager {
@@ -60,10 +63,16 @@ impl FirewallManager {
             tuxfrw_bin: tuxfrw_bin.to_string(),
             nft_bin: nft_bin.to_string(),
             timeout_duration: Duration::from_secs(timeout_secs),
+            cached_version: Arc::new(RwLock::new(None)),
         }
     }
 
     pub async fn execute(&self, action: FirewallAction) -> Result<CommandResult, FirewallError> {
+        if matches!(action, FirewallAction::Start | FirewallAction::Restart) {
+            let mut write = self.cached_version.write().await;
+            *write = None;
+        }
+
         let mut cmd = Command::new(&self.tuxfrw_bin);
         cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 
@@ -144,6 +153,77 @@ impl FirewallManager {
         let json: serde_json::Value = serde_json::from_slice(&output.stdout)
             .unwrap_or_else(|_| serde_json::json!({ "nftables": [] }));
         Ok(json)
+    }
+
+    /// Obtém dinamicamente a versão do tuxfrw-nft instalado no sistema.
+    /// 1. Tenta invocar `<tuxfrw_bin> version`.
+    /// 2. Caso falhe (ex: binário legado sem o subcomando), faz parsing estático do cabeçalho do script.
+    /// 3. Fallback gracioso para a versão de baseline "v6.0.2".
+    pub async fn get_tuxfrw_version(&self) -> String {
+        // 1. Fast-path de leitura do cache
+        {
+            let read = self.cached_version.read().await;
+            if let Some(ref v) = *read {
+                return v.clone();
+            }
+        }
+
+        let mut detected_version = None;
+
+        // 2. Executa <tuxfrw_bin> version com timeout curto
+        let mut cmd = Command::new(&self.tuxfrw_bin);
+        cmd.arg("version")
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped());
+
+        if let Ok(Ok(output)) = timeout(Duration::from_secs(2), cmd.output()).await {
+            if output.status.success() {
+                let out_str = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                if !out_str.is_empty() {
+                    let v = if let Some(idx) = out_str.rfind(' ') {
+                        out_str[idx + 1..].trim().to_string()
+                    } else {
+                        out_str
+                    };
+                    let formatted = if v.starts_with('v') {
+                        v
+                    } else {
+                        format!("v{}", v)
+                    };
+                    detected_version = Some(formatted);
+                }
+            }
+        }
+
+        // 3. Fallback: parsing estático das primeiras linhas do script
+        if detected_version.is_none() {
+            if let Ok(content) = tokio::fs::read_to_string(&self.tuxfrw_bin).await {
+                for line in content.lines().take(60) {
+                    if let Some(pos) = line.find("TuxFrw-NFT ") {
+                        let rem = &line[pos + 11..];
+                        let ver: String = rem
+                            .chars()
+                            .take_while(|c| c.is_ascii_digit() || *c == '.')
+                            .collect();
+                        if !ver.is_empty() && ver.contains('.') {
+                            detected_version = Some(format!("v{}", ver));
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 4. Fallback final caso o arquivo não exista no path
+        let version = detected_version.unwrap_or_else(|| "v6.0.2".to_string());
+
+        // 5. Atualiza cache em memória
+        {
+            let mut write = self.cached_version.write().await;
+            *write = Some(version.clone());
+        }
+
+        version
     }
 }
 

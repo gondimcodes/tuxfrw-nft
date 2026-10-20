@@ -1,4 +1,4 @@
-use crate::firewall::ConfigService;
+use crate::firewall::{ConfigService, FirewallManager};
 use askama::Template;
 use axum::{
     extract::State,
@@ -12,6 +12,8 @@ use std::sync::Arc;
 pub struct ConfigTemplate {
     pub raw_content: String,
     pub conf_path: String,
+    pub tuxfrw_version: String,
+    pub web_version: &'static str,
 }
 
 #[derive(Deserialize)]
@@ -27,8 +29,10 @@ pub struct UpdateConfigResponse {
 }
 
 pub async fn config_page(
+    State(firewall): State<Arc<FirewallManager>>,
     State(config_service): State<Arc<ConfigService>>,
 ) -> Html<String> {
+    let tuxfrw_version = firewall.get_tuxfrw_version().await;
     let conf_view = config_service.read_tuxfrw_conf().unwrap_or_else(|_| {
         crate::firewall::TuxfrwConfigView {
             raw_content: "# Não foi possível ler o arquivo tuxfrw.conf".to_string(),
@@ -39,6 +43,8 @@ pub async fn config_page(
     let tpl = ConfigTemplate {
         raw_content: conf_view.raw_content,
         conf_path: config_service.get_conf_path().to_string_lossy().to_string(),
+        tuxfrw_version,
+        web_version: env!("CARGO_PKG_VERSION"),
     };
 
     Html(tpl.render().unwrap_or_default())

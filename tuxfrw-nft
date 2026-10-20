@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 6.0.1
+# TuxFrw-NFT 6.0.2
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -26,6 +26,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 # ----------------------------------------------------------------------------
+
+TUXFRW_VERSION="6.0.2"
 
 #################################################################
 # Definindo funcoes:
@@ -357,7 +359,7 @@ EOF
 
 header() {
   echo "========================================================================="
-  echo "=== TuxFrw-NFT 6.0.1                                                  ==="
+  printf "=== TuxFrw-NFT %-55s===\n" "$TUXFRW_VERSION"
   echo "=== Copyright (C) 2001-2026                                           ===" 
   echo "=== Marcelo Gondim <gondim@gmail.com>                                 ===" 
   echo "+-----------------------------------------------------------------------+"
@@ -412,7 +414,11 @@ case "$1" in
     header
     cf_update
     ;;
+  version|-v|--version)
+    echo "$TUXFRW_VERSION"
+    exit 0
+    ;;
   *)
-    echo "Usage: $0 {start|stop|load|natopen|status|restart|panic|cf-update}"
+    echo "Usage: $0 {start|stop|load|natopen|status|restart|panic|cf-update|version}"
     exit 1
 esac
