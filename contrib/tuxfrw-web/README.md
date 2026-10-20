@@ -27,6 +27,19 @@
 
 ---
 
+## Screenshots
+
+### Operations Dashboard & Netfilter Live State
+![Operations Dashboard](screenshots/dashboard.png)
+
+### Central Configuration Editor (`tuxfrw.conf`)
+![Central Configuration Editor](screenshots/config-editor.png)
+
+### Rule Modules Editor (`rules/*.mod`)
+![Rule Modules Editor](screenshots/rules-editor.png)
+
+---
+
 ## Project Structure
 
 ```text
@@ -38,6 +51,10 @@ contrib/tuxfrw-web/
 ├── INSTALL.md               # English installation guide
 ├── INSTALL.pt-br.md         # Portuguese installation guide
 ├── tuxfrw-web.service       # Systemd service unit definition
+├── screenshots/             # Dashboard and editor screenshots
+│   ├── dashboard.png
+│   ├── config-editor.png
+│   └── rules-editor.png
 ├── src/
 │   ├── main.rs              # Daemon entry point, HTTPS and Dual-Stack bindings
 │   ├── config.rs            # Configuration loader and atomic TOML writer

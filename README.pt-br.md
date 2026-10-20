@@ -19,6 +19,7 @@
 ## Sumário
 - [Visão Geral](#visão-geral)
 - [Principais Recursos](#principais-recursos)
+- [Painel de Gestão Web (`tuxfrw-web`)](#painel-de-gestão-web-tuxfrw-web)
 - [Estrutura do Projeto](#estrutura-do-projeto)
 - [Requisitos](#requisitos)
 - [Instalação Rápida](#instalação-rápida)
@@ -81,12 +82,49 @@ O sistema opera compilando dinamicamente um arquivo batch atômico de regras (`/
 
 ---
 
+## Painel de Gestão Web (`tuxfrw-web`)
+
+O TuxFrw-NFT inclui o **TuxFrw-Web** (`contrib/tuxfrw-web`), um daemon de gerenciamento e dashboard web de alta performance desenvolvido 100% em **Rust** (Axum 0.7, Tokio, Rustls, Dual-Stack IPv6/IPv4).
+
+### Principais Recursos do TuxFrw-Web:
+- **Segurança de Memória e Performance em Rust**: Binário estático único sem dependências externas no servidor (sem necessidade de Node.js, Python ou PHP).
+- **HTTPS Nativo e Dual-Stack Simultâneo**: Escuta em `[::]:8443` (ou porta configurável como `9443`), atendendo clientes IPv6 e IPv4 em conexões cifradas com geração automática de certificados TLS ECDSA.
+- **Autenticação Robusta**: Hashing com Argon2id e CAPTCHA vetorial SVG dinâmico com assinatura criptográfica HMAC-SHA256 e proteção anti-replay de uso único (*Single-Use Token*).
+- **Editor Web com Validação Sintática em 2 Níveis**: Edição segura do `tuxfrw.conf` e de todos os módulos `rules/*.mod`, com bloqueio prévio de gravação caso haja erros de sintaxe (`bash -n` e `nft -c`).
+- **Terminal ao Vivo e Modo Pânico**: Execução em tempo real de comandos (`start`, `restart`, `cf-update`, recarga atômica de chains) com saída de terminal colorida e bloqueio emergencial (*Panic Mode*).
+- **Interface Bilíngue**: Suporte dinâmico a Português do Brasil e Inglês em todas as telas e mensagens do sistema.
+
+### Telas do Sistema (Screenshots)
+
+#### Dashboard Operacional e Estado do Netfilter
+![Dashboard Operacional do TuxFrw-Web](contrib/tuxfrw-web/screenshots/dashboard.png)
+
+#### Editor da Configuração Central (`tuxfrw.conf`)
+![Editor de Configuração Central do TuxFrw-Web](contrib/tuxfrw-web/screenshots/config-editor.png)
+
+#### Editor de Módulos de Regras (`rules/*.mod`)
+![Editor de Módulos de Regras do TuxFrw-Web](contrib/tuxfrw-web/screenshots/rules-editor.png)
+
+> Para detalhes completos de compilação, configuração e serviço systemd, consulte a [**Documentação do TuxFrw-Web**](contrib/tuxfrw-web/README.pt-br.md) e o [**Guia de Instalação**](contrib/tuxfrw-web/INSTALL.pt-br.md).
+
+---
+
 ## Estrutura do Projeto
 
 ### Árvore do Repositório (Código-Fonte)
 
 ```text
 tuxfrw-nft/
+├── contrib/
+│   └── tuxfrw-web/               # Daemon e interface web em Rust (HTTPS Dual-Stack)
+│       ├── Cargo.toml            # Dependências e compilação do Rust
+│       ├── config.example.toml   # Template de referência para /etc/tuxfrw-nft/config.toml
+│       ├── README.md & .pt-br.md # Documentação técnica do TuxFrw-Web (EN / PT-BR)
+│       ├── INSTALL.md & .pt-br.md# Manuais de instalação e operação (EN / PT-BR)
+│       ├── tuxfrw-web.service    # Definição da unidade systemd
+│       ├── screenshots/          # Imagens do painel e editores web
+│       ├── src/                  # Código-fonte Rust (Axum, Tokio, Rustls, Auth, Firewall)
+│       └── templates/            # Templates HTML Askama pré-compilados
 ├── tuxfrw-nft                    # Script executável principal de controle (CLI)
 ├── tuxfrw.conf                   # Arquivo central de configuração e variáveis de rede
 ├── tuxfrw-nft.service            # Unidade de serviço para gerenciamento via systemd

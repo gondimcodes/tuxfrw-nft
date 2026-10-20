@@ -8,6 +8,14 @@ and this project adheres to semantic release versioning.
 ## [6.0.0] - 2026-10-19
 
 ### Added
+- **TuxFrw-Web (Web Management Dashboard & Control Daemon)**:
+  - Introduced `contrib/tuxfrw-web`, a lightweight, memory-safe web management dashboard and control daemon built 100% in Rust (Axum 0.7, Tokio, Rustls, Askama).
+  - Native HTTPS engine and simultaneous Dual-Stack IPv6/IPv4 listening on `[::]:8443` (or customizable `9443`).
+  - Hardened authentication with Argon2id password hashing and vector SVG CAPTCHA (HMAC-SHA256, single-use anti-replay tokens, 5-minute TTL).
+  - Integrated online editor for `tuxfrw.conf` and `rules/*.mod` with two-tier pre-save syntax validation (`bash -n` and kernel dry-run `nft -c`).
+  - Real-time command execution terminal stream, emergency Panic Mode (lockdown), and dynamic atomic reloading of chains.
+  - Complete internationalization (i18n) support with instant dynamic switching between English and Brazilian Portuguese across all templates.
+  - Dedicated systemd supervision unit (`tuxfrw-web.service`) and comprehensive installation manuals.
 - **Modular TCP SYNPROXY (Anti-SYN Flood DDoS Mitigation)**:
   - Implemented modular TCP SYNPROXY architecture controlled via `SYNPROXY` and `SYNPROXY_PORTS` in `tuxfrw.conf`.
   - Added `synproxy-prerouting` chain at raw priority in `tf_BASE.mod` marking incoming SYNs on protected ports as `notrack` to bypass premature conntrack session allocation.

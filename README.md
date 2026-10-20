@@ -19,6 +19,7 @@
 ## Table of Contents
 - [Overview](#overview)
 - [Key Features](#key-features)
+- [Web Management Dashboard (`tuxfrw-web`)](#web-management-dashboard-tuxfrw-web)
 - [Directory Structure](#directory-structure)
 - [Requirements](#requirements)
 - [Quick Start](#quick-start)
@@ -81,12 +82,49 @@ The tool compiles rule definitions into an atomic ruleset batch file (`/etc/tuxf
 
 ---
 
+## Web Management Dashboard (`tuxfrw-web`)
+
+TuxFrw-NFT includes **TuxFrw-Web** (`contrib/tuxfrw-web`), an optional high-performance, memory-safe web management dashboard and control daemon built in **Rust** (Axum 0.7, Tokio, Rustls, Dual-Stack IPv6/IPv4).
+
+### Key Features of TuxFrw-Web:
+- **Memory Safety & Performance**: Single self-contained static executable with zero external runtime dependencies (no Node.js, Python, or PHP).
+- **Native Dual-Stack & HTTPS**: Binds to `[::]:8443` (or customizable `9443`) with automatic ECDSA TLS certificate generation.
+- **Hardened Authentication**: Strong Argon2id password hashing and vector SVG CAPTCHA (HMAC-SHA256, single-use anti-replay tokens, 5-minute TTL).
+- **Online Rules & Config Editor**: Direct web-based editing of `tuxfrw.conf` and `rules/*.mod` with two-tier pre-save syntax validation (`bash -n` and `nft -c`).
+- **Live Output Console & Panic Lockdown**: Real-time terminal output for firewall operations (`start`, `restart`, `cf-update`, atomic chain reloads) and emergency Panic Lockdown.
+- **Bilingual Interface**: Seamless runtime switching between English and Brazilian Portuguese across all templates.
+
+### Screenshots
+
+#### Operations Dashboard & Netfilter Live State
+![TuxFrw-Web Operations Dashboard](contrib/tuxfrw-web/screenshots/dashboard.png)
+
+#### Central Configuration Editor (`tuxfrw.conf`)
+![TuxFrw-Web Configuration Editor](contrib/tuxfrw-web/screenshots/config-editor.png)
+
+#### Rule Modules Editor (`rules/*.mod`)
+![TuxFrw-Web Rule Modules Editor](contrib/tuxfrw-web/screenshots/rules-editor.png)
+
+> For full build, configuration, and systemd deployment details, refer to the [**TuxFrw-Web Documentation**](contrib/tuxfrw-web/README.md) and [**Installation Guide**](contrib/tuxfrw-web/INSTALL.md).
+
+---
+
 ## Directory Structure
 
 ### Repository Tree (Source Code)
 
 ```text
 tuxfrw-nft/
+├── contrib/
+│   └── tuxfrw-web/               # Rust web management daemon & dashboard (HTTPS Dual-Stack)
+│       ├── Cargo.toml            # Dependencies and compilation definitions
+│       ├── config.example.toml   # Reference template for /etc/tuxfrw-nft/config.toml
+│       ├── README.md & .pt-br.md # TuxFrw-Web documentation (EN / PT-BR)
+│       ├── INSTALL.md & .pt-br.md# Installation guides (EN / PT-BR)
+│       ├── tuxfrw-web.service    # Systemd unit definition
+│       ├── screenshots/          # Dashboard and web editor screenshots
+│       ├── src/                  # Rust source code (Axum, Tokio, Rustls, Auth, Firewall)
+│       └── templates/            # Askama precompiled HTML templates
 ├── tuxfrw-nft                    # Main CLI management launcher script
 ├── tuxfrw.conf                   # Central configuration file and network parameters
 ├── tuxfrw-nft.service            # Systemd service unit for service supervision

@@ -38,29 +38,41 @@ impl SessionStore {
         lock.retain(|_, s| s.expires_at > now);
 
         lock.insert(token.clone(), session);
-        tracing::info!("create_session: token '{}' registrado para '{}'. Total ativas: {}", token, username, lock.len());
+        // SEC-03: Não logar token bruto nos logs
+        tracing::debug!("create_session: nova sessão registrada para usuário '{}'. Total ativas: {}", username, lock.len());
         token
     }
 
+    /// SEC-08: Validação otimizada via trava de LEITURA compartilhada (fast-path).
+    /// SEC-03: Sem vazamento de tokens brutos nos logs do sistema.
     pub async fn validate_session(&self, token: &str) -> Option<String> {
-        let mut lock = self.sessions.write().await;
         let now = Utc::now();
-        tracing::info!("validate_session: buscando token '{}'. Total no store: {}", token, lock.len());
 
-        if let Some(session) = lock.get(token) {
-            tracing::info!("validate_session: encontrado para '{}', expira em: {:?}, now: {:?}", session.username, session.expires_at, now);
-            if session.expires_at > now {
-                return Some(session.username.clone());
+        // 1. Fast path: leitura compartilhada sem bloquear outras threads
+        {
+            let lock = self.sessions.read().await;
+            if let Some(session) = lock.get(token) {
+                if session.expires_at > now {
+                    return Some(session.username.clone());
+                }
             } else {
-                tracing::warn!("validate_session: sessão expirada para token '{}'!", token);
+                return None;
             }
-        } else {
-            tracing::warn!("validate_session: token '{}' NÃO existe no store!", token);
         }
 
-        // Clean up expired or invalid
-        lock.remove(token);
-        None
+        // 2. Slow path: sessão expirada encontrada, adquire trava de escrita para remoção
+        let mut lock = self.sessions.write().await;
+        if let Some(session) = lock.get(token) {
+            if session.expires_at <= now {
+                tracing::debug!("validate_session: sessão expirada removida para '{}'", session.username);
+                lock.remove(token);
+                None
+            } else {
+                Some(session.username.clone())
+            }
+        } else {
+            None
+        }
     }
 
     pub async fn destroy_session(&self, token: &str) {

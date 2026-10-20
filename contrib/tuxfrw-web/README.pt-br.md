@@ -27,6 +27,19 @@
 
 ---
 
+## Telas do Sistema (Screenshots)
+
+### Dashboard Operacional e Estado do Netfilter
+![Dashboard Operacional](screenshots/dashboard.png)
+
+### Editor da Configuração Central (`tuxfrw.conf`)
+![Editor de Configuração Central](screenshots/config-editor.png)
+
+### Editor de Módulos de Regras (`rules/*.mod`)
+![Editor de Módulos de Regras](screenshots/rules-editor.png)
+
+---
+
 ## Estrutura do Projeto
 
 ```text
@@ -38,6 +51,10 @@ contrib/tuxfrw-web/
 ├── INSTALL.md               # Manual de instalação em inglês
 ├── INSTALL.pt-br.md         # Manual de instalação em português
 ├── tuxfrw-web.service       # Unidade de serviço systemd
+├── screenshots/             # Imagens do painel e editores
+│   ├── dashboard.png
+│   ├── config-editor.png
+│   └── rules-editor.png
 ├── src/
 │   ├── main.rs              # Inicializador do daemon, bindings HTTPS e Dual-Stack
 │   ├── config.rs            # Loader e escritor atômico do config.toml

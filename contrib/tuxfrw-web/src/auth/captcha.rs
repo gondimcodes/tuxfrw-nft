@@ -3,6 +3,9 @@ use hmac::{Hmac, Mac};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use sha2::Sha256;
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 type HmacSha256 = Hmac<Sha256>;
 
@@ -13,11 +16,44 @@ pub struct CaptchaResponse {
     pub captcha_svg: String,
 }
 
+/// Store em memória com controle de uso único (anti-replay) e purga por TTL
+#[derive(Clone, Default)]
+pub struct CaptchaStore {
+    used_tokens: Arc<RwLock<HashMap<String, i64>>>,
+}
+
+impl CaptchaStore {
+    pub fn new() -> Self {
+        Self {
+            used_tokens: Arc::new(RwLock::new(HashMap::new())),
+        }
+    }
+
+    /// Verifica se o token já foi consumido e, se não, marca como consumido
+    pub async fn consume_token(&self, nonce: &str, expires_at: i64) -> bool {
+        let mut lock = self.used_tokens.write().await;
+        let now = Utc::now().timestamp();
+
+        // Purga tokens antigos
+        lock.retain(|_, &mut exp| exp > now);
+
+        if lock.contains_key(nonce) {
+            // Já consumido anteriormente (tentativa de replay)
+            return false;
+        }
+
+        lock.insert(nonce.to_string(), expires_at);
+        true
+    }
+}
+
 pub struct CaptchaEngine;
 
 impl CaptchaEngine {
     /// Gera um desafio de CAPTCHA visual dinâmico em formato vetorial SVG,
     /// com linhas de ruído ótico, rotação aleatória de caracteres e token assinado por HMAC/SHA-256.
+    /// SEC-01: O código secreto JAMAIS é entregue ao cliente (nem em texto puro nem em Base64).
+    /// SEC-10: Exige chave secreta válida.
     pub fn generate(secret_key: &str) -> Result<CaptchaResponse, String> {
         let mut rng = rand::thread_rng();
 
@@ -31,14 +67,11 @@ impl CaptchaEngine {
             .collect();
 
         let timestamp_utc = Utc::now().timestamp();
-        let signature = Self::sign_payload(&code.to_uppercase(), timestamp_utc, secret_key)?;
+        let nonce = hex::encode(rng.gen::<[u8; 16]>());
+        let signature = Self::sign_payload(&nonce, timestamp_utc, &code.to_uppercase(), secret_key)?;
 
-        let encoded_code = base64::Engine::encode(
-            &base64::engine::general_purpose::STANDARD,
-            code.to_uppercase(),
-        );
-
-        let captcha_id = format!("{}:{}:{}", encoded_code, timestamp_utc, signature);
+        // captcha_id seguro: nonce:timestamp:assinatura_hmac
+        let captcha_id = format!("{}:{}:{}", nonce, timestamp_utc, signature);
 
         let colors = ["#00F0FF", "#C471ED", "#F43F5E", "#38BDF8", "#10B981"];
         let mut letters_svg = String::new();
@@ -81,8 +114,13 @@ impl CaptchaEngine {
         })
     }
 
-    /// Valida o token e a resposta fornecida pelo usuário
-    pub fn verify(
+    /// Valida o token e a resposta fornecida pelo usuário.
+    /// Protegido contra:
+    /// - SEC-01: Validação sem exposição do código original
+    /// - SEC-02: Replay attack via CaptchaStore (Single-Use Token)
+    /// - Timing attack via Mac::verify_slice em tempo constante
+    pub async fn verify(
+        store: &CaptchaStore,
         captcha_id: &str,
         user_input_code: &str,
         secret_key: &str,
@@ -93,9 +131,14 @@ impl CaptchaEngine {
             return false;
         }
 
-        let encoded_code = parts[0];
+        let nonce = parts[0];
         let timestamp_str = parts[1];
-        let provided_sig = parts[2];
+        let provided_sig_hex = parts[2];
+
+        // Validar formato do nonce (hex 32 caracteres)
+        if nonce.len() != 32 || !nonce.chars().all(|c| c.is_ascii_hexdigit()) {
+            return false;
+        }
 
         let timestamp: i64 = match timestamp_str.parse() {
             Ok(t) => t,
@@ -108,45 +151,41 @@ impl CaptchaEngine {
             return false; // Expirado ou timestamp no futuro
         }
 
-        let decoded_bytes = match base64::Engine::decode(
-            &base64::engine::general_purpose::STANDARD,
-            encoded_code,
-        ) {
+        let clean_user_code = user_input_code.trim().to_uppercase();
+        if clean_user_code.is_empty() || clean_user_code.len() > 10 {
+            return false;
+        }
+
+        let provided_sig_bytes = match hex::decode(provided_sig_hex) {
             Ok(b) => b,
             Err(_) => return false,
         };
 
-        let real_code = match String::from_utf8(decoded_bytes) {
-            Ok(s) => s,
+        // Validação da assinatura HMAC-SHA256 em tempo constante
+        let mut mac = match HmacSha256::new_from_slice(secret_key.as_bytes()) {
+            Ok(m) => m,
             Err(_) => return false,
         };
+        mac.update(format!("{}:{}:{}", nonce, timestamp, clean_user_code).as_bytes());
 
-        // Validação da assinatura criptográfica
-        let expected_sig = match Self::sign_payload(&real_code, timestamp, secret_key) {
-            Ok(s) => s,
-            Err(_) => return false,
-        };
-
-        if expected_sig != provided_sig {
-            return false; // Token adulterado
+        if mac.verify_slice(&provided_sig_bytes).is_err() {
+            return false; // Assinatura incorreta (código errado ou token adulterado)
         }
 
-        // Comparação insensível a maiúsculas/minúsculas e espaços
-        let clean_user_code = user_input_code.trim().to_uppercase();
-        clean_user_code == real_code
+        // SEC-02: Garantir que o token seja de uso único (anti-replay)
+        let expires_at = timestamp + ttl_secs as i64;
+        store.consume_token(nonce, expires_at).await
     }
 
-    fn sign_payload(code: &str, timestamp: i64, secret_key: &str) -> Result<String, String> {
-        let effective_key = if secret_key.is_empty() {
-            "tuxfrw-default-secure-captcha-seed-hmac"
-        } else {
-            secret_key
-        };
-
-        let mut mac = HmacSha256::new_from_slice(effective_key.as_bytes())
+    fn sign_payload(
+        nonce: &str,
+        timestamp: i64,
+        code: &str,
+        secret_key: &str,
+    ) -> Result<String, String> {
+        let mut mac = HmacSha256::new_from_slice(secret_key.as_bytes())
             .map_err(|e| format!("Erro ao inicializar HMAC: {}", e))?;
-        mac.update(format!("{}:{}", code, timestamp).as_bytes());
+        mac.update(format!("{}:{}:{}", nonce, timestamp, code).as_bytes());
         Ok(hex::encode(mac.finalize().into_bytes()))
     }
 }
-

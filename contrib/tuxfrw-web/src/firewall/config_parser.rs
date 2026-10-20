@@ -67,7 +67,48 @@ impl ConfigService {
         })
     }
 
+    pub fn validate_bash_syntax(&self, content: &str, display_name: &str) -> Result<(), String> {
+        let temp_dir = std::env::temp_dir();
+        let temp_file_path = temp_dir.join(format!(".tuxfrw_syntax_chk_{}.tmp", uuid::Uuid::new_v4()));
+
+        fs::write(&temp_file_path, content)
+            .map_err(|e| format!("Falha ao criar arquivo temporário de validação: {}", e))?;
+
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            let _ = fs::set_permissions(&temp_file_path, fs::Permissions::from_mode(0o600));
+        }
+
+        struct TempCleanup(PathBuf);
+        impl Drop for TempCleanup {
+            fn drop(&mut self) {
+                let _ = fs::remove_file(&self.0);
+            }
+        }
+        let _cleanup = TempCleanup(temp_file_path.clone());
+
+        let bash_output = std::process::Command::new("bash")
+            .arg("-n")
+            .arg(&temp_file_path)
+            .output()
+            .map_err(|e| format!("Erro ao executar validador bash: {}", e))?;
+
+        if !bash_output.status.success() {
+            let stderr = String::from_utf8_lossy(&bash_output.stderr);
+            let sanitized = stderr.replace(&temp_file_path.to_string_lossy().to_string(), display_name);
+            return Err(format!("Erro de sintaxe Bash:\n{}", sanitized.trim()));
+        }
+
+        Ok(())
+    }
+
     pub fn save_tuxfrw_conf(&self, content: &str) -> io::Result<()> {
+        // SEC-09: Validação sintática obrigatória antes de gravar tuxfrw.conf
+        if let Err(val_err) = self.validate_bash_syntax(content, "tuxfrw.conf") {
+            return Err(io::Error::new(io::ErrorKind::InvalidData, val_err));
+        }
+
         let conf_path = self.get_conf_path();
         self.write_atomic(&conf_path, content)?;
         info!("Saved updated tuxfrw.conf to {:?}", conf_path);
@@ -95,8 +136,16 @@ impl ConfigService {
         // Sanitize to prevent path traversal
         let safe_name = Path::new(file_name)
             .file_name()
-            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Invalid file name"))?
+            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Nome de arquivo inválido"))?
             .to_string_lossy();
+
+        // SEC-07: Restrição estrita ao formato de módulo de regras do TuxFrw
+        if !safe_name.starts_with("tf_") || !safe_name.ends_with(".mod") {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Nome de módulo inválido. Deve iniciar com tf_ e terminar com .mod",
+            ));
+        }
 
         let path = self.get_rules_dir().join(safe_name.as_ref());
         let content = fs::read_to_string(&path)?;

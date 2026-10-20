@@ -45,17 +45,26 @@ pub async fn load_or_generate_tls(
     }
 
     std::fs::write(cert_p, &cert_pem)?;
-    std::fs::write(key_p, &key_pem)?;
 
+    // SEC-05: Criação da chave privada TLS já com modo 0600 atômico no Unix (elimina janela TOCTOU)
     #[cfg(unix)]
     {
-        use std::os::unix::fs::PermissionsExt;
-        let mut perms = std::fs::metadata(key_p)?.permissions();
-        perms.set_mode(0o600);
-        std::fs::set_permissions(key_p, perms)?;
+        use std::io::Write;
+        use std::os::unix::fs::OpenOptionsExt;
+
+        let mut file = std::fs::OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .mode(0o600)
+            .open(key_p)?;
+        file.write_all(key_pem.as_bytes())?;
+    }
+    #[cfg(not(unix))]
+    {
+        std::fs::write(key_p, &key_pem)?;
     }
 
     info!("Self-signed TLS certificate successfully saved to {:?}", cert_p);
     Ok(RustlsConfig::from_pem(cert_pem.into_bytes(), key_pem.into_bytes()).await?)
 }
-

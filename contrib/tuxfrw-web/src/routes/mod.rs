@@ -4,7 +4,7 @@ pub mod config_view;
 pub mod dashboard;
 pub mod rules_view;
 
-use crate::auth::{SessionStore, SESSION_COOKIE};
+use crate::auth::{CaptchaStore, SessionStore, SESSION_COOKIE};
 use crate::config::Config;
 use crate::firewall::{ConfigService, FirewallManager};
 use axum::{
@@ -22,6 +22,7 @@ use std::sync::Arc;
 pub struct AppState {
     pub config: Arc<tokio::sync::RwLock<Config>>,
     pub session_store: SessionStore,
+    pub captcha_store: CaptchaStore,
     pub firewall: Arc<FirewallManager>,
     pub config_service: Arc<ConfigService>,
 }
@@ -52,9 +53,47 @@ pub fn create_router(state: AppState) -> Router {
     Router::new()
         .merge(public_routes)
         .merge(protected_routes)
+        .layer(middleware::from_fn_with_state(
+            state.clone(),
+            security_headers_middleware,
+        ))
         .with_state(state)
 }
 
+/// SEC-04: Middleware de injeção de Headers HTTP Defensivos
+async fn security_headers_middleware(
+    State(state): State<AppState>,
+    req: Request<Body>,
+    next: Next,
+) -> Response {
+    let is_tls = {
+        let cfg = state.config.read().await;
+        cfg.server.tls_enabled
+    };
+
+    let mut response = next.run(req).await;
+    let headers = response.headers_mut();
+
+    headers.insert(header::X_FRAME_OPTIONS, "DENY".parse().unwrap());
+    headers.insert(header::X_CONTENT_TYPE_OPTIONS, "nosniff".parse().unwrap());
+    headers.insert(header::REFERRER_POLICY, "strict-origin-when-cross-origin".parse().unwrap());
+    headers.insert(
+        header::CONTENT_SECURITY_POLICY,
+        "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:;".parse().unwrap(),
+    );
+
+    if is_tls {
+        headers.insert(
+            header::STRICT_TRANSPORT_SECURITY,
+            "max-age=31536000; includeSubDomains".parse().unwrap(),
+        );
+    }
+
+    response
+}
+
+/// Middleware de autenticação de sessão via Cookie
+/// SEC-03: Sem vazamento de identificadores de sessão nem dados de cookie em logs
 async fn auth_middleware(
     State(state): State<AppState>,
     req: Request<Body>,
@@ -64,20 +103,12 @@ async fn auth_middleware(
     let mut authenticated = false;
     let mut authed_user: Option<String> = None;
 
-    let cookie_header_raw = req.headers()
-        .get(header::COOKIE)
-        .and_then(|h| h.to_str().ok())
-        .unwrap_or("<NENHUM HEADER COOKIE>");
-
-    tracing::info!("auth_middleware: rota '{}' - Header Cookie recebido: '{}'", path, cookie_header_raw);
-
     if let Some(cookie_hdr) = req.headers().get(header::COOKIE) {
         if let Ok(cookie_str) = cookie_hdr.to_str() {
             for part in cookie_str.split(';') {
                 let part = part.trim();
                 if let Some(token) = part.strip_prefix(&format!("{}=", SESSION_COOKIE)) {
                     let clean_token = token.trim_matches('"').trim();
-                    tracing::info!("auth_middleware: tentando validar token extraído '{}'", clean_token);
                     if let Some(user) = state.session_store.validate_session(clean_token).await {
                         authenticated = true;
                         authed_user = Some(user);
@@ -89,10 +120,10 @@ async fn auth_middleware(
     }
 
     if authenticated {
-        tracing::debug!("auth_middleware: acesso permitido a '{}' para {:?}", path, authed_user);
+        tracing::trace!("auth_middleware: acesso autenticado a '{}' para {:?}", path, authed_user);
         next.run(req).await
     } else {
-        tracing::warn!("auth_middleware: acesso não autenticado na rota '{}'. Redirecionando para /login.", path);
+        tracing::debug!("auth_middleware: acesso não autenticado na rota '{}'. Redirecionando para /login.", path);
         if path.starts_with("/api/") {
             (
                 StatusCode::UNAUTHORIZED,
@@ -103,12 +134,6 @@ async fn auth_middleware(
         } else {
             Redirect::to("/login").into_response()
         }
-    }
-}
-
-impl axum::extract::FromRef<AppState> for (Arc<tokio::sync::RwLock<Config>>, SessionStore) {
-    fn from_ref(state: &AppState) -> Self {
-        (state.config.clone(), state.session_store.clone())
     }
 }
 
@@ -123,4 +148,3 @@ impl axum::extract::FromRef<AppState> for Arc<ConfigService> {
         state.config_service.clone()
     }
 }
-

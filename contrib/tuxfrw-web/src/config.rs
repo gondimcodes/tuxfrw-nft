@@ -1,3 +1,4 @@
+use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tracing::{info, warn};
@@ -85,20 +86,38 @@ impl Config {
             Some(PathBuf::from("config.example.toml")),
         ];
 
+        let mut config = None;
+
         for candidate in candidate_paths.into_iter().flatten() {
             if candidate.exists() {
                 info!("Loading configuration from {:?}", candidate);
                 let content = std::fs::read_to_string(&candidate)?;
                 let mut cfg: Config = toml::from_str(&content)?;
                 cfg.active_path = candidate;
-                return Ok(cfg);
+                config = Some(cfg);
+                break;
             }
         }
 
-        warn!("No config.toml found. Using default internal configuration.");
-        let mut default_cfg = Config::default();
-        default_cfg.active_path = PathBuf::from("/etc/tuxfrw-nft/config.toml");
-        Ok(default_cfg)
+        let mut cfg = match config {
+            Some(c) => c,
+            None => {
+                warn!("No config.toml found. Using default internal configuration.");
+                let mut default_cfg = Config::default();
+                default_cfg.active_path = PathBuf::from("/etc/tuxfrw-nft/config.toml");
+                default_cfg
+            }
+        };
+
+        // SEC-10: Se secret_key estiver vazia, gera chave aleatória de 32 bytes em memória por boot
+        if cfg.auth.secret_key.trim().is_empty() {
+            let mut rng = rand::thread_rng();
+            let key_bytes: [u8; 32] = rng.gen();
+            cfg.auth.secret_key = hex::encode(key_bytes);
+            info!("Generated cryptographically secure in-memory secret_key for session & CAPTCHA signing");
+        }
+
+        Ok(cfg)
     }
 
     pub fn save_password_hash(&mut self, new_hash: &str) -> std::io::Result<()> {
@@ -108,8 +127,26 @@ impl Config {
 
         let target_dir = self.active_path.parent().unwrap_or_else(|| Path::new("."));
         let temp_file = target_dir.join(format!(".config.tmp.{}", uuid::Uuid::new_v4()));
-        
-        std::fs::write(&temp_file, serialized)?;
+
+        // SEC-05: Criação do arquivo temporário de configuração já com permissão 0600 no Unix
+        #[cfg(unix)]
+        {
+            use std::io::Write;
+            use std::os::unix::fs::OpenOptionsExt;
+
+            let mut file = std::fs::OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .mode(0o600)
+                .open(&temp_file)?;
+            file.write_all(serialized.as_bytes())?;
+        }
+        #[cfg(not(unix))]
+        {
+            std::fs::write(&temp_file, serialized)?;
+        }
+
         std::fs::rename(&temp_file, &self.active_path)?;
         info!("Updated password hash saved to {:?}", self.active_path);
         Ok(())

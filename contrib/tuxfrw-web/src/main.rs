@@ -64,10 +64,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         &config.firewall.nft_bin,
     ));
     let session_store = SessionStore::new();
+    let captcha_store = auth::CaptchaStore::new();
 
     let state = AppState {
         config: Arc::new(tokio::sync::RwLock::new(config)),
         session_store,
+        captcha_store,
         firewall: firewall_mgr,
         config_service,
     };
