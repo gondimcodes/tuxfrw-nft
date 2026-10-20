@@ -67,6 +67,48 @@ impl ConfigService {
         })
     }
 
+    pub fn validate_tuxfrw_conf(&self, content: &str) -> Result<(), String> {
+        // 1. Validação estrutural de configuração (formato chave=valor):
+        // No tuxfrw.conf, todas as linhas ativas devem ser comentários (#) ou atribuições NOME_VAR="VALOR".
+        // Caracteres soltos (como 'á', comandos shell ou palavras avulsas) são imediatamente rejeitados.
+        for (idx, line) in content.lines().enumerate() {
+            let line_no = idx + 1;
+            let trimmed = line.trim();
+
+            if trimmed.is_empty() || trimmed.starts_with('#') {
+                continue;
+            }
+
+            let clean_line = if let Some(stripped) = trimmed.strip_prefix("export ") {
+                stripped.trim()
+            } else {
+                trimmed
+            };
+
+            let Some((var_name, _val)) = clean_line.split_once('=') else {
+                return Err(format!(
+                    "Erro de formato na linha {}: '{}'.\nNo tuxfrw.conf, todas as linhas devem ser comentários (#) ou definições no formato NOME_VAR=\"VALOR\".",
+                    line_no, trimmed
+                ));
+            };
+
+            let var_name = var_name.trim();
+            let is_valid_ident = !var_name.is_empty()
+                && (var_name.starts_with(|c: char| c.is_ascii_alphabetic() || c == '_'))
+                && var_name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+
+            if !is_valid_ident {
+                return Err(format!(
+                    "Erro de sintaxe na linha {}: identificador inválido '{}'.\nNomes de variáveis devem conter apenas letras, números e underscore.",
+                    line_no, var_name
+                ));
+            }
+        }
+
+        // 2. Validação sintática do interpretador Bash (aspas balanceadas, escapes e sintaxe)
+        self.validate_bash_syntax(content, "tuxfrw.conf")
+    }
+
     pub fn validate_bash_syntax(&self, content: &str, display_name: &str) -> Result<(), String> {
         let temp_dir = std::env::temp_dir();
         let temp_file_path = temp_dir.join(format!(".tuxfrw_syntax_chk_{}.tmp", uuid::Uuid::new_v4()));
@@ -104,8 +146,8 @@ impl ConfigService {
     }
 
     pub fn save_tuxfrw_conf(&self, content: &str) -> io::Result<()> {
-        // SEC-09: Validação sintática obrigatória antes de gravar tuxfrw.conf
-        if let Err(val_err) = self.validate_bash_syntax(content, "tuxfrw.conf") {
+        // Validação obrigatória estrutural e sintática antes de gravar tuxfrw.conf
+        if let Err(val_err) = self.validate_tuxfrw_conf(content) {
             return Err(io::Error::new(io::ErrorKind::InvalidData, val_err));
         }
 
