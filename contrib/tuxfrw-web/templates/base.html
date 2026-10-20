@@ -169,7 +169,7 @@
 </head>
 <body>
     <header>
-        <a href="/" class="brand">
+        <a href="/" class="brand" onclick="refreshTuxfrwVersion()">
             🛡️ TuxFrw-NFT
             <span class="badge" id="tuxfrw-version-badge">{{ tuxfrw_version }}</span>
             <span class="badge badge-success">Dual-Stack IPv6/IPv4</span>
@@ -443,8 +443,22 @@
             window.dispatchEvent(new CustomEvent('languageChanged', { detail: { lang } }));
         }
 
+        async function refreshTuxfrwVersion() {
+            try {
+                const res = await fetch('/api/version');
+                if (res.ok) {
+                    const data = await res.json();
+                    const badge = document.getElementById('tuxfrw-version-badge');
+                    if (badge && data.tuxfrw_version) {
+                        badge.textContent = data.tuxfrw_version;
+                    }
+                }
+            } catch (_) {}
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             applyLanguage(getCurrentLanguage());
+            refreshTuxfrwVersion();
         });
     </script>
     {% block scripts %}{% endblock %}

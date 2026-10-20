@@ -125,6 +125,9 @@
             const resp = await fetch('/api/status');
             const data = await resp.json();
             document.getElementById('status-output').innerHTML = ansiToHtml(data.output || t('no_rules_or_error'));
+            if (typeof refreshTuxfrwVersion === 'function') {
+                refreshTuxfrwVersion();
+            }
         } catch (e) {
             console.error(e);
         }

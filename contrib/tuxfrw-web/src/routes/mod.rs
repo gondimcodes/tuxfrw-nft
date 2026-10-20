@@ -38,6 +38,7 @@ pub fn create_router(state: AppState) -> Router {
         .route("/api/action/:action", post(api::run_action_api))
         .route("/api/load/:module", post(api::load_module_api))
         .route("/api/status", get(api::get_status_api))
+        .route("/api/version", get(api::get_version_api))
         .route_layer(middleware::from_fn_with_state(
             state.clone(),
             auth_middleware,

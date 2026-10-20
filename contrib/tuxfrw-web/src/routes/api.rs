@@ -11,6 +11,22 @@ pub struct StatusApiResponse {
     pub output: String,
 }
 
+#[derive(Serialize)]
+pub struct VersionApiResponse {
+    pub tuxfrw_version: String,
+    pub web_version: String,
+}
+
+pub async fn get_version_api(
+    State(firewall): State<Arc<FirewallManager>>,
+) -> Json<VersionApiResponse> {
+    let tuxfrw_version = firewall.get_tuxfrw_version().await;
+    Json(VersionApiResponse {
+        tuxfrw_version,
+        web_version: env!("CARGO_PKG_VERSION").to_string(),
+    })
+}
+
 pub async fn run_action_api(
     State(firewall): State<Arc<FirewallManager>>,
     Path(action): Path<String>,

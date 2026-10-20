@@ -54,7 +54,6 @@ pub struct FirewallManager {
     tuxfrw_bin: String,
     nft_bin: String,
     timeout_duration: Duration,
-    cached_version: Arc<RwLock<Option<String>>>,
 }
 
 impl FirewallManager {
@@ -63,16 +62,10 @@ impl FirewallManager {
             tuxfrw_bin: tuxfrw_bin.to_string(),
             nft_bin: nft_bin.to_string(),
             timeout_duration: Duration::from_secs(timeout_secs),
-            cached_version: Arc::new(RwLock::new(None)),
         }
     }
 
     pub async fn execute(&self, action: FirewallAction) -> Result<CommandResult, FirewallError> {
-        if matches!(action, FirewallAction::Start | FirewallAction::Restart) {
-            let mut write = self.cached_version.write().await;
-            *write = None;
-        }
-
         let mut cmd = Command::new(&self.tuxfrw_bin);
         cmd.stdout(Stdio::piped()).stderr(Stdio::piped());
 
@@ -155,22 +148,15 @@ impl FirewallManager {
         Ok(json)
     }
 
-    /// Obtém dinamicamente a versão do tuxfrw-nft instalado no sistema.
+    /// Obtém dinamicamente a versão do tuxfrw-nft instalado no sistema em tempo real.
+    /// Chamado a cada requisição de página ou refresh, garantindo sincronia imediata.
     /// 1. Tenta invocar `<tuxfrw_bin> version`.
     /// 2. Caso falhe (ex: binário legado sem o subcomando), faz parsing estático do cabeçalho do script.
     /// 3. Fallback gracioso para a versão de baseline "v6.0.2".
     pub async fn get_tuxfrw_version(&self) -> String {
-        // 1. Fast-path de leitura do cache
-        {
-            let read = self.cached_version.read().await;
-            if let Some(ref v) = *read {
-                return v.clone();
-            }
-        }
-
         let mut detected_version = None;
 
-        // 2. Executa <tuxfrw_bin> version com timeout curto
+        // 1. Executa <tuxfrw_bin> version com timeout curto
         let mut cmd = Command::new(&self.tuxfrw_bin);
         cmd.arg("version")
             .stdout(Stdio::piped())
@@ -195,7 +181,7 @@ impl FirewallManager {
             }
         }
 
-        // 3. Fallback: parsing estático das primeiras linhas do script
+        // 2. Fallback: parsing estático das primeiras linhas do script
         if detected_version.is_none() {
             if let Ok(content) = tokio::fs::read_to_string(&self.tuxfrw_bin).await {
                 for line in content.lines().take(60) {
@@ -214,16 +200,8 @@ impl FirewallManager {
             }
         }
 
-        // 4. Fallback final caso o arquivo não exista no path
-        let version = detected_version.unwrap_or_else(|| "v6.0.2".to_string());
-
-        // 5. Atualiza cache em memória
-        {
-            let mut write = self.cached_version.write().await;
-            *write = Some(version.clone());
-        }
-
-        version
+        // 3. Fallback final caso o arquivo não exista no path
+        detected_version.unwrap_or_else(|| "v6.0.2".to_string())
     }
 }
 

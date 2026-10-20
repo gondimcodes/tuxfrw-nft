@@ -8,9 +8,11 @@ and this project adheres to semantic release versioning.
 ## [6.0.2] - 2026-10-20
 
 ### Added
-- **Dynamic TuxFrw-NFT Version Resolution in TuxFrw-Web**:
-  - Implemented `FirewallManager::get_tuxfrw_version()` with dynamic query cascade: first executes the configured `$tuxfrw_bin version` with a 2-second timeout, gracefully falls back to static header parsing of `$tuxfrw_bin` (supporting backward compatibility with legacy scripts), and maintains an in-memory cached read lock (`Arc<RwLock<Option<String>>>`) with cache invalidation upon firewall restarts or reloads.
-  - Dynamically injected the detected firewall version into the top navigation bar (`tuxfrw_version` badge in `templates/base.html`) across Dashboard, `tuxfrw.conf` editor, and Rules modules views, eliminating hardcoded version discrepancies between the web interface and the underlying firewall daemon.
+- **Real-Time TuxFrw-NFT Version Resolution & Refresh in TuxFrw-Web**:
+  - Implemented real-time dynamic query cascade in `FirewallManager::get_tuxfrw_version()`: executes configured `$tuxfrw_bin version` with a 2-second timeout, gracefully falling back to static header parsing of `$tuxfrw_bin` (supporting backward compatibility with legacy scripts).
+  - Eliminated static caching so every page reload (F5) or click on the top brand logo immediately re-queries the firewall version from disk/Netfilter.
+  - Added dedicated JSON endpoint `GET /api/version` and client-side helper `refreshTuxfrwVersion()`, dynamically synchronizing the version badge on page load, logo click, and whenever firewall status is refreshed in the dashboard.
+  - Injected detected firewall version into the top navigation bar (`tuxfrw_version` badge in `templates/base.html`) across Dashboard, `tuxfrw.conf` editor, and Rules modules views.
 - **CLI Subcommand `version` in TuxFrw-NFT**:
   - Added native `version`, `-v`, and `--version` options to `/usr/sbin/tuxfrw-nft` CLI, outputting the clean SemVer string for easy automated checks and daemon introspection.
 
