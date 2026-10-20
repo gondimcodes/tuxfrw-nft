@@ -93,6 +93,8 @@ TuxFrw-NFT includes **TuxFrw-Web** (`contrib/tuxfrw-web`), an optional high-perf
 - **Online Rules & Config Editor**: Direct web-based editing of `tuxfrw.conf` and `rules/*.mod` with two-tier pre-save syntax validation (`bash -n` and `nft -c`).
 - **Live Output Console & Panic Lockdown**: Real-time terminal output for firewall operations (`start`, `restart`, `cf-update`, atomic chain reloads) and emergency Panic Lockdown.
 - **Bilingual Interface**: Seamless runtime switching between English and Brazilian Portuguese across all templates.
+- **Full-Width Responsive UI**: Fluid layout expanding to 100% viewport width without artificial margins, optimized for widescreen and ultrawide displays.
+- **Cyber Hexagon Theme**: Cyber dark visual aesthetic with embedded network neon background (`/static/hero_bg.png`), 1% optical blur filter, and glassmorphism panels.
 
 ### Screenshots
 

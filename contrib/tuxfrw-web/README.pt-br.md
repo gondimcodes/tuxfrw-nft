@@ -13,6 +13,8 @@
 - **Autenticação Segura via Argon2id & API REST**: Senhas armazenadas com algoritmo criptográfico Argon2id em `/etc/tuxfrw-nft/config.toml`, com sessões isoladas em cookies `HttpOnly; Secure; SameSite=Lax`.
 - **CAPTCHA Criptográfico SVG**: Desafio visual dinâmico com caracteres não-ambíguos, linhas de ruído ótico, efeito glow neon e assinatura stateless HMAC-SHA256 (validade de 5 minutos, anti-replay e anti-força-bruta).
 - **Suporte Multilíngue (i18n)**: Seletor de idiomas dinâmico com suporte nativo a **Português (Brasil)** e **English** em todas as telas e mensagens do painel.
+- **Interface Responsiva Full-Width**: Layout fluido expandido para 100% da largura útil da tela sem restrições horizontais artificiais, otimizado para monitores widescreen e ultrawide de alta resolução.
+- **Tema Visual Cyber Hexagon**: Tema escuro com ativo de fundo embutido nativamente no binário (`/static/hero_bg.png`), camada de desfoque ótico sutil de 1% (`filter: blur(1.5px)`) e painéis translúcidos em glassmorphism (`backdrop-filter: blur(8px)`).
 - **Painel de Operações Rápidas**:
   - `start`, `stop` (não-destrutivo), `restart`, `cf-update` (Cloudflare CDN);
   - **Modo Pânico (Lockdown Emergencial)** com diálogo de confirmação.
@@ -51,6 +53,8 @@ contrib/tuxfrw-web/
 ├── INSTALL.md               # Manual de instalação em inglês
 ├── INSTALL.pt-br.md         # Manual de instalação em português
 ├── tuxfrw-web.service       # Unidade de serviço systemd
+├── static/                  # Ativos web estáticos embutidos
+│   └── hero_bg.png          # Imagem de fundo Cyber Hexagon (ispfocus-site)
 ├── screenshots/             # Imagens do painel e editores
 │   ├── dashboard.png
 │   ├── config-editor.png

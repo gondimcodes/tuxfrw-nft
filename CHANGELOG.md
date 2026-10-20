@@ -8,13 +8,14 @@ and this project adheres to semantic release versioning.
 ## [6.0.1] - 2026-10-19
 
 ### Added
-- **TuxFrw-Web (v1.0.1) Cyber Hexagon Background**:
-  - Embedded native static asset `/static/hero_bg.png` (Cyber Hexagon network neon background from `ispfocus-site`) compiled directly into the binary via `include_bytes!`.
-  - Applied fixed background layer with 1% optical blur (`filter: blur(1.5px)`), dark contrast gradient, and translucent glassmorphism cards (`backdrop-filter: blur(8px)`) across all main views and login.
+- **TuxFrw-Web (v1.0.1) Cyber Hexagon Theme**:
+  - Embedded native static asset `/static/hero_bg.png` (Cyber Hexagon network neon background from `ispfocus-site`) compiled directly into the binary via `include_bytes!`, serving via dedicated Axum endpoint with immutable browser caching (`Cache-Control: public, max-age=31536000, immutable`).
+  - Applied fixed background layer with 1% optical blur (`filter: blur(1.5px)`), dark contrast gradient, and translucent glassmorphism cards (`backdrop-filter: blur(8px)`) across all main views (`base.html`) and login authentication (`login.html`).
 
 ### Changed
 - **TuxFrw-Web (v1.0.1) Full-Width Responsive Layout**:
   - Expanded application container from fixed 1400px limit to 100% fluid viewport width (`max-width: 100%`), maximizing horizontal space for the rules editor (`rules/*.mod`), `tuxfrw.conf`, dashboard console, and Netfilter status on widescreen and ultrawide monitors.
+  - Adjusted header and main horizontal padding to `2rem` for uniform visual alignment across all pages.
 
 ---
 

@@ -93,6 +93,8 @@ O TuxFrw-NFT inclui o **TuxFrw-Web** (`contrib/tuxfrw-web`), um daemon de gerenc
 - **Editor Web com Validação Sintática em 2 Níveis**: Edição segura do `tuxfrw.conf` e de todos os módulos `rules/*.mod`, com bloqueio prévio de gravação caso haja erros de sintaxe (`bash -n` e `nft -c`).
 - **Terminal ao Vivo e Modo Pânico**: Execução em tempo real de comandos (`start`, `restart`, `cf-update`, recarga atômica de chains) com saída de terminal colorida e bloqueio emergencial (*Panic Mode*).
 - **Interface Bilíngue**: Suporte dinâmico a Português do Brasil e Inglês em todas as telas e mensagens do sistema.
+- **Interface Responsiva Full-Width**: Layout fluido expandido para 100% da largura útil da tela sem restrições horizontais artificiais, otimizado para monitores widescreen e ultrawide.
+- **Tema Visual Cyber Hexagon**: Tema escuro tecnológico com ativo de fundo embutido nativamente no executável (`/static/hero_bg.png`), filtro de desfoque ótico sutil de 1% e painéis translúcidos em glassmorphism.
 
 ### Telas do Sistema (Screenshots)
 

@@ -13,6 +13,8 @@
 - **Secure Authentication via Argon2id & REST API**: Strong password hashing using Argon2id stored in `/etc/tuxfrw-nft/config.toml`, with session cookies hardened via `HttpOnly; Secure; SameSite=Lax`.
 - **Cryptographic SVG CAPTCHA**: Dynamic vector challenge with non-ambiguous characters, optical noise lines, neon glow dispersion filter, and stateless HMAC-SHA256 signature (5-minute TTL, anti-replay, and anti-brute-force).
 - **Multilingual Support (i18n)**: Instant dynamic language switching between **🇺🇸 English** and **🇧🇷 Português (Brasil)** across all templates and system messages.
+- **Full-Width Responsive UI**: Fluid layout dynamically expanding to 100% viewport width without artificial horizontal constraints, optimized for high-resolution widescreen and ultrawide displays.
+- **Cyber Hexagon Visual Theme**: Built-in dark visual theme with native embedded background asset (`/static/hero_bg.png`), 1% optical blur filter (`filter: blur(1.5px)`), and glassmorphism translucent panels (`backdrop-filter: blur(8px)`).
 - **Quick Operations Panel**:
   - `start`, `stop` (non-destructive), `restart`, `cf-update` (Cloudflare CDN IP ranges);
   - **Panic Mode (Emergency Lockdown)** with confirmation dialog.
@@ -51,6 +53,8 @@ contrib/tuxfrw-web/
 ├── INSTALL.md               # English installation guide
 ├── INSTALL.pt-br.md         # Portuguese installation guide
 ├── tuxfrw-web.service       # Systemd service unit definition
+├── static/                  # Embedded static web assets
+│   └── hero_bg.png          # Cyber Hexagon background image (ispfocus-site)
 ├── screenshots/             # Dashboard and editor screenshots
 │   ├── dashboard.png
 │   ├── config-editor.png
