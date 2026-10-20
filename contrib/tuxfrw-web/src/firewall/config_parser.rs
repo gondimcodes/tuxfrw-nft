@@ -85,7 +85,7 @@ impl ConfigService {
                 trimmed
             };
 
-            let Some((var_name, _val)) = clean_line.split_once('=') else {
+            let Some((var_name, raw_val)) = clean_line.split_once('=') else {
                 return Err(format!(
                     "Erro de formato na linha {}: '{}'.\nNo tuxfrw.conf, todas as linhas devem ser comentários (#) ou definições no formato NOME_VAR=\"VALOR\".",
                     line_no, trimmed
@@ -101,6 +101,37 @@ impl ConfigService {
                 return Err(format!(
                     "Erro de sintaxe na linha {}: identificador inválido '{}'.\nNomes de variáveis devem conter apenas letras, números e underscore.",
                     line_no, var_name
+                ));
+            }
+
+            let val = raw_val.trim();
+            let is_quoted = (val.starts_with('"') && val.ends_with('"') && val.len() >= 2)
+                || (val.starts_with('\'') && val.ends_with('\'') && val.len() >= 2);
+
+            let is_valid_val = is_quoted || {
+                if val.starts_with('"') {
+                    if let Some(end_idx) = val[1..].rfind('"') {
+                        let rest = val[1 + end_idx + 1..].trim();
+                        rest.is_empty() || rest.starts_with('#')
+                    } else {
+                        false
+                    }
+                } else if val.starts_with('\'') {
+                    if let Some(end_idx) = val[1..].rfind('\'') {
+                        let rest = val[1 + end_idx + 1..].trim();
+                        rest.is_empty() || rest.starts_with('#')
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                }
+            };
+
+            if !is_valid_val {
+                return Err(format!(
+                    "Erro de sintaxe na linha {}: '{}'.\nO valor da variável '{}' deve estar obrigatoriamente delimitado por aspas (ex: {}=\"\" ou {}=\"valor\").",
+                    line_no, trimmed, var_name, var_name, var_name
                 ));
             }
         }
