@@ -1,10 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::process::Stdio;
-use std::sync::Arc;
 use std::time::Duration;
 use thiserror::Error;
 use tokio::process::Command;
-use tokio::sync::RwLock;
 use tokio::time::timeout;
 use tracing::{error, info};
 
