@@ -15,6 +15,9 @@ and this project adheres to semantic release versioning.
   - Added native `version`, `-v`, and `--version` options to `/usr/sbin/tuxfrw-nft` CLI, outputting the clean SemVer string for easy automated checks and daemon introspection.
 
 ### Changed
+- **TuxFrw-Web (v1.0.2) Version Bump**:
+  - Bumped `contrib/tuxfrw-web` package version to `1.0.2` in `Cargo.toml` and `Cargo.lock`.
+  - Refactored startup logger in `src/main.rs` to dynamically read version from `env!("CARGO_PKG_VERSION")`.
 - **Unified Version Bump to 6.0.2**:
   - Bumped version number across all core scripts and rule modules (`VERSION`, `tuxfrw-nft`, `tuxfrw.conf`, `install.sh`, `tf_KERNEL.mod`, `tf_BASE.mod`, all 20 rule modules in `rules/tf_*.mod`, `CREDITS.md`, `README.md`, and `README.pt-br.md`).
 

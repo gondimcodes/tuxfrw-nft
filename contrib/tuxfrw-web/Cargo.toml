@@ -1,6 +1,6 @@
 [package]
 name = "tuxfrw-web"
-version = "1.0.1"
+version = "1.0.2"
 edition = "2021"
 authors = ["Marcelo Gondim <gondim@gmail.com>"]
 description = "Web Management Dashboard and Control Daemon for TuxFrw-NFT"
