@@ -1,7 +1,7 @@
 # TuxFrw-NFT
 
 > **A ferramenta definitiva de automação e gerenciamento de firewall Linux com Netfilter/nftables.**  
-> *Versão 6.0.2*
+> *Versão 6.0.3*
 
 [![Licença: GPLv2](https://img.shields.io/badge/License-GPLv2-blue.svg)](LICENSE)
 [![Netfilter](https://img.shields.io/badge/Netfilter-nftables-orange.svg)](https://wiki.nftables.org/)
@@ -78,7 +78,7 @@ O sistema opera compilando dinamicamente um arquivo batch atômico de regras (`/
   - Isolamento cirúrgico de tabelas eliminou o uso de `flush ruleset` global, mantendo namespaces externos como Fail2ban (`table inet f2b-table` / `table ip filter`) totalmente íntegros e operacionais entre recargas;
   - Encadeamento ótimo de hooks no kernel: Fail2ban bloqueia na borda com `priority -1` antes que as regras do TuxFrw sejam processadas na `priority 0`.
 - **Recargas Atômicas Dinâmicas**: Recarregue módulos isoladamente sem reiniciar todo o firewall (ex: `tuxfrw-nft load SYNPROXY`, `tuxfrw-nft load DOCKER`, `tuxfrw-nft load URPF`).
-- **Integração Nativa com Systemd**: Unidade `tuxfrw-nft.service` ordenada antes de targets de rede para inicialização segura.
+- **Integração Nativa com Systemd**: Unidade `tuxfrw-nft.service` ordenada após a inicialização dos dispositivos de rede e antes de daemons como o Fail2ban para carga determinística de chains netdev.
 
 ---
 
@@ -163,7 +163,7 @@ tuxfrw-nft/
 ├── CREDITS.md                    # Créditos históricos das versões legadas (IPTables/CFTK)
 ├── AUTHORS                       # Autor e mantenedor do projeto
 ├── LICENSE                       # Licença GNU General Public License v2 (GPLv2)
-└── VERSION                       # Versão da release atual (6.0.2)
+└── VERSION                       # Versão da release atual (6.0.3)
 ```
 
 ### Layout de Implantação no Sistema Operacional
@@ -282,7 +282,7 @@ Guias aprofundados sobre arquitetura, boas práticas e diagnóstico:
 ## Autoria e Créditos Históricos
 
 **The TuxFrw Team**
-- **Marcelo Gondim** <gondim@gmail.com> (Autor e Mantenedor Principal - TuxFrw-NFT 6.0.2)
+- **Marcelo Gondim** <gondim@gmail.com> (Autor e Mantenedor Principal - TuxFrw-NFT 6.0.3)
 
 Reconhecimentos e contribuições para as versões legadas do projeto (Netfilter/IPTables e Conectiva CFTK) estão documentados no arquivo [CREDITS.md](CREDITS.md).
 

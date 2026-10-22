@@ -129,7 +129,7 @@ Todas as portas de serviços em DMZ e regras de 1:1 NAT vêm comentadas por padr
 | `rules/tf_NETDEV.mod` | Pré-filtragem no estágio ingress de interfaces físicas contra anomalias de flags TCP e pacotes spoofados. |
 | `rules/tf_NAT-IN.mod` | Regras de DNAT (Port Forwarding em `PREROUTING`). |
 | `rules/tf_NAT-OUT.mod` | Regras de SNAT (Masquerade em `POSTROUTING`). |
-| `/etc/systemd/system/tuxfrw-nft.service` | Unidade systemd configurada para proteção antecipada no ciclo de boot (`Before=network-pre.target`). |
+| `/etc/systemd/system/tuxfrw-nft.service` | Unidade systemd configurada para inicialização após prontidão dos dispositivos de rede (`After=network-pre.target systemd-udevd.service network.target`). |
 
 ---
 
@@ -289,7 +289,7 @@ A partir da versão 5.3, o TuxFrw-NFT opera com **isolamento cirúrgico de tabel
    - A chain `INPUT` do TuxFrw-NFT roda com prioridade `0` (`NF_IP_PRI_FILTER`).
    - O kernel avalia `-1` antes de `0`: conexões de IPs banidos pelo Fail2ban são rejeitadas ou descartadas imediatamente na borda, antes de consumir processamento das regras do TuxFrw.
 3. **Ordem de Inicialização no Boot**:
-   - A unidade `tuxfrw-nft.service` define `Before=network-pre.target shutdown.target fail2ban.service`, assegurando que o firewall base esteja consolidado antes que o Fail2ban inicialize suas jails.
+   - A unidade `tuxfrw-nft.service` define `After=network-pre.target systemd-udevd.service network.target` e `Before=shutdown.target fail2ban.service`, assegurando que o firewall base e os hooks netdev carreguem confiavelmente antes que o Fail2ban inicialize suas jails.
 
 ---
 

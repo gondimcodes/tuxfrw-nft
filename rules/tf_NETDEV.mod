@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 6.0.2
+# TuxFrw-NFT 6.0.3
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -25,7 +25,7 @@
 #
 # ----------------------------------------------------------------------------
 
-if [ "$EXT_IFACE" != "" ]; then
+if [ "$EXT_IFACE" != "" ] && [ -d "/sys/class/net/$EXT_IFACE" ]; then
    # Drop TCP flag anomalies (Port Scans / Invalid combinations)
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn|rst|psh|ack|urg) == 0x0 counter drop"
    $NFT "add rule netdev filter $EXT_IFACE tcp flags & (fin|syn) == fin|syn counter drop"
@@ -54,13 +54,13 @@ if [ "$EXT_IFACE" != "" ]; then
    if [ "$EXT_BRO" != "" ]; then $NFT "add rule netdev filter $EXT_IFACE ip saddr $EXT_BRO counter drop"; fi
 fi
 
-if [ "$INT_IFACE" != "" ]; then
+if [ "$INT_IFACE" != "" ] && [ -d "/sys/class/net/$INT_IFACE" ]; then
    if [ "$INT_IP" != "" ]; then $NFT "add rule netdev filter $INT_IFACE ip saddr $INT_IP counter drop"; fi
    if [ "$INT_IP6" != "" ]; then $NFT "add rule netdev filter $INT_IFACE ip6 saddr $INT_IP6 counter drop"; fi
    if [ "$INT_BRO" != "" ]; then $NFT "add rule netdev filter $INT_IFACE ip saddr $INT_BRO counter drop"; fi
 fi
 
-if [ "$DMZ_IFACE" != "" ]; then
+if [ "$DMZ_IFACE" != "" ] && [ -d "/sys/class/net/$DMZ_IFACE" ]; then
    if [ "$DMZ_IP" != "" ]; then $NFT "add rule netdev filter $DMZ_IFACE ip saddr $DMZ_IP counter drop"; fi
    if [ "$DMZ_IP6" != "" ]; then $NFT "add rule netdev filter $DMZ_IFACE ip6 saddr $DMZ_IP6 counter drop"; fi
    if [ "$DMZ_BRO" != "" ]; then $NFT "add rule netdev filter $DMZ_IFACE ip saddr $DMZ_BRO counter drop"; fi

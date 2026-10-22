@@ -1,7 +1,7 @@
 # TuxFrw-NFT
 
 > **The ultimate Linux firewall automation and management tool using Netfilter/nftables.**  
-> *Version 6.0.2*
+> *Version 6.0.3*
 
 [![License: GPLv2](https://img.shields.io/badge/License-GPLv2-blue.svg)](LICENSE)
 [![Netfilter](https://img.shields.io/badge/Netfilter-nftables-orange.svg)](https://wiki.nftables.org/)
@@ -78,7 +78,7 @@ The tool compiles rule definitions into an atomic ruleset batch file (`/etc/tuxf
   - Surgical table-level isolation permanently abolishes global `flush ruleset`, keeping external namespaces like Fail2ban (`table inet f2b-table` / `table ip filter`) completely intact across reloads;
   - Optimal hook priority chaining: Fail2ban blocks at `priority -1` on the outer edge before TuxFrw rules execute at `priority 0`.
 - **Dynamic Atomic Reloading**: Reload individual modules on the fly without bouncing the entire firewall (e.g., `tuxfrw-nft load SYNPROXY`, `tuxfrw-nft load DOCKER`, `tuxfrw-nft load URPF`).
-- **Native Systemd Integration**: Dedicated `tuxfrw-nft.service` unit configured to run before network initialization targets.
+- **Native Systemd Integration**: Dedicated `tuxfrw-nft.service` unit configured to run after network device initialization targets and before dependent security services like Fail2ban.
 
 ---
 
@@ -163,7 +163,7 @@ tuxfrw-nft/
 ├── CREDITS.md                    # Historical credits from legacy versions (IPTables/CFTK)
 ├── AUTHORS                       # Project author and maintainer
 ├── LICENSE                       # GNU General Public License v2 (GPLv2)
-└── VERSION                       # Current release version string (6.0.2)
+└── VERSION                       # Current release version string (6.0.3)
 ```
 
 ### OS Deployment Layout
@@ -282,7 +282,7 @@ In-depth technical manuals and architecture guides:
 ## Authorship & Historical Credits
 
 **The TuxFrw Team**
-- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 6.0.2)
+- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 6.0.3)
 
 Acknowledgments and contributions to legacy project versions (Netfilter/IPTables and Conectiva CFTK) are documented in [CREDITS.md](CREDITS.md).
 

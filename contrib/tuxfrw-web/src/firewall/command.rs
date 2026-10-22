@@ -150,7 +150,7 @@ impl FirewallManager {
     /// Chamado a cada requisição de página ou refresh, garantindo sincronia imediata.
     /// 1. Tenta invocar `<tuxfrw_bin> version`.
     /// 2. Caso falhe (ex: binário legado sem o subcomando), faz parsing estático do cabeçalho do script.
-    /// 3. Fallback gracioso para a versão de baseline "v6.0.2".
+    /// 3. Fallback gracioso para a versão de baseline "v6.0.3".
     pub async fn get_tuxfrw_version(&self) -> String {
         let mut detected_version = None;
 
@@ -199,7 +199,7 @@ impl FirewallManager {
         }
 
         // 3. Fallback final caso o arquivo não exista no path
-        detected_version.unwrap_or_else(|| "v6.0.2".to_string())
+        detected_version.unwrap_or_else(|| "v6.0.3".to_string())
     }
 }
 

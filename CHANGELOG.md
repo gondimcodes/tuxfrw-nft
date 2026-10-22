@@ -5,6 +5,24 @@ All notable changes to the **TuxFrw-NFT** project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to semantic release versioning.
 
+## [6.0.3] - 2026-10-22
+
+### Fixed
+- **CRITICAL BUG FIX: Systemd Boot Timing and Netdev Device Dependency (Server Reboot Left Host Unshielded)**:
+  - **Vulnerability & Root Cause**: During system reboot, `tuxfrw-nft.service` executed too early (`Before=network-pre.target` with `DefaultDependencies=no`). At this ultra-early boot stage, network interface devices (physical NICs or virtual interfaces) were not yet registered or renamed by `systemd-udevd`. Because Netfilter's `netdev` family (`type filter hook ingress device <dev>`) strictly requires the interface device to exist in the kernel network namespace at load time, the atomic batch compilation (`/usr/sbin/nft -f /etc/tuxfrw-nft/tuxfrw.nft`) failed with `Error: Interface does not exist`. Because `nft -f` transactions are all-or-nothing, the entire firewall ruleset (including `table inet filter`, `INPUT` drop policy, `OUTPUT`, `FORWARD`, NAT, and Docker protection) was completely rejected by the kernel, leaving the server completely unshielded with default accept policies after reboot.
+  - **False Success Masking**: Furthermore, `/usr/sbin/tuxfrw-nft`'s `evaluate_retval` routine erased `/tmp/tf_error` and exited with status 0 (`rm -f /tmp/tf_error`), causing systemd to falsely report `Process: ExecStart=... (code=exited, status=0/SUCCESS)` despite zero rules being loaded into memory.
+  - **Systemd Boot Dependency Realignment**: Reordered `tuxfrw-nft.service` to `After=network-pre.target systemd-udevd.service network.target`, `Wants=network.target`, and `Before=shutdown.target fail2ban.service`. This guarantees all network interfaces and udev rules are established prior to firewall compilation while maintaining precedence over dependent security daemons like Fail2ban.
+  - **Defensive Device Pre-Flight Checks**: Injected existence verification (`[ -d "/sys/class/net/$IFACE" ]`) across `tf_BASE.mod` and `rules/tf_NETDEV.mod`. If an interface configured in `tuxfrw.conf` is temporarily offline or nonexistent, TuxFrw logs a descriptive warning and gracefully skips the netdev ingress chain for that single device without aborting the atomic batch, ensuring all other firewall tables and chains continue protecting the server.
+  - **Deterministic Error Handling & Exit Codes**: Modified `evaluate_retval` to output captured Netfilter error messages directly to `stderr` (logged fully in `journalctl`) and return error status. Updated `start`, `stop`, `natopen`, and `panic` commands to propagate non-zero exit codes (`exit 1`) to systemd upon any kernel transaction failure.
+  - **CIS Hardening & Dynamic Binary Resolution**: Dynamically resolved `NFT_BIN="$(type -p nft 2>/dev/null || which nft 2>/dev/null || echo '/usr/sbin/nft')"` and invoked `$NFT_BIN -f` directly, eliminating dependencies on executable permissions for `/etc` files on systems with `noexec` mounts.
+
+### Changed
+- **Unified Version Bump to 6.0.3**:
+  - Bumped version number across all core scripts, configuration files, and rule modules (`VERSION`, `tuxfrw-nft`, `tuxfrw.conf`, `install.sh`, `tf_KERNEL.mod`, `tf_BASE.mod`, all 20 rule modules in `rules/tf_*.mod`, `CREDITS.md`, `README.md`, and `README.pt-br.md`).
+  - Updated fallback baseline version in `contrib/tuxfrw-web` (`src/firewall/command.rs`) to `v6.0.3`.
+
+---
+
 ## [6.0.2] - 2026-10-20
 
 ### Added

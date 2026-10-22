@@ -129,7 +129,7 @@ All DMZ service ports and 1:1 NAT mapping rules are commented out by default as 
 | `rules/tf_NETDEV.mod` | Ingress filtering at physical interface level against TCP flag attacks and spoofed packets. |
 | `rules/tf_NAT-IN.mod` | Inbound DNAT rules (Port Forwarding in `PREROUTING`). |
 | `rules/tf_NAT-OUT.mod` | Outbound SNAT rules (Masquerade in `POSTROUTING`). |
-| `/etc/systemd/system/tuxfrw-nft.service` | Dedicated systemd service configured for early boot startup (`Before=network-pre.target`). |
+| `/etc/systemd/system/tuxfrw-nft.service` | Dedicated systemd service configured for boot startup after network devices are ready (`After=network-pre.target systemd-udevd.service network.target`). |
 
 ---
 
@@ -289,7 +289,7 @@ Starting with version 5.3, TuxFrw-NFT employs **surgical table-level isolation**
    - TuxFrw-NFT's `INPUT` chain runs with priority `0` (`NF_IP_PRI_FILTER`).
    - Netfilter evaluates priority `-1` before priority `0`: traffic from banned IPs is rejected or dropped immediately at the edge before consuming any processing cycles in TuxFrw rules.
 3. **Boot Ordering with Systemd**:
-   - The `tuxfrw-nft.service` unit defines `Before=network-pre.target shutdown.target fail2ban.service`, ensuring base network filtering is established before Fail2ban initialises its jails.
+   - The `tuxfrw-nft.service` unit defines `After=network-pre.target systemd-udevd.service network.target` and `Before=shutdown.target fail2ban.service`, ensuring base network filtering and netdev hooks load reliably before Fail2ban initialises its jails.
 
 ---
 

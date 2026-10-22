@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 6.0.2
+# TuxFrw-NFT 6.0.3
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -27,7 +27,8 @@
 #
 # ----------------------------------------------------------------------------
 
-TUXFRW_VERSION="6.0.2"
+TUXFRW_VERSION="6.0.3"
+NFT_BIN="$(type -p nft 2>/dev/null || which nft 2>/dev/null || echo '/usr/sbin/nft')"
 
 #################################################################
 # Definindo funcoes:
@@ -40,10 +41,16 @@ FAILURE="echo -en \\033[1;31m"
 evaluate_retval() {
    if [ -s /tmp/tf_error ]; then
       print_status failure
+      echo -e "\n--- Netfilter Error Details ---" >&2
+      cat /tmp/tf_error >&2
+      echo -e "-------------------------------\n" >&2
+      rm -f /tmp/tf_error
+      return 1
    else
       print_status success
+      rm -f /tmp/tf_error
+      return 0
    fi
-   rm -f /tmp/tf_error
 }
 
 print_status() {
@@ -96,7 +103,7 @@ load_files()
 }
 
 load_chain() {
-  echo '#!/usr/sbin/nft -f' > $CONF_DIR/tuxfrw.nft
+  echo "#!${NFT_BIN} -f" > $CONF_DIR/tuxfrw.nft
   defines
   if [ "$1" != "" ]; then
      if [ "$1" == "NAT-IN" ]; then
@@ -164,13 +171,13 @@ load_chain() {
         exit
      fi
      if [ "$1" == "NETDEV" ]; then
-        if [ "$EXT_IFACE" != "" ]; then
+        if [ "$EXT_IFACE" != "" ] && [ -d "/sys/class/net/$EXT_IFACE" ]; then
            $NFT "flush chain netdev filter $EXT_IFACE" >> $CONF_DIR/tuxfrw.nft
         fi
-        if [ "$INT_IFACE" != "" ]; then
+        if [ "$INT_IFACE" != "" ] && [ -d "/sys/class/net/$INT_IFACE" ]; then
            $NFT "flush chain netdev filter $INT_IFACE" >> $CONF_DIR/tuxfrw.nft
         fi
-        if [ "$DMZ_IFACE" != "" ]; then
+        if [ "$DMZ_IFACE" != "" ] && [ -d "/sys/class/net/$DMZ_IFACE" ]; then
            $NFT "flush chain netdev filter $DMZ_IFACE" >> $CONF_DIR/tuxfrw.nft
         fi
         if [ "$EXT_IFACE" != "" -o "$INT_IFACE" != "" -o "$DMZ_IFACE" != "" ]; then 
@@ -230,8 +237,13 @@ start() {
   evaluate_retval
   echo -e "Applying TuxFrw configuration: \n"
   create_rules
-  touch /var/lock/subsys/tuxfrw &> /dev/null
-  run_nft
+  if run_nft; then
+    touch /var/lock/subsys/tuxfrw &> /dev/null
+    return 0
+  else
+    rm -f /var/lock/subsys/tuxfrw &> /dev/null
+    exit 1
+  fi
 }
 
 stop() {
@@ -239,7 +251,11 @@ stop() {
   echo -n "Clearing all current rules and user defined chains: "
   evaluate_retval
   rm -f /var/lock/subsys/tuxfrw &> /dev/null
-  run_nft
+  if run_nft; then
+    return 0
+  else
+    exit 1
+  fi
 }
 
 natopen() {
@@ -251,8 +267,12 @@ natopen() {
   evaluate_retval
   echo -e "Applying NAT configuration: \n"
   create_natopen
-  rm -f /var/lock/subsys/tuxfrw &> /dev/null
-  run_nft
+  if run_nft; then
+    rm -f /var/lock/subsys/tuxfrw &> /dev/null
+    return 0
+  else
+    exit 1
+  fi
 }
 
 panic() {
@@ -261,8 +281,12 @@ panic() {
   evaluate_retval
   $NFT 'add table inet filter' >> $CONF_DIR/tuxfrw.nft
   $NFT 'add chain inet filter INPUT { type filter hook input priority 0; policy drop; }' >> $CONF_DIR/tuxfrw.nft
-  rm -f /var/lock/subsys/tuxfrw &> /dev/null
-  run_nft
+  if run_nft; then
+    rm -f /var/lock/subsys/tuxfrw &> /dev/null
+    return 0
+  else
+    exit 1
+  fi
 }
 
 cf_update() {

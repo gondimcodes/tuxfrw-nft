@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 6.0.2
+# TuxFrw-NFT 6.0.3
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -25,12 +25,14 @@
 #
 # ----------------------------------------------------------------------------
 
+NFT_BIN="$(type -p nft 2>/dev/null || which nft 2>/dev/null || echo '/usr/sbin/nft')"
+
 #
 # Flush, delete and zero all chains
 #
 clear_rules()
 {
-  echo '#!/usr/sbin/nft -f' > $CONF_DIR/tuxfrw.nft
+  echo "#!${NFT_BIN} -f" > $CONF_DIR/tuxfrw.nft
   # Non-destructive table-level isolation: NEVER flush ruleset!
   # Preserves third-party daemons (Fail2ban 'f2b-table', Docker bridges, WireGuard, etc.)
   # We add empty tables first so delete never fails if table doesn't exist.
@@ -63,8 +65,12 @@ defines()
 run_nft()
 {
   chmod 700 $CONF_DIR/tuxfrw.nft
-  $CONF_DIR/tuxfrw.nft 2> /tmp/tf_error
+  $NFT_BIN -f $CONF_DIR/tuxfrw.nft 2> /tmp/tf_error
+  local nft_status=$?
   echo -n "Running rules in memory: "
+  if [ $nft_status -ne 0 ] && [ ! -s /tmp/tf_error ]; then
+     echo "Error: nft command exited with error code $nft_status" > /tmp/tf_error
+  fi
   evaluate_retval
 }
 
@@ -189,21 +195,38 @@ create_rules()
   fi
 
   # setup netdev
-  if [ "$EXT_IFACE" != "" -o "$DMZ_IFACE" != "" -o "$INT_IFACE" != "" ]; then
+  local has_netdev=0
+  if [ "$EXT_IFACE" != "" ] && [ -d "/sys/class/net/$EXT_IFACE" ]; then has_netdev=1; fi
+  if [ "$INT_IFACE" != "" ] && [ -d "/sys/class/net/$INT_IFACE" ]; then has_netdev=1; fi
+  if [ "$DMZ_IFACE" != "" ] && [ -d "/sys/class/net/$DMZ_IFACE" ]; then has_netdev=1; fi
+
+  if [ "$has_netdev" -eq 1 ]; then
      $NFT 'add table netdev filter' >> $CONF_DIR/tuxfrw.nft
+     if [ "$EXT_IFACE" != "" ]; then
+        if [ -d "/sys/class/net/$EXT_IFACE" ]; then
+           $NFT "add chain netdev filter $EXT_IFACE { type filter hook ingress device $EXT_IFACE priority 0; policy accept; }" >> $CONF_DIR/tuxfrw.nft
+        else
+           echo "Warning: Interface '$EXT_IFACE' not found. Skipping NETDEV ingress chain." >&2
+        fi
+     fi
+     if [ "$INT_IFACE" != "" ]; then
+        if [ -d "/sys/class/net/$INT_IFACE" ]; then
+           $NFT "add chain netdev filter $INT_IFACE { type filter hook ingress device $INT_IFACE priority 0; policy accept; }" >> $CONF_DIR/tuxfrw.nft
+        else
+           echo "Warning: Interface '$INT_IFACE' not found. Skipping NETDEV ingress chain." >&2
+        fi
+     fi
+     if [ "$DMZ_IFACE" != "" ]; then
+        if [ -d "/sys/class/net/$DMZ_IFACE" ]; then
+           $NFT "add chain netdev filter $DMZ_IFACE { type filter hook ingress device $DMZ_IFACE priority 0; policy accept; }" >> $CONF_DIR/tuxfrw.nft
+        else
+           echo "Warning: Interface '$DMZ_IFACE' not found. Skipping NETDEV ingress chain." >&2
+        fi
+     fi
+     . $CONF_DIR/rules/tf_NETDEV.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
+     echo -n "Loading NETDEV"
+     evaluate_retval
   fi
-  if [ "$EXT_IFACE" != "" ]; then
-     $NFT "add chain netdev filter $EXT_IFACE { type filter hook ingress device $EXT_IFACE priority 0; policy accept; }" >> $CONF_DIR/tuxfrw.nft
-  fi
-  if [ "$INT_IFACE" != "" ]; then
-     $NFT "add chain netdev filter $INT_IFACE { type filter hook ingress device $INT_IFACE priority 0; policy accept; }" >> $CONF_DIR/tuxfrw.nft
-  fi
-  if [ "$DMZ_IFACE" != "" ]; then
-     $NFT "add chain netdev filter $DMZ_IFACE { type filter hook ingress device $DMZ_IFACE priority 0; policy accept; }" >> $CONF_DIR/tuxfrw.nft
-  fi
-  . $CONF_DIR/rules/tf_NETDEV.mod 2> /tmp/tf_error >> $CONF_DIR/tuxfrw.nft
-  echo -n "Loading NETDEV"
-  evaluate_retval
   
 # setup mangle
   if [ "$MANGLE" == "1" ]; then
