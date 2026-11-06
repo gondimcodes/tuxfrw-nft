@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------
-# TuxFrw-NFT 6.0.3
+# TuxFrw-NFT 6.0.4
 # Copyright (C) 2001-2026 Marcelo Gondim (https://github.com/gondimcodes/tuxfrw-nft)
 # ----------------------------------------------------------------------------
 #
@@ -42,10 +42,15 @@ clear_rules()
   echo 'delete table netdev filter' >> $CONF_DIR/tuxfrw.nft
   echo 'add table inet mangle' >> $CONF_DIR/tuxfrw.nft
   echo 'delete table inet mangle' >> $CONF_DIR/tuxfrw.nft
-  echo 'add table ip nat' >> $CONF_DIR/tuxfrw.nft
-  echo 'delete table ip nat' >> $CONF_DIR/tuxfrw.nft
-  echo 'add table ip6 nat' >> $CONF_DIR/tuxfrw.nft
-  echo 'delete table ip6 nat' >> $CONF_DIR/tuxfrw.nft
+
+  # Only purge ip/ip6 nat tables in classic Gateway/Router mode.
+  # In Docker mode (DOCKER_SUPPORT="1"), Docker owns 'table ip nat' for container MASQUERADE and port forwardings.
+  if [ "$DOCKER_SUPPORT" != "1" ]; then
+    echo 'add table ip nat' >> $CONF_DIR/tuxfrw.nft
+    echo 'delete table ip nat' >> $CONF_DIR/tuxfrw.nft
+    echo 'add table ip6 nat' >> $CONF_DIR/tuxfrw.nft
+    echo 'delete table ip6 nat' >> $CONF_DIR/tuxfrw.nft
+  fi
 }
 
 defines()

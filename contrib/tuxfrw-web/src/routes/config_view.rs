@@ -33,12 +33,13 @@ pub async fn config_page(
     State(config_service): State<Arc<ConfigService>>,
 ) -> Html<String> {
     let tuxfrw_version = firewall.get_tuxfrw_version().await;
-    let conf_view = config_service.read_tuxfrw_conf().unwrap_or_else(|_| {
-        crate::firewall::TuxfrwConfigView {
-            raw_content: "# Não foi possível ler o arquivo tuxfrw.conf".to_string(),
-            parsed_variables: Default::default(),
-        }
-    });
+    let conf_view =
+        config_service
+            .read_tuxfrw_conf()
+            .unwrap_or_else(|_| crate::firewall::TuxfrwConfigView {
+                raw_content: "# Não foi possível ler o arquivo tuxfrw.conf".to_string(),
+                parsed_variables: Default::default(),
+            });
 
     let tpl = ConfigTemplate {
         raw_content: conf_view.raw_content,
@@ -67,4 +68,3 @@ pub async fn update_config_api(
         }),
     }
 }
-

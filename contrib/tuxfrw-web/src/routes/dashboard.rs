@@ -16,9 +16,7 @@ pub struct DashboardTemplate {
     pub web_version: &'static str,
 }
 
-pub async fn dashboard_page(
-    State(firewall): State<Arc<FirewallManager>>,
-) -> Response {
+pub async fn dashboard_page(State(firewall): State<Arc<FirewallManager>>) -> Response {
     tracing::info!("dashboard_page: renderizando tela principal...");
     let tuxfrw_version = firewall.get_tuxfrw_version().await;
     let status_res = firewall.execute(FirewallAction::Status).await;
@@ -50,10 +48,12 @@ pub async fn dashboard_page(
             tracing::error!("Erro ao renderizar dashboard.html: {}", e);
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                Html(format!("<h1>Erro ao renderizar Dashboard</h1><pre>{}</pre>", e)),
+                Html(format!(
+                    "<h1>Erro ao renderizar Dashboard</h1><pre>{}</pre>",
+                    e
+                )),
             )
                 .into_response()
         }
     }
 }
-

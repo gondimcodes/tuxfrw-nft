@@ -55,13 +55,13 @@ pub fn build_logout_cookie(is_tls: bool) -> String {
 }
 
 pub async fn login_page() -> Html<String> {
-    let tpl = LoginTemplate { error_message: None };
+    let tpl = LoginTemplate {
+        error_message: None,
+    };
     Html(tpl.render().unwrap_or_default())
 }
 
-pub async fn get_captcha_api(
-    State(state): State<AppState>,
-) -> Response {
+pub async fn get_captcha_api(State(state): State<AppState>) -> Response {
     let cfg = state.config.read().await;
     match CaptchaEngine::generate(&cfg.auth.secret_key) {
         Ok(res) => Json(res).into_response(),
@@ -111,18 +111,23 @@ pub async fn handle_login_api(
 
     if valid_user && valid_pass {
         // SEC-03: Não logar tokens nem dados de autenticação em texto puro
-        tracing::info!("Login JSON efetuado com sucesso para o usuário: {}", form.username);
+        tracing::info!(
+            "Login JSON efetuado com sucesso para o usuário: {}",
+            form.username
+        );
         let timeout_minutes = if cfg.auth.session_timeout_minutes == 0 {
             60
         } else {
             cfg.auth.session_timeout_minutes
         };
 
-        let token = state.session_store
+        let token = state
+            .session_store
             .create_session(&form.username, timeout_minutes as i64)
             .await;
 
-        let cookie_header = build_session_cookie(&token, timeout_minutes * 60, cfg.server.tls_enabled);
+        let cookie_header =
+            build_session_cookie(&token, timeout_minutes * 60, cfg.server.tls_enabled);
 
         let mut response = Json(LoginResponse {
             success: true,
@@ -131,10 +136,9 @@ pub async fn handle_login_api(
         })
         .into_response();
 
-        response.headers_mut().insert(
-            SET_COOKIE,
-            cookie_header.parse().unwrap(),
-        );
+        response
+            .headers_mut()
+            .insert(SET_COOKIE, cookie_header.parse().unwrap());
         response
     } else {
         warn!("Falha de autenticação para o usuário: {}", form.username);
@@ -150,10 +154,7 @@ pub async fn handle_login_api(
     }
 }
 
-pub async fn handle_login(
-    State(state): State<AppState>,
-    Form(form): Form<LoginForm>,
-) -> Response {
+pub async fn handle_login(State(state): State<AppState>, Form(form): Form<LoginForm>) -> Response {
     let cfg = state.config.read().await;
 
     // 1. Validação estrita do CAPTCHA Criptográfico (SEC-01 & SEC-02)
@@ -169,7 +170,10 @@ pub async fn handle_login(
     if !is_captcha_valid {
         warn!("Tentativa de login rejeitada por CAPTCHA inválido, expirado ou já utilizado para usuário: {}", form.username);
         let tpl = LoginTemplate {
-            error_message: Some("Código CAPTCHA incorreto, expirado ou já utilizado. Digite o novo desafio gerado.".to_string()),
+            error_message: Some(
+                "Código CAPTCHA incorreto, expirado ou já utilizado. Digite o novo desafio gerado."
+                    .to_string(),
+            ),
         };
         return Html(tpl.render().unwrap_or_default()).into_response();
     }
@@ -180,39 +184,42 @@ pub async fn handle_login(
 
     if valid_user && valid_pass {
         // SEC-03: Sem vazamento de tokens em log
-        tracing::info!("Login efetuado com sucesso para o usuário: {}", form.username);
+        tracing::info!(
+            "Login efetuado com sucesso para o usuário: {}",
+            form.username
+        );
         let timeout_minutes = if cfg.auth.session_timeout_minutes == 0 {
             60
         } else {
             cfg.auth.session_timeout_minutes
         };
 
-        let token = state.session_store
+        let token = state
+            .session_store
             .create_session(&form.username, timeout_minutes as i64)
             .await;
 
         // SEC-06: Garante SameSite=Lax e Secure idênticos ao fluxo JSON
-        let cookie_header = build_session_cookie(&token, timeout_minutes * 60, cfg.server.tls_enabled);
+        let cookie_header =
+            build_session_cookie(&token, timeout_minutes * 60, cfg.server.tls_enabled);
 
         let mut response = Redirect::to("/").into_response();
-        response.headers_mut().insert(
-            SET_COOKIE,
-            cookie_header.parse().unwrap(),
-        );
+        response
+            .headers_mut()
+            .insert(SET_COOKIE, cookie_header.parse().unwrap());
         response
     } else {
         warn!("Failed login attempt for user: {}", form.username);
         let tpl = LoginTemplate {
-            error_message: Some("Credenciais inválidas. Verifique o usuário e a senha.".to_string()),
+            error_message: Some(
+                "Credenciais inválidas. Verifique o usuário e a senha.".to_string(),
+            ),
         };
         Html(tpl.render().unwrap_or_default()).into_response()
     }
 }
 
-pub async fn handle_logout(
-    headers: HeaderMap,
-    State(state): State<AppState>,
-) -> Response {
+pub async fn handle_logout(headers: HeaderMap, State(state): State<AppState>) -> Response {
     if let Some(cookie_hdr) = headers.get(axum::http::header::COOKIE) {
         if let Ok(cookie_str) = cookie_hdr.to_str() {
             for part in cookie_str.split(';') {
@@ -231,11 +238,7 @@ pub async fn handle_logout(
     };
 
     let mut resp = Redirect::to("/login").into_response();
-    resp.headers_mut().insert(
-        SET_COOKIE,
-        build_logout_cookie(is_tls)
-            .parse()
-            .unwrap(),
-    );
+    resp.headers_mut()
+        .insert(SET_COOKIE, build_logout_cookie(is_tls).parse().unwrap());
     resp
 }

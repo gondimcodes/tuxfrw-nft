@@ -11,7 +11,10 @@ pub async fn load_or_generate_tls(
     let key_p = Path::new(key_path);
 
     if cert_p.exists() && key_p.exists() {
-        info!("Loading TLS certificate from {:?} and key from {:?}", cert_p, key_p);
+        info!(
+            "Loading TLS certificate from {:?} and key from {:?}",
+            cert_p, key_p
+        );
         return Ok(RustlsConfig::from_pem_file(cert_p, key_p).await?);
     }
 
@@ -65,6 +68,9 @@ pub async fn load_or_generate_tls(
         std::fs::write(key_p, &key_pem)?;
     }
 
-    info!("Self-signed TLS certificate successfully saved to {:?}", cert_p);
+    info!(
+        "Self-signed TLS certificate successfully saved to {:?}",
+        cert_p
+    );
     Ok(RustlsConfig::from_pem(cert_pem.into_bytes(), key_pem.into_bytes()).await?)
 }

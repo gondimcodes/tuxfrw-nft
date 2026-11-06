@@ -39,7 +39,11 @@ impl SessionStore {
 
         lock.insert(token.clone(), session);
         // SEC-03: Não logar token bruto nos logs
-        tracing::debug!("create_session: nova sessão registrada para usuário '{}'. Total ativas: {}", username, lock.len());
+        tracing::debug!(
+            "create_session: nova sessão registrada para usuário '{}'. Total ativas: {}",
+            username,
+            lock.len()
+        );
         token
     }
 
@@ -51,12 +55,9 @@ impl SessionStore {
         // 1. Fast path: leitura compartilhada sem bloquear outras threads
         {
             let lock = self.sessions.read().await;
-            if let Some(session) = lock.get(token) {
-                if session.expires_at > now {
-                    return Some(session.username.clone());
-                }
-            } else {
-                return None;
+            let session = lock.get(token)?;
+            if session.expires_at > now {
+                return Some(session.username.clone());
             }
         }
 
@@ -64,7 +65,10 @@ impl SessionStore {
         let mut lock = self.sessions.write().await;
         if let Some(session) = lock.get(token) {
             if session.expires_at <= now {
-                tracing::debug!("validate_session: sessão expirada removida para '{}'", session.username);
+                tracing::debug!(
+                    "validate_session: sessão expirada removida para '{}'",
+                    session.username
+                );
                 lock.remove(token);
                 None
             } else {

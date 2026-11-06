@@ -78,7 +78,10 @@ async fn security_headers_middleware(
 
     headers.insert(header::X_FRAME_OPTIONS, "DENY".parse().unwrap());
     headers.insert(header::X_CONTENT_TYPE_OPTIONS, "nosniff".parse().unwrap());
-    headers.insert(header::REFERRER_POLICY, "strict-origin-when-cross-origin".parse().unwrap());
+    headers.insert(
+        header::REFERRER_POLICY,
+        "strict-origin-when-cross-origin".parse().unwrap(),
+    );
     headers.insert(
         header::CONTENT_SECURITY_POLICY,
         "default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data:;".parse().unwrap(),
@@ -122,10 +125,17 @@ async fn auth_middleware(
     }
 
     if authenticated {
-        tracing::trace!("auth_middleware: acesso autenticado a '{}' para {:?}", path, authed_user);
+        tracing::trace!(
+            "auth_middleware: acesso autenticado a '{}' para {:?}",
+            path,
+            authed_user
+        );
         next.run(req).await
     } else {
-        tracing::debug!("auth_middleware: acesso não autenticado na rota '{}'. Redirecionando para /login.", path);
+        tracing::debug!(
+            "auth_middleware: acesso não autenticado na rota '{}'. Redirecionando para /login.",
+            path
+        );
         if path.starts_with("/api/") {
             (
                 StatusCode::UNAUTHORIZED,

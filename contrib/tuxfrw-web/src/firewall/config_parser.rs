@@ -95,7 +95,9 @@ impl ConfigService {
             let var_name = var_name.trim();
             let is_valid_ident = !var_name.is_empty()
                 && (var_name.starts_with(|c: char| c.is_ascii_alphabetic() || c == '_'))
-                && var_name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+                && var_name
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || c == '_');
 
             if !is_valid_ident {
                 return Err(format!(
@@ -109,16 +111,16 @@ impl ConfigService {
                 || (val.starts_with('\'') && val.ends_with('\'') && val.len() >= 2);
 
             let is_valid_val = is_quoted || {
-                if val.starts_with('"') {
-                    if let Some(end_idx) = val[1..].rfind('"') {
-                        let rest = val[1 + end_idx + 1..].trim();
+                if let Some(stripped) = val.strip_prefix('"') {
+                    if let Some(end_idx) = stripped.rfind('"') {
+                        let rest = stripped[end_idx + 1..].trim();
                         rest.is_empty() || rest.starts_with('#')
                     } else {
                         false
                     }
-                } else if val.starts_with('\'') {
-                    if let Some(end_idx) = val[1..].rfind('\'') {
-                        let rest = val[1 + end_idx + 1..].trim();
+                } else if let Some(stripped) = val.strip_prefix('\'') {
+                    if let Some(end_idx) = stripped.rfind('\'') {
+                        let rest = stripped[end_idx + 1..].trim();
                         rest.is_empty() || rest.starts_with('#')
                     } else {
                         false
@@ -142,7 +144,8 @@ impl ConfigService {
 
     pub fn validate_bash_syntax(&self, content: &str, display_name: &str) -> Result<(), String> {
         let temp_dir = std::env::temp_dir();
-        let temp_file_path = temp_dir.join(format!(".tuxfrw_syntax_chk_{}.tmp", uuid::Uuid::new_v4()));
+        let temp_file_path =
+            temp_dir.join(format!(".tuxfrw_syntax_chk_{}.tmp", uuid::Uuid::new_v4()));
 
         fs::write(&temp_file_path, content)
             .map_err(|e| format!("Falha ao criar arquivo temporário de validação: {}", e))?;
@@ -169,7 +172,8 @@ impl ConfigService {
 
         if !bash_output.status.success() {
             let stderr = String::from_utf8_lossy(&bash_output.stderr);
-            let sanitized = stderr.replace(&temp_file_path.to_string_lossy().to_string(), display_name);
+            let sanitized =
+                stderr.replace(&temp_file_path.to_string_lossy().to_string(), display_name);
             return Err(format!("Erro de sintaxe Bash:\n{}", sanitized.trim()));
         }
 
@@ -225,7 +229,11 @@ impl ConfigService {
 
         let desc = content
             .lines()
-            .find(|line| line.starts_with("# tf_") || line.contains("rules module") || line.contains("directional"))
+            .find(|line| {
+                line.starts_with("# tf_")
+                    || line.contains("rules module")
+                    || line.contains("directional")
+            })
             .unwrap_or("")
             .trim_start_matches('#')
             .trim()
@@ -246,7 +254,9 @@ impl ConfigService {
             .to_string_lossy();
 
         if !safe_name.starts_with("tf_") || !safe_name.ends_with(".mod") {
-            return Err("Nome de módulo inválido. Deve iniciar com tf_ e terminar com .mod".to_string());
+            return Err(
+                "Nome de módulo inválido. Deve iniciar com tf_ e terminar com .mod".to_string(),
+            );
         }
 
         // 1. Gravar em arquivo temporário isolado
@@ -280,7 +290,8 @@ impl ConfigService {
 
         if !bash_output.status.success() {
             let stderr = String::from_utf8_lossy(&bash_output.stderr);
-            let sanitized = stderr.replace(&temp_file_path.to_string_lossy().to_string(), &safe_name);
+            let sanitized =
+                stderr.replace(&temp_file_path.to_string_lossy().to_string(), &safe_name);
             return Err(format!("Erro de sintaxe Bash:\n{}", sanitized.trim()));
         }
 
@@ -387,9 +398,9 @@ EOF
     }
 
     pub fn save_rule_module(&self, file_name: &str, content: &str) -> io::Result<()> {
-        let safe_name = Path::new(file_name)
-            .file_name()
-            .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "Nome de arquivo inválido"))?;
+        let safe_name = Path::new(file_name).file_name().ok_or_else(|| {
+            io::Error::new(io::ErrorKind::InvalidInput, "Nome de arquivo inválido")
+        })?;
 
         // Validação obrigatória pré-salvamento: bloqueia a gravação se houver erros de sintaxe
         if let Err(val_err) = self.validate_rule_module(file_name, content) {
@@ -419,4 +430,3 @@ EOF
         Ok(())
     }
 }
-

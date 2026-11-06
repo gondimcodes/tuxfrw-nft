@@ -89,4 +89,3 @@ pub async fn get_status_api(
 
     Json(StatusApiResponse { output })
 }
-

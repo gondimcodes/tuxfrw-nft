@@ -103,9 +103,10 @@ impl Config {
             Some(c) => c,
             None => {
                 warn!("No config.toml found. Using default internal configuration.");
-                let mut default_cfg = Config::default();
-                default_cfg.active_path = PathBuf::from("/etc/tuxfrw-nft/config.toml");
-                default_cfg
+                Config {
+                    active_path: PathBuf::from("/etc/tuxfrw-nft/config.toml"),
+                    ..Default::default()
+                }
             }
         };
 
@@ -122,8 +123,7 @@ impl Config {
 
     pub fn save_password_hash(&mut self, new_hash: &str) -> std::io::Result<()> {
         self.auth.password_hash = new_hash.to_string();
-        let serialized = toml::to_string_pretty(self)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        let serialized = toml::to_string_pretty(self).map_err(std::io::Error::other)?;
 
         let target_dir = self.active_path.parent().unwrap_or_else(|| Path::new("."));
         let temp_file = target_dir.join(format!(".config.tmp.{}", uuid::Uuid::new_v4()));

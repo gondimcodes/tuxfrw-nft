@@ -85,17 +85,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         .unwrap_or_else(|_| "[::]:8443".parse().unwrap());
 
     if tls_enabled {
-        info!("HTTPS enabled. Loading TLS configuration for address: {}", addr);
+        info!(
+            "HTTPS enabled. Loading TLS configuration for address: {}",
+            addr
+        );
         let rustls_config = tls::load_or_generate_tls(&cert_path, &key_path, auto_gen_tls).await?;
-        
+
         info!("TuxFrw Web Daemon listening on https://{}", addr);
         info!("Dual-Stack: accepts IPv6 and IPv4 connections simultaneously");
-        
+
         axum_server::bind_rustls(addr, rustls_config)
             .serve(app.into_make_service())
             .await?;
     } else {
-        warn!("TLS is disabled in configuration. Listening unencrypted on http://{}", addr);
+        warn!(
+            "TLS is disabled in configuration. Listening unencrypted on http://{}",
+            addr
+        );
         axum_server::bind(addr)
             .serve(app.into_make_service())
             .await?;
@@ -103,4 +109,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
 
     Ok(())
 }
-

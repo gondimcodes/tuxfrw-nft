@@ -5,6 +5,22 @@ All notable changes to the **TuxFrw-NFT** project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to semantic release versioning.
 
+## [6.0.4] - 2026-11-06
+
+### Fixed
+- **FALHA GRAVE / CRITICAL BUG FIX: Destruição Acidental das Tabelas de NAT do Docker (`table ip nat` e `table ip6 nat`) durante Ciclos de Vida do Firewall (`stop`, `start`, `restart`, `panic`)**:
+  - **Identificação da Falha e Impacto Operacional**: Identificou-se que qualquer execução de comandos de ciclo de vida (`tuxfrw-nft stop`, `tuxfrw-nft start`, `tuxfrw-nft restart` e `tuxfrw-nft panic`), ou recarga via interface web em servidores com contêineres (`DOCKER_SUPPORT="1"`), destruía acidentalmente as tabelas `table ip nat` e `table ip6 nat` do subsistema Netfilter no kernel GNU/Linux. Como o daemon do Docker (via `iptables-nft` / `ip6tables-nft`) gerencia integralmente o tráfego de saída dos contêineres (`MASQUERADE` no `POSTROUTING`) e o redirecionamento/publicação de portas externas (`DNAT` na chain `DOCKER` do `PREROUTING`) dentro de `table ip nat`, a destruição dessas tabelas paralisava imediatamente toda a conectividade de saída dos contêineres e o acesso a todos os serviços publicados (`-p <host_port>:<container_port>`), forçando reinicializações manuais e indesejadas do serviço `docker.service`.
+  - **Causa Raiz da Regressão**: Na versão 5.3, durante a implementação da coexistência com o Fail2ban no modo gateway tradicional (`DOCKER_SUPPORT="0"`), aboliu-se o `flush ruleset` global. No entanto, a rotina `clear_rules()` em `tf_BASE.mod` passou a emitir incondicionalmente instruções de criação e deleção para `table ip nat` e `table ip6 nat` para todos os modos operacionais, removendo a blindagem condicional introduzida originalmente na versão 5.0.
+  - **Remediação Cirúrgica e Blindagem de Isolamento**: Restaurou-se o isolamento estrito de tabelas em `tf_BASE.mod:clear_rules()`, condicionando a purga das tabelas `table ip nat` e `table ip6 nat` exclusivamente a modos onde `DOCKER_SUPPORT != "1"`. Em servidores de aplicação com Docker ativo (`DOCKER_SUPPORT="1"`), o TuxFrw gerencia e limpa única e exclusivamente suas próprias tabelas (`inet filter`, `netdev filter`, `inet mangle`), garantindo que o namespace do Docker permaneça 100% intocado no kernel durante qualquer operação de parada ou inicialização.
+  - **Coexistência Integral com Fail2ban Preservada**: A correção mantém estrita harmonia Zero-Touch com o Fail2ban (que aloca suas jails em `table inet f2b-table` ou `table ip filter`), assegurando que nem as regras de banimento do Fail2ban nem as regras de NAT do Docker sofram qualquer descarte.
+
+### Changed
+- **Unified Version Bump to 6.0.4**:
+  - Elevated version across all core modules, configurations, scripts and technical documentation (`VERSION`, `tuxfrw-nft`, `tuxfrw.conf`, `install.sh`, `tf_KERNEL.mod`, `tf_BASE.mod`, all 20 rule modules in `rules/tf_*.mod`, `CREDITS.md`, `README.md`, and `README.pt-br.md`).
+  - Updated fallback baseline version in `contrib/tuxfrw-web` (`src/firewall/command.rs`) to `v6.0.4`.
+
+---
+
 ## [6.0.3] - 2026-10-22
 
 ### Fixed

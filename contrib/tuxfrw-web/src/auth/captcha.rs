@@ -68,7 +68,8 @@ impl CaptchaEngine {
 
         let timestamp_utc = Utc::now().timestamp();
         let nonce = hex::encode(rng.gen::<[u8; 16]>());
-        let signature = Self::sign_payload(&nonce, timestamp_utc, &code.to_uppercase(), secret_key)?;
+        let signature =
+            Self::sign_payload(&nonce, timestamp_utc, &code.to_uppercase(), secret_key)?;
 
         // captcha_id seguro: nonce:timestamp:assinatura_hmac
         let captcha_id = format!("{}:{}:{}", nonce, timestamp_utc, signature);

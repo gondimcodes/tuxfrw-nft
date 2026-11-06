@@ -42,9 +42,9 @@ pub enum FirewallAction {
 }
 
 pub const ALLOWED_MODULES: &[&str] = &[
-    "INPUT", "OUTPUT", "FORWARD", "DOCKER", "SYNPROXY", "URPF", "NETDEV",
-    "MANGLE", "NAT-IN", "NAT-OUT", "INT-EXT", "EXT-INT", "INT-DMZ", "DMZ-INT",
-    "EXT-DMZ", "DMZ-EXT", "INT-VPN", "VPN-INT", "EXT-VPN", "VPN-EXT", "DMZ-VPN", "VPN-DMZ"
+    "INPUT", "OUTPUT", "FORWARD", "DOCKER", "SYNPROXY", "URPF", "NETDEV", "MANGLE", "NAT-IN",
+    "NAT-OUT", "INT-EXT", "EXT-INT", "INT-DMZ", "DMZ-INT", "EXT-DMZ", "DMZ-EXT", "INT-VPN",
+    "VPN-INT", "EXT-VPN", "VPN-EXT", "DMZ-VPN", "VPN-DMZ",
 ];
 
 #[derive(Clone)]
@@ -150,7 +150,7 @@ impl FirewallManager {
     /// Chamado a cada requisição de página ou refresh, garantindo sincronia imediata.
     /// 1. Tenta invocar `<tuxfrw_bin> version`.
     /// 2. Caso falhe (ex: binário legado sem o subcomando), faz parsing estático do cabeçalho do script.
-    /// 3. Fallback gracioso para a versão de baseline "v6.0.3".
+    /// 3. Fallback gracioso para a versão de baseline "v6.0.4".
     pub async fn get_tuxfrw_version(&self) -> String {
         let mut detected_version = None;
 
@@ -199,7 +199,6 @@ impl FirewallManager {
         }
 
         // 3. Fallback final caso o arquivo não exista no path
-        detected_version.unwrap_or_else(|| "v6.0.3".to_string())
+        detected_version.unwrap_or_else(|| "v6.0.4".to_string())
     }
 }
-

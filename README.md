@@ -1,7 +1,7 @@
 # TuxFrw-NFT
 
 > **The ultimate Linux firewall automation and management tool using Netfilter/nftables.**  
-> *Version 6.0.3*
+> *Version 6.0.4*
 
 [![License: GPLv2](https://img.shields.io/badge/License-GPLv2-blue.svg)](LICENSE)
 [![Netfilter](https://img.shields.io/badge/Netfilter-nftables-orange.svg)](https://wiki.nftables.org/)
@@ -163,7 +163,7 @@ tuxfrw-nft/
 ├── CREDITS.md                    # Historical credits from legacy versions (IPTables/CFTK)
 ├── AUTHORS                       # Project author and maintainer
 ├── LICENSE                       # GNU General Public License v2 (GPLv2)
-└── VERSION                       # Current release version string (6.0.3)
+└── VERSION                       # Current release version string (6.0.4)
 ```
 
 ### OS Deployment Layout
@@ -282,7 +282,7 @@ In-depth technical manuals and architecture guides:
 ## Authorship & Historical Credits
 
 **The TuxFrw Team**
-- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 6.0.3)
+- **Marcelo Gondim** <gondim@gmail.com> (Author & Primary Maintainer - TuxFrw-NFT 6.0.4)
 
 Acknowledgments and contributions to legacy project versions (Netfilter/IPTables and Conectiva CFTK) are documented in [CREDITS.md](CREDITS.md).
 
